@@ -8,14 +8,14 @@
 #'
 #' @name get_rap_phenos
 #'
-#' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p24479_i0") (character)
+#' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0") (character)
 #' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update (character)
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
 #' # get phenotype data
-#' df <- get_rap_phenos(c("eid","p31","p24479_i0"))
+#' df <- get_rap_phenos(c("eid","p31","p21003_i0"))
 #' 
 #' # save to file on the RAP worker node
 #' write_tsv(df, "ukb14631.data_output.20231026.txt.gz")
@@ -30,7 +30,7 @@ get_rap_phenos <- function(names,
                            verbose=FALSE)  {
 
 	if (verbose) cat("Check input & options\n")
-	if (! is.character(names) ) stop("`names` needs to be a character vector of UK Biobank RAP phenotype names, e.g., c(\"eid\",\"p31\",\"p24479_i0\")")
+	if (! is.character(names) ) stop("`names` needs to be a character vector of UK Biobank RAP phenotype names, e.g., c(\"eid\",\"p31\",\"p21003_i0\")")
 
 	if (verbose) cat("Check `eid` is included\n")
 	if (! "eid" %in% names)  {
