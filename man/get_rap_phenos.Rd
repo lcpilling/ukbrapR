@@ -4,10 +4,12 @@
 \alias{get_rap_phenos}
 \title{Use R on the UK Biobank RAP (Spark cluster) to get phenotype data}
 \usage{
-get_rap_phenos(names, verbose = FALSE)
+get_rap_phenos(names, record = NULL, verbose = FALSE)
 }
 \arguments{
-\item{names}{A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p24479_i0") (character)}
+\item{names}{A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0") (character)}
+
+\item{record}{A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update (character)}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
@@ -20,7 +22,7 @@ Using a Spark node/cluster on the UK Biobank RAP, run R to extract a provided se
 }
 \examples{
 # get phenotype data
-df <- ukbrapR::get_rap_phenos(c("eid","p31","p24479_i0"))
+df <- get_rap_phenos(c("eid","p31","p21003_i0"))
 
 # save to file on the RAP worker node
 write_tsv(df, "ukb14631.data_output.20231026.txt.gz")

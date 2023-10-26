@@ -20,8 +20,6 @@ remotes::install_github("lukepilling/ukbrapR")
 
 My main motivation was to create a wrapper function in R to extract phenotype variables from the Spark distributed database functions (like SQL). The primary function is `get_rap_phenos()` which mostly contains code from the UK Biobank DNAnexus team https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb. 
 
-Once it works, one will use it like:
-
 ```r
 library(ukbrapR)
 
@@ -38,10 +36,10 @@ The only other function currently, it a wrapper to quickly upload a file from th
 
 ```r
 # uploads to current working directory
-upload_to_rap(file="ukb14631.data_output.20231026.txt.gz")
+upload_to_rap("ukb14631.data_output.20231026.txt.gz")
 
 # uploads to directory "extracts"
-upload_to_rap(file="ukb14631.data_output.20231026.txt.gz", dir="extracts/")
+upload_to_rap("ukb14631.data_output.20231026.txt.gz", dir="extracts/")
 ```
 
 
