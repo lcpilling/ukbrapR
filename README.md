@@ -28,7 +28,7 @@ df <- get_rap_phenos(c("eid","p31","p21003_i0"))  # this takes a few minutes to 
 skim(df)
 #> ── Data Summary ────────────────────────
 #>                            Values
-#> Name                       tbl   
+#> Name                       df    
 #> Number of rows             502364
 #> Number of columns          3     
 #> _______________________          
