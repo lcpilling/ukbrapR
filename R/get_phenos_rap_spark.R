@@ -9,12 +9,13 @@
 #' @name get_rap_phenos
 #'
 #' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p24479_i0") (character)
+#' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update (character)
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
 #' # get phenotype data
-#' df <- ukbrapR::get_rap_phenos(c("eid","p31","p24479_i0"))
+#' df <- get_rap_phenos(c("eid","p31","p24479_i0"))
 #' 
 #' # save to file on the RAP worker node
 #' write_tsv(df, "ukb14631.data_output.20231026.txt.gz")
@@ -25,6 +26,7 @@
 #' @export
 #'
 get_rap_phenos <- function(names,
+                           record=NULL,
                            verbose=FALSE)  {
 
 	if (verbose) cat("Check input & options\n")
@@ -35,6 +37,8 @@ get_rap_phenos <- function(names,
 		cat("Adding `eid` to the requested variable names\n")
 		names <- c("eid",names)
 	}
+	
+	cat("Getting data for ", length(names), " phenotypes\n")
 
 	if (verbose) cat("Import dxdata package and initialize Spark (dxdata) engine\n")
 	cat("*** If asked about creating a python environment, choose 'no' ****\n")
@@ -42,7 +46,9 @@ get_rap_phenos <- function(names,
 
 	if (verbose) cat("Connect to the dataset\n")
 	project <- system("dx env | grep project- | awk -F '\t' '{print $2}'", intern = TRUE)
-	record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | head -n 1" , intern = TRUE)
+	if (is.null(record))  {
+		record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | head -n 1" , intern = TRUE)
+	}
 	DATASET_ID <- paste0(project, ":", record)
 	dataset <- dxdata$load_dataset(id=DATASET_ID)
 
@@ -50,10 +56,7 @@ get_rap_phenos <- function(names,
 	pheno <- dataset$entities_by_name[['participant']]
 
 	if (verbose) cat("Select fields from participant table\n")
-	get_fields = function(nm)  {
-		pheno$find_field(name=nm)
-	}
-	fld = purrr::map(names, get_fields)
+	fld = purrr::map(names, function(x) pheno$find_field(name=x))
 
 	if (verbose) cat("Define the Spark engine\n")
 	engine <- dxdata$connect(dialect="hive+pyspark")
