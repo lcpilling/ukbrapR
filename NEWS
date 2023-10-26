@@ -1,0 +1,6 @@
+# ukbrapR v0.0.1
+
+Initial release containing two functions:
+ - get_rap_phenos()
+ - upload_to_rap()
+
