@@ -1,0 +1,7 @@
+url: ~
+template:
+  bootstrap: 5
+
+authors:
+  Luke Pilling:
+    href: "https://lukepilling.github.io"

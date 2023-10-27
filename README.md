@@ -7,14 +7,19 @@ R functions to use in the UK Biobank Research Analysis Platform (RAP).
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
 
-This will only work on DNAnexus (https://ukbiobank.dnanexus.com) in an approved UK Biobank project. In tools, create a JupyterLab environment on the Spark Cluster. Start an R session and install this package, which will also install the necessary dependencies for interacting with the Python environment, Apache Spark, and the Arrow C++ library.
+## Installation
+
+This will only work on DNAnexus (https://ukbiobank.dnanexus.com) in an approved UK Biobank project. 
+
+In tools, create a JupyterLab environment on a Spark Cluster. Start an R session and install this package. This will  install the necessary dependencies for interacting with the Python environment, Apache Spark, and the Arrow C++ library.
 
 ```r
 if (!require(remotes)) install.packages("remotes")
-remotes::install_github("lukepilling/ukbrapR")  # this takes a few minutes to build the dependencies
+remotes::install_github("lukepilling/ukbrapR")
+  # this takes a few minutes to build the dependencies
 ```
 
-# get_rap_phenos()
+## Get phenotypes on the RAP
 
 My main motivation was to create a wrapper function in R to extract phenotype variables from the Spark distributed database functions (like SQL). The primary function is `get_rap_phenos()` which mostly contains code from the UK Biobank DNAnexus team https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb. 
 
@@ -22,10 +27,11 @@ My main motivation was to create a wrapper function in R to extract phenotype va
 library(ukbrapR)
 
 # get phenotype data (participant ID, sex, and baseline age)
-df <- get_rap_phenos(c("eid","p31","p21003_i0"))  # this takes a few minutes to complete the interaction with Apache Spark etc.
+df <- get_rap_phenos(c("eid","p31","p21003_i0"))
+  # takes a few minutes to complete interactions with Apache Spark etc.
 
-# skim data
-skim(df)
+# overview of data
+skimr::skim(df)
 #> ── Data Summary ────────────────────────
 #>                            Values
 #> Name                       df    
@@ -51,9 +57,9 @@ skim(df)
 write_tsv(df, "ukb14631.data_output.20231026.txt.gz")
 ```
 
-# upload_to_rap()
+## Upload back to the RAP
 
-The only other function currently, it a wrapper to quickly upload a file from the worker node to the RAP space.
+A wrapper to quickly upload a file from the worker node to the RAP space.
 
 ```r
 # uploads to current working directory
