@@ -1,5 +1,5 @@
 # ukbrapR
-R functions to use in the UK Biobank Research Analysis Platform (RAP).
+{ukbrapR} (phonetically: 'U-K-B-rapper') is a small collection of R functions to use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
 [![](https://img.shields.io/badge/version-0.0.1-informational.svg)](https://github.com/lukepilling/ukbrapR)
@@ -9,7 +9,7 @@ R functions to use in the UK Biobank Research Analysis Platform (RAP).
 
 ## Installation
 
-This will only work on DNAnexus (https://ukbiobank.dnanexus.com) in an approved UK Biobank project. 
+*This will only work on DNAnexus (https://ukbiobank.dnanexus.com) in an approved UK Biobank project in a JupyterLab environment on a Spark Cluster.*
 
 In tools, create a JupyterLab environment on a Spark Cluster. Start an R session and install this package. This will  install the necessary dependencies for interacting with the Python environment, Apache Spark, and the Arrow C++ library.
 
