@@ -1,6 +1,6 @@
 Package: ukbrapR
 Title: R functions to use in the UK Biobank Research Analysis Platform (RAP)
-Version: 0.0.1
+Version: 0.0.1.9000
 Authors@R: c(person("Luke", "Pilling", 
                     email = "L.Pilling@exeter.ac.uk", 
                     role = c("aut", "cre"),
@@ -12,13 +12,18 @@ Depends:
   R (>= 4.1.1)
 Imports:
   dplyr (>= 1.1.0), 
-  readr (>= 2.0.0), 
+  forcats (>= 1.0.0), 
+  lubridate (>= 1.5.0), 
   purrr (>= 1.0.0), 
+  readr (>= 2.0.0), 
   stringr (>= 1.5.0), 
+  tibble (>= 3.2.1), 
+  tidyr (>= 1.3.0), 
   rlang (>= 1.0.0), 
   reticulate (>= 1.34.0), 
   arrow (>= 13.0.0), 
-  skimr (>= 2.1.5)
+  skimr (>= 2.1.5),
+  sparklyr (>= 1.8.4)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
