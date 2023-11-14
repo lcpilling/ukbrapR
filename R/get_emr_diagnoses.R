@@ -1,8 +1,8 @@
-#' Get UK Biobank participant medical records data 
+#' Get UK Biobank participant Electronic Medical Records (EMR) data 
 #'
 #' @description Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
 #'
-#' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`)
+#' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 #'
 #' @author Luke Pilling
 #'
@@ -59,17 +59,17 @@ get_emr_diagnoses <- function(codes_df,
 
 	# Check code lists - only first 5 digits are used by UK Biobank
 	if (verbose) cat("Check code lists - only first 5 digits are used by UK Biobank\n")
-	get_icd10 = FALSE
-	get_read2 = FALSE
-	get_ctv3  = FALSE
-	ICD10s    = ""
-	Read2s    = ""
-	CTV3s     = ""
+	get_icd10 <- FALSE
+	get_read2 <- FALSE
+	get_ctv3  <- FALSE
+	ICD10s    <- ""
+	Read2s    <- ""
+	CTV3s     <- ""
 	
 	# get ICD10s. Remove "." dot characters. First 5 characters only. Add "%" suffix to each for SQL LIKE query
 	if (any(codes_df[,vocab_col] == "ICD10"))  {
-		get_icd10 = TRUE
-		ICD10s    = codes_df |>
+		get_icd10 <- TRUE
+		ICD10s    <- codes_df |>
 			dplyr::filter(!!rlang::sym(vocab_col) == "ICD10") |>
 			dplyr::select(!!rlang::sym(codes_col)) |>
 			dplyr::pull() |>
@@ -82,15 +82,15 @@ get_emr_diagnoses <- function(codes_df,
 
 	# get Read2 and CTV3s. First 5 characters only. 
 	if (any(codes_df[,vocab_col] == "Read2"))  {
-		get_read2 = TRUE
-		Read2s    = codes_df[ codes_df[,vocab_col] == "Read2" , codes_col ]
-		Read2s    = stringr::str_sub(Read2s, 1, 5) |> unique()
+		get_read2 <- TRUE
+		Read2s    <- codes_df[ codes_df[,vocab_col] == "Read2" , codes_col ]
+		Read2s    <- stringr::str_sub(Read2s, 1, 5) |> unique()
 		cat(" - N unique Read2 codes:", length(Read2s), "\n")
 	}
 	if (any(codes_df[,vocab_col] == "CTV3"))  {
-		get_ctv3 = TRUE
-		CTV3s    = codes_df[ codes_df[,vocab_col] == "CTV3" , codes_col ]
-		CTV3s    = stringr::str_sub(CTV3s, 1, 5) |> unique()
+		get_ctv3 <- TRUE
+		CTV3s    <- codes_df[ codes_df[,vocab_col] == "CTV3" , codes_col ]
+		CTV3s    <- stringr::str_sub(CTV3s, 1, 5) |> unique()
 		cat(" - N unique CTV3 codes:", length(CTV3s), "\n")
 	}
 
@@ -121,17 +121,21 @@ get_emr_diagnoses <- function(codes_df,
 
 		# because we want to also match child codes for e.g., chapter codes we will use SQL `LIKE` 
 		# need to make the query manually because only fixed patterns are supported on database backends
+		# need to join with the main "death" table to get the date
 		if (verbose) cat(" - death_cause\n")
-		death_cause_query = stringr::str_c(
-			"SELECT * FROM death_cause WHERE cause_icd10 LIKE '",
+		death_cause_query <- stringr::str_c(
+			"SELECT death_cause.eid, death_cause.cause_icd10, death_cause.dnx_death_id, death_cause.arr_index, death.date_of_death, death.dsource, death.source ",
+			"FROM death_cause ",
+			"INNER JOIN death on death_cause.dnx_death_id=death.dnx_death_id ",
+			"WHERE cause_icd10 LIKE '",
 			stringr::str_flatten(ICD10s, collapse = "' OR cause_icd10 LIKE '"),
 			"'"
 		)
-		death_cause_tbl = dplyr::tbl(sc, dbplyr::sql(death_cause_query))
+		death_cause_tbl <- dplyr::tbl(sc, dbplyr::sql(death_cause_query))
 
-		# same for hesin_diag, but will also join with the episode date info etc.
+		# same for hesin_diag, but will join with the episode date info etc.
 		if (verbose) cat(" - hesin_diag\n")
-		hesin_diag_query = stringr::str_c(
+		hesin_diag_query <- stringr::str_c(
 			"SELECT hesin_diag.eid, hesin_diag.diag_ICD10, hesin_diag.dnx_hesin_id, hesin.epistart, hesin.epiend, hesin.admidate, hesin.disdate ",
 			"FROM hesin_diag ",
 			"INNER JOIN hesin on hesin_diag.dnx_hesin_id=hesin.dnx_hesin_id ",
@@ -139,30 +143,30 @@ get_emr_diagnoses <- function(codes_df,
 			stringr::str_flatten(ICD10s, collapse = "' OR diag_icd10 LIKE '"),
 			"'"
 		)
-		hesin_diag_tbl = dplyr::tbl(sc, dbplyr::sql(hesin_diag_query))
+		hesin_diag_tbl <- dplyr::tbl(sc, dbplyr::sql(hesin_diag_query))
 		
 	}
 	if (get_read2 | get_ctv3)  {
 		if (verbose) cat(" - gp_clinical\n")
-		gp_clinical_tbl = dplyr::tbl(sc, "gp_clinical")
-		gp_clinical_tbl = gp_clinical_tbl |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
+		gp_clinical_tbl <- dplyr::tbl(sc, "gp_clinical")
+		gp_clinical_tbl <- gp_clinical_tbl |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
 	}
 	
 	# Collect data to memory
 	if (verbose) cat("Collect data to memory\n")
-	death_cause = NA
-	hesin_diag  = NA
-	gp_clinical = NA
+	death_cause <- NULL
+	hesin_diag  <- NULL
+	gp_clinical <- NULL
 	if (get_icd10)  {
 		if (verbose) cat(" - death_cause\n")
-		death_cause = sparklyr::collect(death_cause_tbl)
+		death_cause <- sparklyr::collect(death_cause_tbl)
 
 		if (verbose) cat(" - hesin\n")
-		hesin_diag = sparklyr::collect(hesin_diag_tbl)
+		hesin_diag <- sparklyr::collect(hesin_diag_tbl)
 	}
 	if (get_read2 | get_ctv3)  {
 		if (verbose) cat(" - gp_clinical\n")
-		gp_clinical = sparklyr::collect(gp_clinical_tbl)
+		gp_clinical <- sparklyr::collect(gp_clinical_tbl)
 	}
 	
 	#
@@ -173,7 +177,9 @@ get_emr_diagnoses <- function(codes_df,
 	if (verbose)  cat("Done.\nTime taken:", end_time - start_time, "\n")
 	
 	# Return data as list
-	list(death_cause=death_cause, hesin_diag=hesin_diag, gp_clinical=gp_clinical)
+	output_list <- list(death_cause=death_cause, hesin_diag=hesin_diag, gp_clinical=gp_clinical, codes_df=codes_df)
+	class(output_list) <- "ukb_emr"
+	return(output_list)
 
 }
 

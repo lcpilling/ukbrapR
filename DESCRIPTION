@@ -15,10 +15,10 @@ Imports:
   readr (>= 2.0.0), 
   stringr (>= 1.5.0), 
   purrr (>= 1.0.0), 
+  lubridate (>= 1.9.0), 
   rlang (>= 1.0.0), 
   reticulate (>= 1.34.0), 
   arrow (>= 13.0.0), 
-  skimr (>= 2.1.5),
   sparklyr (>= 1.8.4)
 Encoding: UTF-8
 LazyData: true
