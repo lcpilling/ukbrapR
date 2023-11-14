@@ -60,6 +60,7 @@ get_emr_df <- function(diagnosis_list,
 	#
 	
 	# Do death_cause
+	options(dplyr.summarise.inform = FALSE)
 	if (use_death_cause)  {
 		if (verbose) cat("Get date first diagnosis: death_df\n")
 		death_cause <- diagnosis_list$death_cause |>
@@ -86,6 +87,7 @@ get_emr_df <- function(diagnosis_list,
 			dplyr::group_by(eid) |>
 			dplyr::summarize(gp_df=min(event_dt, na.rm=TRUE))
 	}
+	options(dplyr.summarise.inform = TRUE)
 	
 	#
 	#
