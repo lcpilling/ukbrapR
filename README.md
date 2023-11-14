@@ -1,5 +1,5 @@
 # ukbrapR
-{ukbrapR} (phonetically: 'U-K-B-rapper') is a small package of R functions to use in the UK Biobank Research Analysis Platform (RAP).
+{ukbrapR} (phonetically: 'U-K-B-rapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
 [![](https://img.shields.io/badge/version-0.0.2-informational.svg)](https://github.com/lukepilling/ukbrapR)
@@ -67,7 +67,7 @@ Identify the date first diagnosed for each participant from any of the "long" da
 
 ```r
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df = get_emr_df(diagnosis_list)
+diagnosis_df <- get_emr_df(diagnosis_list)
 #> 0.98 sec elapsed
 
 # save to files on the RAP worker node
