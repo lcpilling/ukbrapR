@@ -1,6 +1,6 @@
-#' Use R on the UK Biobank RAP (Spark cluster) to get phenotype data
+#' Get UK Biobank participant phenotype data 
 #'
-#' @description Using a Spark node/cluster on the UK Biobank RAP, run R to extract a provided set of variables. Using code from the UK Biobank DNAnexus team https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb
+#' @description Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to extract a provided set of variables. Using code from the UK Biobank DNAnexus team https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb
 #'
 #' @return Returns a data.frame (the participant data for the requested variables)
 #'
@@ -8,17 +8,18 @@
 #'
 #' @name get_rap_phenos
 #'
-#' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0") (character)
-#' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update (character)
+#' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0")
+#' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update
+#'        \code{default=most recent dataset update}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
 #' # get phenotype data
-#' df <- get_rap_phenos(c("eid","p31","p21003_i0"))
+#' df <- ukbrapR::get_rap_phenos(c("eid","p31","p21003_i0"))
 #' 
 #' # save to file on the RAP worker node
-#' write_tsv(df, "ukb14631.data_output.20231026.txt.gz")
+#' readr::write_tsv(df, "ukb14631.data_output.20231026.txt.gz")
 #' 
 #' # upload data to RAP storage
 #' ukbrapR::upload_to_rap(file="ukb14631.data_output.20231026.txt.gz", dir="")
@@ -28,6 +29,8 @@
 get_rap_phenos <- function(names,
                            record=NULL,
                            verbose=FALSE)  {
+
+	start_time <- Sys.time()
 
 	if (verbose) cat("Check input & options\n")
 	if (! is.character(names) ) stop("`names` needs to be a character vector of UK Biobank RAP phenotype names, e.g., c(\"eid\",\"p31\",\"p21003_i0\")")
@@ -80,6 +83,10 @@ get_rap_phenos <- function(names,
 
 	if (verbose) cat("Collect the data from the dataset to R memory\n")
 	tbl <- ds |> dplyr::collect()
+
+	end_time <- Sys.time()
+	if (verbose)  cat("Done.\nTime taken:", end_time - start_time, "\n")
+
 	tbl
 
 }
