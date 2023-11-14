@@ -27,19 +27,19 @@ The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK
 
 ```r
 # get phenotype data (participant ID, sex, and baseline age)
-df <- get_rap_phenos(c("eid", "p31", "p21003_i0"))
+ukb <- get_rap_phenos(c("eid", "p31", "p21003_i0"))
 #> 48.02 sec elapsed
 
 # summary of data
-table(df$p31)
+table(ukb$p31)
 #> Female   Male 
 #> 273297 229067
-summary(df$p21003_i0)
+summary(ukb$p21003_i0)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #>  37.00   50.00   58.00   56.53   63.00   73.00 
 
 # save to file on the RAP worker node
-readr::write_tsv(df, "ukbrap.phenos.20231114.txt.gz")
+readr::write_tsv(ukb, "ukbrap.phenos.20231114.txt.gz")
 ```
 
 ## Get medical records diagnoses
@@ -72,6 +72,28 @@ diagnosis_df <- get_emr_df(diagnosis_list)
 
 # save to files on the RAP worker node
 readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
+```
+
+## Example analysis:
+
+Hypothesis: age and sex are associated with likelihood of CKD diagnosis in the medical record follow-up 
+
+```r 
+ukb <- dplyr::left_join(ukb, diagnosis_df, by="eid")
+
+# create binary "ever diagnosed" variable
+ukb <- ukb |> dplyr::mutate(CKD_bin = dplyr::if_else( !is.na(df), 1, 0))
+
+# fit logistic regression model for "ever diagnosed" -- get "tidy" model output
+fit_CKD_bin <- glm(CKD_bin ~ p21003_i0 + p31, data = ukb, family = binomial)
+
+lukesRlib::tidy_ci(fit_CKD_bin)
+Binomial model (estimate=Odds Ratio) :: N=502354, Ncases=31440
+# A tibble: 2 × 8
+  term       estimate std.error statistic  p.value conf.low conf.high p.extreme 
+  <chr>         <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl> <chr>     
+1 p21003_i0      1.12  0.000967     116.  0            1.12      1.12 2.42e-2938
+2 p31            1.13  0.0119        10.5 6.46e-26     1.11      1.16 NA 
 ```
 
 ## Upload file to the RAP
