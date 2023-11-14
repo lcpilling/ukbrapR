@@ -39,17 +39,17 @@ codes_df <- readr::read_tsv("https://raw.githubusercontent.com/GEMINI-multimorbi
 codes_df
 
 # get diagnosis data - returns list of data frames (one per source)
-diagnoses_list <- ukbrapR::get_emr_diagnoses(codes_df)
+diagnoses_list <- get_emr_diagnoses(codes_df)
 # 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 # 298.18 sec elapsed
 
 # save to files on the RAP worker node
-readr::write_tsv(diagnoses_list$death_cause, "ukb14631.CKD.death_cause.20231114.txt.gz")
-readr::write_tsv(diagnoses_list$hesin_diag,  "ukb14631.CKD.hesin_diag.20231114.txt.gz")
-readr::write_tsv(diagnoses_list$gp_clinical, "ukb14631.CKD.gp_clinical.20231114.txt.gz")
+readr::write_tsv(diagnoses_list$death_cause, "ukbrap.CKD.death_cause.20231114.txt.gz")
+readr::write_tsv(diagnoses_list$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
+readr::write_tsv(diagnoses_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.txt.gz")
 
 # upload data to RAP storage
-ukbrapR::upload_to_rap(file="ukb14631.CKD.*.20231114.txt.gz", dir="")
+upload_to_rap(file="ukbrap.CKD.*.20231114.txt.gz", dir="")
 
 }
 \author{

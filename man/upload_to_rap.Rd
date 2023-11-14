@@ -21,8 +21,11 @@ NA
 Use R to upload a file to the UK Biobank RAP (really just a wrapper for `dx upload`)
 }
 \examples{
+
+readr::write_tsv(data.frame(x=1:10,y=11:20), "ukbrap.dummy.20231114.txt.gz")
+
 # upload file to RAP storage
-ukbrapR::upload_to_rap(file="ukb14631.data_output.20231026.txt.gz", dir="extracts/")
+upload_to_rap(file="ukbrap.dummy.20231114.txt.gz", dir="extracts/")
 
 }
 \author{

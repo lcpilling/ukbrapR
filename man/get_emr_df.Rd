@@ -28,7 +28,7 @@ get_emr_df(
 \code{default=FALSE}}
 }
 \value{
-Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`)
+Returns a single, "wide" data frame: the participant data for the requested diagnosis codes with "date first" `_df` variables. One for each source of data, and a combined variable.
 }
 \description{
 For each participant identify the date of first diagnosis for the provided electronic medical records.
@@ -39,16 +39,19 @@ codes_df <- readr::read_tsv("https://raw.githubusercontent.com/GEMINI-multimorbi
 codes_df
 
 # get diagnosis data - returns list of data frames (one per source)
-diagnosis_list <- ukbrapR::get_emr_diagnoses(codes_df)
+diagnosis_list <- get_emr_diagnoses(codes_df)
+# 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
+# 298.18 sec elapsed
 
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df = ukbrapR::get_emr_df(diagnosis_list)
+diagnosis_df = get_emr_df(diagnosis_list)
+# 0.9 sec elapsed
 
 # save to files on the RAP worker node
-readr::write_tsv(diagnosis_df, "ukb14631.CKD.date_first.20231114.txt.gz")
+readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
 
 # upload data to RAP storage
-ukbrapR::upload_to_rap(file="ukb14631.CKD.date_first.20231114.txt.gz", dir="")
+upload_to_rap(file="ukbrap.CKD.date_first.20231114.txt.gz", dir="")
 
 }
 \author{
