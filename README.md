@@ -66,12 +66,12 @@ readr::write_tsv(diagnoses_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.tx
 Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr_diagnoses()` (cause of death, HES, and GP).
 
 ```r
-#' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_emr_df(diagnosis_list)
-#' #> 0.98 sec elapsed
-#'
-#' # save to files on the RAP worker node
-#' readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
+# for each participant, get Date First diagnosed with the condition
+diagnosis_df = get_emr_df(diagnosis_list)
+#> 0.98 sec elapsed
+
+# save to files on the RAP worker node
+readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
 ```
 
 ## Upload file to the RAP
