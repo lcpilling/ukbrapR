@@ -6,7 +6,7 @@
 #'
 #' @author Luke Pilling
 #'
-#' @name get_emr_diagnoses
+#' @name get_emr_df
 #'
 #' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
 #' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
@@ -27,7 +27,7 @@
 #' diagnosis_list <- ukbrapR::get_emr_diagnoses(codes_df)
 #'
 #' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_emr_df(diagnosis_list)
+#' diagnosis_df = ukbrapR::get_emr_df(diagnosis_list)
 #'
 #' # save to files on the RAP worker node
 #' readr::write_tsv(diagnosis_df, "ukb14631.CKD.date_first.20231114.txt.gz")

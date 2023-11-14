@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_emr_diagnoses.R
 \name{get_emr_diagnoses}
 \alias{get_emr_diagnoses}
-\title{Get UK Biobank participant medical records data}
+\title{Get UK Biobank participant Electronic Medical Records (EMR) data}
 \usage{
 get_emr_diagnoses(
   codes_df,
@@ -28,7 +28,7 @@ get_emr_diagnoses(
 \code{default=FALSE}}
 }
 \value{
-Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`)
+Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 }
 \description{
 Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
