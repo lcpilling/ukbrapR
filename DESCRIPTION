@@ -12,13 +12,9 @@ Depends:
   R (>= 4.1.1)
 Imports:
   dplyr (>= 1.1.0), 
-  forcats (>= 1.0.0), 
-  lubridate (>= 1.5.0), 
-  purrr (>= 1.0.0), 
   readr (>= 2.0.0), 
   stringr (>= 1.5.0), 
-  tibble (>= 3.2.1), 
-  tidyr (>= 1.3.0), 
+  purrr (>= 1.0.0), 
   rlang (>= 1.0.0), 
   reticulate (>= 1.34.0), 
   arrow (>= 13.0.0), 
