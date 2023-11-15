@@ -121,9 +121,10 @@ readr::write_tsv(ukb, "ukbrap.phenos.20231114.txt.gz")
 upload_to_rap("ukbrap.phenos.20231114.txt.gz")
 
 # save "long" diagnosis data plus the derived "wide" date first and upload to directory "extracts"
-readr::write_tsv(diagnoses_list$death_cause, "ukbrap.CKD.death_cause.20231114.txt.gz")
-readr::write_tsv(diagnoses_list$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
-readr::write_tsv(diagnoses_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.txt.gz")
+readr::write_tsv(diagnosis_list$death_cause, "ukbrap.CKD.death_cause.20231114.txt.gz")
+readr::write_tsv(diagnosis_list$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
+readr::write_tsv(diagnosis_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.txt.gz")
+readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
 
 upload_to_rap("ukbrap.*.20231114.txt.gz", dir="extracts/")
 ```
