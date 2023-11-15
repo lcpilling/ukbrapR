@@ -160,13 +160,16 @@ get_emr_diagnoses <- function(codes_df,
 	if (get_icd10)  {
 		if (verbose) cat(" - death_cause\n")
 		death_cause <- sparklyr::collect(death_cause_tbl)
+		death_cause$eid <- as.numeric(death_cause$eid)  # can sometimes become CHR 
 
 		if (verbose) cat(" - hesin\n")
 		hesin_diag <- sparklyr::collect(hesin_diag_tbl)
+		hesin_diag$eid <- as.numeric(hesin_diag$eid)  # can sometimes become CHR 
 	}
 	if (get_read2 | get_ctv3)  {
 		if (verbose) cat(" - gp_clinical\n")
 		gp_clinical <- sparklyr::collect(gp_clinical_tbl)
+		gp_clinical$eid <- as.numeric(gp_clinical$eid)  # can sometimes become CHR 
 	}
 	
 	#

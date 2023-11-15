@@ -16,10 +16,10 @@
 #'
 #' @examples
 #' # get phenotype data
-#' df <- get_rap_phenos(c("eid","p31","p21003_i0"))
+#' ukb <- get_rap_phenos(c("eid","p31","p21003_i0","p53_i0"))
 #' 
 #' # save to file on the RAP worker node
-#' readr::write_tsv(df, "ukbrap.phenos.20231114.txt.gz")
+#' readr::write_tsv(ukb, "ukbrap.phenos.20231114.txt.gz")
 #' 
 #' # upload data to RAP storage
 #' upload_to_rap(file="ukbrap.phenos.20231114.txt.gz", dir="")

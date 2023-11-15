@@ -66,6 +66,7 @@ get_emr_df <- function(diagnosis_list,
 	if (use_death_cause)  {
 		if (verbose) cat("Get date first diagnosis: death_df\n")
 		death_cause <- diagnosis_list$death_cause |>
+			dplyr::mutate(date_of_death = dplyr::if_else(is.finite(date_of_death), date_of_death, NA)) |> 
 			dplyr::group_by(eid) |>
 			dplyr::summarize(death_df=min(date_of_death, na.rm=TRUE))
 	}
@@ -78,6 +79,7 @@ get_emr_df <- function(diagnosis_list,
 			dplyr::mutate(diagnosis_date = dplyr::if_else(is.na(diagnosis_date), epiend, diagnosis_date)) |>
 			dplyr::mutate(diagnosis_date = dplyr::if_else(is.na(diagnosis_date), admidate, diagnosis_date)) |>
 			dplyr::mutate(diagnosis_date = lubridate::as_date(dplyr::if_else(is.na(diagnosis_date), disdate, diagnosis_date))) |>
+			dplyr::mutate(diagnosis_date = dplyr::if_else(is.finite(diagnosis_date), diagnosis_date, NA)) |> 
 			dplyr::group_by(eid) |>
 			dplyr::summarize(hes_df=min(diagnosis_date, na.rm=TRUE))
 	}
@@ -86,6 +88,7 @@ get_emr_df <- function(diagnosis_list,
 	if (use_gp_clinical)  {
 		if (verbose) cat("Get date first diagnosis: gp_df\n")
 		gp_clinical <- diagnosis_list$gp_clinical |>
+			dplyr::mutate(event_dt = dplyr::if_else(is.finite(event_dt), event_dt, NA)) |> 
 			dplyr::group_by(eid) |>
 			dplyr::summarize(gp_df=min(event_dt, na.rm=TRUE))
 	}
