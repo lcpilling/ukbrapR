@@ -21,7 +21,7 @@ remotes::install_github("lukepilling/ukbrapR")
 
 ## Get phenotype data
 
-Extracts phenotype variables from the Spark database to an R data frame. Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
+Pull phenotypes from Spark to an R data frame. Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
 
 The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb). 
 
@@ -51,6 +51,11 @@ codes_df <- readr::read_tsv("https://raw.githubusercontent.com/GEMINI-multimorbi
 diagnosis_list <- get_emr_diagnoses(codes_df)
 #> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 #> 298.18 sec elapsed
+
+# N records for each source
+nrow(diagnosis_list$death_cause)  #   1,962
+nrow(diagnosis_list$hesin_diag)   # 206,394
+nrow(diagnosis_list$gp_clinical)  #  29,088
 ```
 
 ## Get date first diagnosis
@@ -62,8 +67,20 @@ Identify the date first diagnosed for each participant from any of the "long" da
 diagnosis_df <- get_emr_df(diagnosis_list)
 #> 0.98 sec elapsed
 
-# save to files on the RAP worker node
-readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
+# skim data 
+skimr::skim(diagnosis_df)
+#> ── Data Summary ────────────────────────
+#>                            Values      
+#> Name                       diagnosis_df
+#> Number of rows             31945       
+#> Number of columns          5           
+#> 
+#> ── Variable type: Date ───────────────────────────────────────────────────────────
+#>   skim_variable  n_missing complete_rate min        max        median     n_unique
+#> 1 death_df           30018        0.0603 2008-02-20 2022-12-15 2020-03-03     1429
+#> 2 hes_df              7242        0.773  1995-08-29 2022-10-31 2018-05-15     5562
+#> 3 gp_df              19195        0.399  1958-01-01 2017-09-06 2009-09-15     3264
+#> 4 df                     6        1.00   1958-01-01 2022-12-01 2015-02-17     6367
 ```
 
 ## Example analysis
@@ -85,17 +102,12 @@ ukb <- ukb |> dplyr::mutate(
 	)
 )
 
-# fit logistic regression model for "ever diagnosed" 
-fit_CKD_bin <- glm(CKD_bin ~ p21003_i0 + p31, data = ukb, family = binomial)
-
-# get tidy model output with 95% CIs and extreme p-values
-lukesRlib::tidy_ci(fit_CKD_bin)
-#> Binomial model (estimate=Odds Ratio) :: N=502364, Ncases=31939
-#> # A tibble: 2 × 8
-#>   term      estimate std.error statistic  p.value conf.low conf.high p.extreme 
-#>   <chr>        <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl> <chr>     
-#> 1 p21003_i0     1.12  0.000960     117.  0            1.12      1.12 1.76e-2984
-#> 2 p31Male       1.15  0.0118        11.5 1.26e-30     1.12      1.17 NA
+table(ukb$CKD_bin)
+#>      0      1 
+#> 470425  31939 
+summary(ukb$CKD_time[ ukb$CKD_bin==1 ])
+#>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#>  0.003   4.427   7.863   7.694  11.244  16.512    6607 
 
 # fit time to event CoxPH model 
 library(survival)
@@ -135,7 +147,7 @@ On a DNAnexus Spark cluster: `mem1_hdd1_v2_x16` with **2 nodes** on "Normal" pri
 
 Thing | Time taken | Note
 ----- | ---------- | ----
-Lauch JupyterLab Spark cluster | 8 minutes | 
+Launch JupyterLab Spark cluster | 8 minutes | 
 Build R package plus dependencies | 5 minutes | Can be skipped if using a saved Snapshot
 Get phenotype data | 1 minute | 
 Ascertain medical records diagnoses | 5 minutes | Includes converting to wide "date first"
