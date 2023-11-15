@@ -136,12 +136,13 @@ On a DNAnexus Spark cluster: `mem1_hdd1_v2_x16` with **2 nodes** on "Normal" pri
 Thing | Time taken | Note
 ----- | ---------- | ----
 Lauch JupyterLab Spark cluster | 8 minutes | 
-Build R package plus dependencies | 5 minutes | (Can be skipped if using a saved Snapshot)
+Build R package plus dependencies | 5 minutes | Can be skipped if using a saved Snapshot
 Get phenotype data | 1 minute | 
-Ascertain medical records diagnoses | 5 minutes | 
+Ascertain medical records diagnoses | 5 minutes | Includes converting to wide "date first"
 Simple analysis | <1 minute | 
 
 Approx. time: 20 mins
+
 Approx. cost: £0.20
 
 *Note: time can vary depending on number of phenotypes/diagnostic codes requested, and how busy the platform is.*
