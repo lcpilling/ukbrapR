@@ -1,5 +1,5 @@
 # ukbrapR
-{ukbrapR} (phonetically: 'U-K-B-rapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
+{ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
 [![](https://img.shields.io/badge/version-0.0.2-informational.svg)](https://github.com/lukepilling/ukbrapR)
