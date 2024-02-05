@@ -2,7 +2,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.0.2-informational.svg)](https://github.com/lukepilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.0.2.9000-informational.svg)](https://github.com/lukepilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lukepilling/ukbrapR.svg)](https://github.com/lukepilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
@@ -17,6 +17,9 @@ In tools, launch a JupyterLab environment on a Spark Cluster. In R, install {ukb
 if (!require(remotes)) install.packages("remotes")
 remotes::install_github("lukepilling/ukbrapR")
   # Takes a few minutes to build the dependencies. Suggest saving as a snapshot.
+
+# to install a specific release version
+#remotes::install_github("lukepilling/ukbrapR@v0.0.2")
 ```
 
 ## Get phenotype data
@@ -45,7 +48,7 @@ For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Ele
 
 ```r
 # example diagnostic codes for CKD from GEMINI multimorbidity project
-codes_df <- readr::read_tsv("https://raw.githubusercontent.com/GEMINI-multimorbidity/diagnostic_codes/main/codelists/CKD.txt")
+codes_df <- readr::read_tsv("https://lukepilling.github.io/files/CKD.txt")
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_emr_diagnoses(codes_df)
