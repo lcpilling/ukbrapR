@@ -20,7 +20,7 @@
 #'
 #' @examples
 #' # example diagnostic codes for CKD from GEMINI multimorbidity project
-#' codes_df <- readr::read_tsv("https://raw.githubusercontent.com/GEMINI-multimorbidity/diagnostic_codes/main/codelists/CKD.txt")
+#' codes_df <- readr::read_tsv("https://lukepilling.github.io/files/CKD.txt")
 #' codes_df
 #'
 #' # get diagnosis data - returns list of data frames (one per source)
