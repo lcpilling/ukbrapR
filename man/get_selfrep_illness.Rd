@@ -24,7 +24,13 @@ get_selfrep_illness(
 \code{default='code'}}
 
 \item{ukb_dat}{A data frame. Optional. If not provided, will get the phenotypes from the RAP. Contains the self-reported illness fields e.g., `p20008_i0_a0`.
-\code{default='code'}}
+\code{default=NULL}}
+
+\item{n_cancer_arrays}{An integer. It is not trivial to determine the max number of arrays to request from Spark for the self-reported illnesses. The defaults match the currently (Feb 2024) available data but may need increasing in the future.
+\code{default=5}}
+
+\item{n_noncancer_arrays}{An integer. It is not trivial to determine the max number of arrays to request from Spark for the self-reported illnesses. The defaults match the currently (Feb 2024) available data but may need increasing in the future.
+\code{default=30}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
