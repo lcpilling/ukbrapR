@@ -54,6 +54,13 @@ For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Ele
 ```r
 # example diagnostic codes for CKD from GEMINI multimorbidity project are included
 head(codes_df_ckd)
+#>   vocab_id  code
+#> 1    ICD10 N18.3
+#> 2    ICD10 N18.4
+#> 3    ICD10 N18.5
+#> 4    ICD10 N18.6
+#> 5    ICD10 N18.9
+#> 6    ICD10   N19
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_emr(codes_df_ckd)
@@ -98,6 +105,23 @@ UK Biobank cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20001) and
 ```r
 # Example, for haemochromatosis:
 print(codes_df_hh)
+#>         vocab_id   code
+#> 1  ukb_noncancer   1507
+#> 2           ICD9 275.03
+#> 3          ICD10  E83.1
+#> 4          Read2  126A.
+#> 5          Read2  4L41.
+#> 6          Read2  677C0
+#> 7          Read2  C350.
+#> 8          Read2  C3500
+#> 9           CTV3  C3500
+#> 10          CTV3  X40QQ
+#> 11          CTV3  XaIyI
+#> 12          CTV3  XaIyx
+#> 13          CTV3  XaXHI
+#> 14          CTV3  XE13K
+#> 15          CTV3  X307o
+#> 16          CTV3  X307p
 ```
 
 The below function will by default pull the appropriate self-reported fields from the RAP Spark system to determine whether a participant has reported any of the provided codes, and identify the self-reported date of diagnosis:
