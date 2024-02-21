@@ -6,7 +6,7 @@
 #'
 #' @author Luke Pilling
 #'
-#' @name get_emr_diagnoses
+#' @name get_emr
 #'
 #' @param codes_df A data frame. Contains the `vocab_col` and `codes_col` i.e., a list of diagnostic codes, and an indicator of the vocabulary.
 #' @param vocab_col A string. Column name in `codes_df` that contains the vocabulary indicator for the code (vocab IDs should be 'ICD10' 'Read2' or 'CTV3').
@@ -20,29 +20,27 @@
 #'
 #' @examples
 #' # example diagnostic codes for CKD from GEMINI multimorbidity project
-#' codes_df <- readr::read_tsv("https://lukepilling.github.io/files/CKD.txt")
-#' codes_df
+#' head(codes_df_ckd)
 #'
-#' # get diagnosis data - returns list of data frames (one per source)
-#' diagnoses_list <- get_emr_diagnoses(codes_df)
-#' # 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
-#' # 298.18 sec elapsed
+#' # get EMR data - returns list of data frames (one per source)
+#' emr_dat <- get_emr(codes_df_ckd)
 #'
-#' # save to files on the RAP worker node
-#' readr::write_tsv(diagnoses_list$death_cause, "ukbrap.CKD.death_cause.20231114.txt.gz")
-#' readr::write_tsv(diagnoses_list$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
-#' readr::write_tsv(diagnoses_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.txt.gz")
+#' # save to files on the RAP worker node -- either as an R object, or separate as text files:
+#' save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
+#' readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
 #' 
 #' # upload data to RAP storage
-#' upload_to_rap(file="ukbrap.CKD.*.20231114.txt.gz", dir="")
+#' upload_to_rap(file="ukbrap.CKD.*.20231114.*", dir="")
 #'
 #' @export
 #'
-get_emr_diagnoses <- function(codes_df,
-                              vocab_col = "vocab_id",
-                              codes_col = "code",
-                              spark_master = "spark://master:41000",
-                              verbose=FALSE)  {
+get_emr <- function(
+	codes_df,
+	vocab_col = "vocab_id",
+	codes_col = "code",
+	spark_master = "spark://master:41000",
+	verbose=FALSE
+)  {
 	
 	start_time <- Sys.time()
 
@@ -118,7 +116,7 @@ get_emr_diagnoses <- function(codes_df,
 	# Create reference to tables without loading into memory
 	if (verbose) cat("Create query for Spark tables without yet loading into memory\n")
 	if (get_icd10)  {
-
+	
 		# because we want to also match child codes for e.g., chapter codes we will use SQL `LIKE` 
 		# need to make the query manually because only fixed patterns are supported on database backends
 		# need to join with the main "death" table to get the date
@@ -132,7 +130,7 @@ get_emr_diagnoses <- function(codes_df,
 			"'"
 		)
 		death_cause_tbl <- dplyr::tbl(sc, dbplyr::sql(death_cause_query))
-
+	
 		# same for hesin_diag, but will join with the episode date info etc.
 		if (verbose) cat(" - hesin_diag\n")
 		hesin_diag_query <- stringr::str_c(
@@ -161,7 +159,7 @@ get_emr_diagnoses <- function(codes_df,
 		if (verbose) cat(" - death_cause\n")
 		death_cause <- sparklyr::collect(death_cause_tbl)
 		death_cause$eid <- as.numeric(death_cause$eid)  # can sometimes become CHR 
-
+	
 		if (verbose) cat(" - hesin\n")
 		hesin_diag <- sparklyr::collect(hesin_diag_tbl)
 		hesin_diag$eid <- as.numeric(hesin_diag$eid)  # can sometimes become CHR 
@@ -176,26 +174,13 @@ get_emr_diagnoses <- function(codes_df,
 	#
 	#
 	
-	end_time <- Sys.time()
-	if (verbose)  cat("Done.\nTime taken:", end_time - start_time, "\n")
+	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
 	
 	# Return data as list
-	output_list <- list(death_cause=death_cause, hesin_diag=hesin_diag, gp_clinical=gp_clinical, codes_df=codes_df)
+	output_list <- list(gp_clinical=gp_clinical, hesin_diag=hesin_diag, death_cause=death_cause, codes_df=codes_df)
 	class(output_list) <- "ukb_emr"
 	return(output_list)
-
+	
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

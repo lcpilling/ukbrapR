@@ -22,14 +22,16 @@
 #'
 #' @export
 #'
-upload_to_rap <- function(file,
-                          dir="FALSE",
-                          verbose=FALSE)  {
-
+upload_to_rap <- function(
+	file,
+	dir = "FALSE",
+	verbose = FALSE
+)  {
+	
 	if (verbose) cat("Check input & options\n")
 	if (! is.character(file) ) stop("`file` needs to be a string of the filename to upload")
 	if (! file.exists(file) ) stop("`file` not found")
-
+	
 	if (dir == "FALSE")  {
 		if (verbose) cat("Uploading to current working directory\n")
 		system(paste0("dx upload ", file))
@@ -38,7 +40,7 @@ upload_to_rap <- function(file,
 		if (substr(dir, nchar(dir), nchar(dir)) != "/")  dir <- paste0(dir, "/")
 		system(paste0("dx upload ", file, " --path ", dir))
 	}
-
+	
 }
 
 

@@ -2,7 +2,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.0.2.9000-informational.svg)](https://github.com/lukepilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.1.0-informational.svg)](https://github.com/lukepilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lukepilling/ukbrapR.svg)](https://github.com/lukepilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
@@ -14,13 +14,18 @@
 In tools, launch a JupyterLab environment on a Spark Cluster. In R, install {ukbrapR}. This will install the necessary dependencies for interacting with Python, Apache Spark, and the Arrow C++ library.
 
 ```r
-if (!require(remotes)) install.packages("remotes")
+# Install the development version
 remotes::install_github("lukepilling/ukbrapR")
-  # Takes a few minutes to build the dependencies. Suggest saving as a snapshot.
 
-# to install a specific release version
-#remotes::install_github("lukepilling/ukbrapR@v0.0.2")
+# To install the latest release, use:
+remotes::install_github("lukepilling/lukesRlib@*release")
+
+# To install a specific version (see tags), use:
+remotes::install_github("lukepilling/lukesRlib@v0.2.0")
 ```
+
+I highly recommend saving a "snapshot" once all the packages are installed, and loading this when launching JupyterLab.
+
 
 ## Get phenotype data
 
@@ -44,30 +49,30 @@ summary(ukb$p21003_i0)
 
 ## Get medical records diagnoses
 
-For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `death_cause`, `hesin_diag` and `gp_clinical` with matched codes.
+For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes.
 
 ```r
-# example diagnostic codes for CKD from GEMINI multimorbidity project
-codes_df <- readr::read_tsv("https://lukepilling.github.io/files/CKD.txt")
+# example diagnostic codes for CKD from GEMINI multimorbidity project are included
+head(codes_df_ckd)
 
 # get diagnosis data - returns list of data frames (one per source)
-diagnosis_list <- get_emr_diagnoses(codes_df)
+diagnosis_list <- get_emr(codes_df_ckd)
 #> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 #> 298.18 sec elapsed
 
 # N records for each source
-nrow(diagnosis_list$death_cause)  #   1,962
-nrow(diagnosis_list$hesin_diag)   # 206,394
 nrow(diagnosis_list$gp_clinical)  #  29,088
+nrow(diagnosis_list$hesin_diag)   # 206,394
+nrow(diagnosis_list$death_cause)  #   1,962
 ```
 
 ## Get date first diagnosis
 
-Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr_diagnoses()` (cause of death, HES, and GP).
+Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr()` (cause of death, HES, and GP).
 
 ```r
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df <- get_emr_df(diagnosis_list)
+diagnosis_df <- get_df(diagnosis_list)
 #> 0.98 sec elapsed
 
 # skim data 
@@ -80,11 +85,52 @@ skimr::skim(diagnosis_df)
 #> 
 #> ── Variable type: Date ───────────────────────────────────────────────────────────
 #>   skim_variable  n_missing complete_rate min        max        median     n_unique
-#> 1 death_df           30018        0.0603 2008-02-20 2022-12-15 2020-03-03     1429
+#> 1 gp_df              19195        0.399  1958-01-01 2017-09-06 2009-09-15     3264
 #> 2 hes_df              7242        0.773  1995-08-29 2022-10-31 2018-05-15     5562
-#> 3 gp_df              19195        0.399  1958-01-01 2017-09-06 2009-09-15     3264
+#> 3 death_df           30018        0.0603 2008-02-20 2022-12-15 2020-03-03     1429
 #> 4 df                     6        1.00   1958-01-01 2022-12-01 2015-02-17     6367
 ```
+
+## Identify self-reported illness / cancer
+
+UK Biobank cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20001) and non-cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20002) illness codes can be included in the codes list:
+
+```r
+# Example, for haemochromatosis:
+print(codes_df_hh)
+```
+
+The below function will by default pull the appropriate self-reported fields from the RAP Spark system to determine whether a participant has reported any of the provided codes, and identify the self-reported date of diagnosis:
+
+```r
+selfrep_df = get_selfrep_illness(codes_df)
+
+table(selfrep_df$selfrep)
+#>     0      1 
+#> 502099    170 
+summary(selfrep_df$selfrep_df)
+#>         Min.      1st Qu.       Median         Mean      3rd Qu.         Max.         NA's 
+#> "1941-11-25" "2003-07-02" "2007-07-02" "2006-06-26" "2011-07-02" "2022-07-02"     "502100" 
+table(selfrep_df$selfrep_i)
+#>  0  1  2  3 
+#> 86 16 65  3 
+```
+
+This can add quite a bit of time. If you prefer to get the fields yourself and provide them to the function each time, you can:
+
+```r
+selfrep_df = get_selfrep_illness(codes_df, ukb_dat = ukb_dat)
+```
+
+You can add this data to the diagnosis list object to get an overall date first (self-reported plus medical records):
+
+```r
+diagnosis_list              <- get_emr(codes_df_hh)
+selfrep_df                  <- get_selfrep_illness(codes_df_hh)
+diagnosis_list[["selfrep"]] <- selfrep_df
+diagnosis_df                <- get_df(diagnosis_list)
+```
+
 
 ## Example analysis
 

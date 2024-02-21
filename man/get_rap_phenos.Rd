@@ -4,10 +4,22 @@
 \alias{get_rap_phenos}
 \title{Get UK Biobank participant phenotype data}
 \usage{
-get_rap_phenos(names, record = NULL, verbose = FALSE)
+get_rap_phenos(
+  names,
+  value_coding = "replace",
+  names_are_titles = FALSE,
+  record = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{names}{A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0")}
+
+\item{value_coding}{A string. How to handle coded fields. "replace" if a coding value exists, replace the raw value with the code; "raw" export the raw values of the field; "exclude" if a coding value exists, do not export the value (most commonly used with sparse fields).
+\code{default="replace"}}
+
+\item{names_are_titles}{Logical. Passing DNAnexus variable "titles" e.g., c("Age at recruitment", "Standing height | Instance 0"),
+\code{default=FALSE}}
 
 \item{record}{A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update
 \code{default=most recent dataset update}}
