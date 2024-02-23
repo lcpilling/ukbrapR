@@ -50,7 +50,7 @@ get_emr <- function(
 	codes_df = as.data.frame(codes_df)  # in case a tibble
 
 	if (! vocab_col %in% colnames(codes_df))  stop("Codelist data frame needs to include vocabulary column. Specify with `vocab_col`")
-	if (! codes_col %in% colnames(codes_df))  stop("Codelist data frame needs to include vocabulary column. Specify with `vocab_col`")
+	if (! codes_col %in% colnames(codes_df))  stop("Codelist data frame needs to include codes column. Specify with `codes_col`")
 
 	if (! any(c("ICD10","Read2","CTV3") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include ICD10, Read2 or CTV3")
 

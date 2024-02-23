@@ -78,7 +78,7 @@ get_df <- function(
 			dplyr::mutate(gp_df = dplyr::if_else(is.finite(gp_df), gp_df, NA))
 	}
 	
-	# CPnvert hesin_diag to "wide" Date First
+	# Convert hesin_diag to "wide" Date First
 	if (use_hesin)  {
 		if (verbose) cat("Get date first diagnosis: hes_df\n")
 		hesin_diag <- diagnosis_list$hesin_diag |>
