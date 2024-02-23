@@ -14,14 +14,10 @@
 In tools, launch a JupyterLab environment on a Spark Cluster. In R, install {ukbrapR}. This will install the necessary dependencies for interacting with Python, Apache Spark, and the Arrow C++ library.
 
 ```r
-# Install the development version
-remotes::install_github("lukepilling/ukbrapR")
+remotes::install_github("lukepilling/ukbrapR")            # install development version
 
-# To install the latest release, use:
-remotes::install_github("lukepilling/lukesRlib@*release")
-
-# To install a specific version (see tags), use:
-remotes::install_github("lukepilling/lukesRlib@v0.2.0")
+remotes::install_github("lukepilling/ukbrapR@*release") # install latest release
+remotes::install_github("lukepilling/ukbrapR@v0.0.2")   # install specific version (see tags)
 ```
 
 I highly recommend saving a "snapshot" once all the packages are installed, and loading this when launching JupyterLab.
