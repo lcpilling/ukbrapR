@@ -17,6 +17,8 @@
 #'        \code{default=TRUE}
 #' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
+#' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
+#'        \code{default=NULL}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
@@ -50,6 +52,7 @@ get_df <- function(
 	include_gp_clinical = TRUE,
 	include_hesin = TRUE,
 	include_death_cause = TRUE,
+	prefix = NULL,
 	verbose = FALSE
 )  {
 	
@@ -186,6 +189,15 @@ get_df <- function(
 				!is.na(death_df) & !is.na(df) & death_df<df ~ death_df,
 				TRUE ~ df)
 		)
+	}
+	
+	# adding variable name prefix?
+	if (!is.null(prefix))  {
+		if (is.character(prefix) & length(prefix) == 1)  {
+			names(diagnosis_df)[2:ncol(diagnosis_df)] = stringr::str_c(prefix, "_", names(diagnosis_df)[2:ncol(diagnosis_df)])
+		} else {
+			warning("Prefix was not a single string - variables names left as default")
+		}
 	}
 	
 	#

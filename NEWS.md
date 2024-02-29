@@ -1,3 +1,9 @@
+# ukbrapR v0.1.0.9000 (29 Feb 2024)
+
+### New features
+ - New argument "prefix" for `get_df()` - user can provide a string to prefix to the output variable names
+
+
 # ukbrapR v0.1.0 (21 Feb 2024)
 
 ### New features

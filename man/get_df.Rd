@@ -10,6 +10,7 @@ get_df(
   include_gp_clinical = TRUE,
   include_hesin = TRUE,
   include_death_cause = TRUE,
+  prefix = NULL,
   verbose = FALSE
 )
 }
@@ -27,6 +28,9 @@ get_df(
 
 \item{include_death_cause}{logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 \code{default=TRUE}}
+
+\item{prefix}{String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
+\code{default=NULL}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
