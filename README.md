@@ -8,6 +8,8 @@
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
 
+<sub>Wrapped server icon by DALL-E</sub>
+
 ## Installation
 
 **Only works on [DNAnexus](https://ukbiobank.dnanexus.com) in a UK Biobank project in JupyterLab on a Spark Cluster.**
