@@ -1,4 +1,5 @@
-# ukbrapR
+# ukbrapR <a href="https://lukepilling.github.io/ukbrapR/"><img src="images/ukbrapR.png" align="right" width="150" /></a>
+
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
