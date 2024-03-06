@@ -34,9 +34,6 @@ get_selfrep_illness(
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
-
-\item{spark_master}{A string. The `master` argmuent passed to `sparklyr::spark_connect()`.
-\code{default='spark://master:41000'}}
 }
 \value{
 Returns a data frame with four variables: eid, selfrep [binary, codes identified?], selfrep_df [date of reported illness], selfrep_i [instance the illness was first reported]

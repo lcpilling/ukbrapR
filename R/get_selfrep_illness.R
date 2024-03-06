@@ -20,8 +20,6 @@
 #'        \code{default=5}
 #' @param n_noncancer_arrays An integer. It is not trivial to determine the max number of arrays to request from Spark for the self-reported illnesses. The defaults match the currently (Feb 2024) available data but may need increasing in the future.
 #'        \code{default=30}
-#' @param spark_master A string. The `master` argmuent passed to `sparklyr::spark_connect()`.
-#'        \code{default='spark://master:41000'}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
