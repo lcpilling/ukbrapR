@@ -1,9 +1,13 @@
-# ukbrapR v0.1.1.9000 (6 June 2024)
+# ukbrapR v0.1.2 (6 June 2024)
+
+### New features
+- New function `get_emr_local()`. If the user has text files for `hesin_diag` and `gp_clinical` etc. these can be searched (rather than Apache Spark queries). This therefore can work on "normal" DNAnexus nodes, or local servers. Most downstream functions also do not rely on Spark clusters if data extracts are available.
 
 ### Changes
 - Change URL to reflect my GitHub username change from `lukepilling` to `lcpilling` to be more consistent between different logins, websites, and social media
  -- https://lcpilling.github.io/ukbrapR
  -- https://github.com/lcpilling/ukbrapR
+- Added dependency {cli} for improved alert/error reporting
 
 
 # ukbrapR v0.1.1 (6 March 2024)

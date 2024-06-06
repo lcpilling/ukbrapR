@@ -3,7 +3,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.1.1.9000-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.1.2-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
@@ -12,7 +12,7 @@
 
 ## Installation
 
-**Only works on [DNAnexus](https://ukbiobank.dnanexus.com) in a UK Biobank project in JupyterLab on a Spark Cluster.**
+**Some functions only work on [DNAnexus](https://ukbiobank.dnanexus.com) in a UK Biobank project in JupyterLab on a Spark Cluster.**
 
 In tools, launch a JupyterLab environment on a Spark Cluster. In R, install {ukbrapR}. This will install the necessary dependencies for interacting with Python, Apache Spark, and the Arrow C++ library.
 
@@ -28,7 +28,7 @@ I highly recommend saving a "snapshot" once all the packages are installed, and 
 
 ## Get phenotype data
 
-Pull phenotypes from Spark to an R data frame. Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
+**Pull phenotypes from Apache Spark on DNAnexus to an R data frame.** Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
 
 The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb). 
 
@@ -48,7 +48,7 @@ summary(ukb$p21003_i0)
 
 ## Get medical records diagnoses
 
-For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes.
+For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes. **Default behaviour is to use Apache Spark on DNAnexus. But if you have `gp_clinical` and `hesin` text files it is possible to run locally with [`get_emr_local()`](reference/get_emr_local.html).**
 
 ```r
 # example diagnostic codes for CKD from GEMINI multimorbidity project are included
@@ -62,7 +62,7 @@ head(codes_df_ckd)
 #> 6    ICD10   N19
 
 # get diagnosis data - returns list of data frames (one per source)
-diagnosis_list <- get_emr(codes_df_ckd)
+diagnosis_list <- get_emr(codes_df_ckd) 
 #> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 #> 298.18 sec elapsed
 
@@ -74,7 +74,7 @@ nrow(diagnosis_list$death_cause)  #   1,962
 
 ## Get date first diagnosis
 
-Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr()` (cause of death, HES, and GP).
+Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr()` (cause of death, HES, and GP). 
 
 ```r
 # for each participant, get Date First diagnosed with the condition
@@ -123,7 +123,7 @@ print(codes_df_hh)
 #> 16          CTV3  X307p
 ```
 
-The below function will by default pull the appropriate self-reported fields from the RAP Spark system to determine whether a participant has reported any of the provided codes, and identify the self-reported date of diagnosis:
+The below function will by default pull the appropriate self-reported fields from **the DNAnexus Apache Spark** system to determine whether a participant has reported any of the provided codes, and identify the self-reported date of diagnosis:
 
 ```r
 selfrep_df = get_selfrep_illness(codes_df)
@@ -139,7 +139,7 @@ table(selfrep_df$selfrep_i)
 #> 86 16 65  3 
 ```
 
-This can add quite a bit of time. If you prefer to get the fields yourself and provide them to the function each time, you can:
+This can add quite a bit of time. If you prefer to use an already-extracted file (this therefore does not require a DNAnexus Spark cluster) you can:
 
 ```r
 selfrep_df = get_selfrep_illness(codes_df, ukb_dat = ukb_dat)

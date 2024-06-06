@@ -206,6 +206,9 @@ get_df <- function(
 	
 	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
 	
+	diagnosis_df_nrow = nrow(diagnosis_df)
+	cli::cli_alert_success("Identified date of first diagnosis from any source for {diagnosis_df_nrow} participants.")
+	
 	# Return data frame
 	diagnosis_df
 	
