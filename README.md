@@ -76,6 +76,8 @@ nrow(diagnosis_list$death_cause)  #   1,962
 
 Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr()` (cause of death, HES, and GP). 
 
+Also includes a column indicating the source of the date of first diagnosis (gp, hes, death [or self-reported, if provided]).
+
 ```r
 # for each participant, get Date First diagnosed with the condition
 diagnosis_df <- get_df(diagnosis_list)

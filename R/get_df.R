@@ -345,6 +345,9 @@ get_df1 <- function(
 		)
 	}
 	
+	# if src & df are empty drop these rows
+	diagnosis_df = diagnosis_df |> dplyr::filter(src!="" & !is.na(df) & !is.na(gp_df) & !is.na(hes_df) & !is.na(death_df))
+	
 	# adding variable name prefix?
 	if (!is.null(prefix))  {
 		if (is.character(prefix) & length(prefix) == 1)  {
