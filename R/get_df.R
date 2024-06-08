@@ -19,11 +19,16 @@
 #'        \code{default=TRUE}
 #' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
 #'        \code{default=NULL}
+#' @param group_by String. If the codes list provided to `get_emr()` (i.e., in diagnosis_list[['codes_df']]) contained a grouping variable, indicate the variable name here. 
+#'        "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
+#'        \code{default=NULL}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
-#' # example diagnostic codes for haemochromatosis
+#'
+#' ###############################################
+#' # example 1. haemochromatosis
 #' print(codes_df_hh)
 #'
 #' # get diagnosis data - returns list of data frames (one per source)
@@ -36,17 +41,166 @@
 #' diagnosis_list[["selfrep"]] <- selfrep_df
 #'
 #' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_df(diagnosis_list)
+#' diagnosis_df = get_df(diagnosis_list, prefox="hh")
 #'
-#' # save to files on the RAP worker node
-#' save(diagnosis_list, diagnosis_df, file="ukbrap.HH.date_first.20240221.RDat")
-#' 
-#' # upload data to RAP storage
-#' upload_to_rap(file="ukbrap.HH.date_first.20240221.RDat", dir="")
+#' ###############################################
+#' # example 2. get multiple diseases at once
+#'
+#' codes = rbind(codes_df_hh, codes_df_ckd)
+#' print(codes)
+#'
+#' # get diagnosis data - returns list of data frames (one per source)
+#' diagnosis_list <- get_emr(codes)
+#'
+#' # for each participant, get Date First diagnosed with the condition
+#' diagnosis_df = get_df(diagnosis_list, group_by="condition")
 #'
 #' @export
 #'
 get_df <- function(
+	diagnosis_list,
+	include_selfrep = TRUE,
+	include_gp_clinical = TRUE,
+	include_hesin = TRUE,
+	include_death_cause = TRUE,
+	prefix = NULL,
+	group_by = NULL,
+	verbose = FALSE
+)  {
+	
+	# are we using a grouping variable?
+	if (is.null(group_by))  {
+		
+		ukbrapR:::get_df1(
+			diagnosis_list=diagnosis_list, 
+			include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
+			prefix=prefix, verbose=verbose
+		)
+		
+	} else {
+		
+		if (verbose) cli::cli_alert("Grouping variable detected - checking codes")
+		
+		# check input codes and group variable
+		if (class(diagnosis_list) != "ukb_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukb_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
+		
+		codes = as.data.frame(diagnosis_list[['codes_df']])
+		
+		if (! group_by %in% colnames(codes))  cli::cli_abort("{.var diagnosis_list} codes data frame needs to contain the group column {group_by}")
+		if (class(codes[,group_by]) != "character")  cli::cli_abort(c("Group column {group_by} needs to be a character vector", "x" = "You've supplied a {.cls {class(codes[,group_by])}}."))
+		
+		# for each grouping variable, subset diagnostic data, run get_df1(), and combine output
+		groups = unique(codes[,group_by])
+		df_tbl = NULL
+		cli::cli_alert("{length(groups)} group{?s} identified - getting date first for each")
+		
+		for (group in groups)  {
+			
+			if (verbose) cli::cli_alert("Doing group {group}")
+			
+			# subset diagnostic codes 
+			codes_sub = codes[codes[,group_by]==group,]
+			
+			diagnosis_list_sub = diagnosis_list
+			
+			## gp clinical
+			if (!is.null(diagnosis_list_sub$gp_clinical) & any(codes_sub$vocab_id %in% c("Read2","CTV3")))  {  
+				Read2s = ""
+				CTV3s  = ""
+				if (any(codes_sub$vocab_id == "Read2"))  Read2s = codes_sub$code[codes_sub$vocab_id == "Read2"]
+				if (any(codes_sub$vocab_id == "CTV3"))   CTV3s  = codes_sub$code[codes_sub$vocab_id == "CTV3"]
+				diagnosis_list_sub$gp_clinical = diagnosis_list_sub$gp_clinical |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
+			}
+			
+			## hesin_diag
+			if (!is.null(diagnosis_list_sub$hesin_diag) & any(codes_sub$vocab_id == "ICD10"))  {  
+				ICD10s = ""
+				if (any(codes_sub$vocab_id == "ICD10"))  {
+					ICD10s <- codes_sub |>
+						dplyr::filter(vocab_id == "ICD10") |>
+						dplyr::select(code) |>
+						dplyr::pull() |>
+						unique() |>
+						stringr::str_remove(stringr::fixed(".")) |> 
+						stringr::str_sub(1, 5)
+				}
+				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+				diagnosis_list_sub$hesin_diag = diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_detect(diag_icd10, !! ICD10_search))
+			}
+			
+			## death_cause
+			if (!is.null(diagnosis_list_sub$death_cause) & any(codes_sub$vocab_id == "ICD10"))  {  
+				ICD10s = ""
+				if (any(codes_sub$vocab_id == "ICD10"))  {
+					ICD10s <- codes_sub |>
+						dplyr::filter(vocab_id == "ICD10") |>
+						dplyr::select(code) |>
+						dplyr::pull() |>
+						unique() |>
+						stringr::str_remove(stringr::fixed(".")) |> 
+						stringr::str_sub(1, 5)
+				}
+				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+				diagnosis_list_sub$death_cause = diagnosis_list_sub$death_cause |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))
+			}
+			
+			# get DF for this condition
+			df_tbl_sub = ukbrapR:::get_df1(
+				diagnosis_list=diagnosis_list_sub, 
+				include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
+				prefix=group, verbose=verbose
+			)
+			
+			# merge with main DF table
+			if (is.null(df_tbl))  {
+				df_tbl = df_tbl_sub
+			} else {
+				df_tbl = dplyr::full_join(df_tbl, df_tbl_sub, by="eid")
+			}
+			
+		}
+		
+		cli::cli_alert_success("Finished getting date first diagnosed for each group/condition.")
+		cli::cli_alert("Warnings for a small number of participants are common and indicate missing dates.")
+		
+		# return combined table
+		return(df_tbl)
+		
+	}
+}
+
+
+#' Get UK Biobank participant Date First (DF) diagnosis for one condition
+#'
+#' @description For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
+#'
+#' @return Returns a single, "wide" data frame: the participant data for the requested diagnosis codes with "date first" `_df` variables. One for each source of data, and a combined variable.
+#'
+#' @author Luke Pilling
+#'
+#' @name get_df1
+#'
+#' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
+#' @param include_selfrep logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
+#' @param include_gp_clinical logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
+#' @param include_hesin logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
+#' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
+#' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
+#'        \code{default=NULL}
+#' @param verbose Logical. Be verbose,
+#'        \code{default=FALSE}
+#'
+#' @examples
+#'
+#' # for each participant, get Date First diagnosed with the condition
+#' diagnosis_df = get_df1(diagnosis_list, prefix="cdk")
+#'
+#' @noRd
+get_df1 <- function(
 	diagnosis_list,
 	include_selfrep = TRUE,
 	include_gp_clinical = TRUE,

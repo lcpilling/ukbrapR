@@ -4,22 +4,10 @@
 \alias{get_emr_local}
 \title{Get UK Biobank participant Electronic Medical Records (EMR) data}
 \usage{
-get_emr_local(
-  codes_df,
-  vocab_col = "vocab_id",
-  codes_col = "code",
-  local_paths = NULL,
-  verbose = FALSE
-)
+get_emr_local(codes_df, local_paths = NULL, verbose = FALSE)
 }
 \arguments{
-\item{codes_df}{A data frame. Contains the `vocab_col` and `codes_col` i.e., a list of diagnostic codes, and an indicator of the vocabulary.}
-
-\item{vocab_col}{A string. Column name in `codes_df` that contains the vocabulary indicator for the code (vocab IDs should be 'ICD10' 'Read2' or 'CTV3').
-\code{default='vocab_id'}}
-
-\item{codes_col}{A string. Column name in `codes_df` that contains the diagnostic code ('ICD10' 'Read2' or 'CTV3' codes).
-\code{default='code'}}
+\item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.}
 
 \item{local_paths}{A data frame. Columns must be `object` and `path` containing paths to: 
 `death`, `death_cause`, `hesin`, `hesin_diag` & `gp_clinical` 

@@ -16,6 +16,8 @@ codes_df_ckd <- data.frame(
   ),
   code = c(ICD10, Read2, CTV3)
 )
+codes_df_ckd$condition = "ckd"
+codes_df_ckd = codes_df_ckd[,c("condition","vocab_id","code")]
 usethis::use_data(codes_df_ckd, overwrite = TRUE, compress = 'xz')
 
 #  Haemochromatosis (include self-reported)
@@ -27,11 +29,12 @@ CTV3    <- c("C3500","X40QQ","XaIyI","XaIyx","XaXHI","XE13K","X307o","X307p")
 codes_df_hh <- data.frame(
   vocab_id = c(
     rep("ukb_noncancer", length(selfrep)),
-    rep("ICD9", length(ICD9)),
     rep("ICD10", length(ICD10)),
     rep("Read2", length(Read2)),
     rep("CTV3", length(CTV3))
   ),
-  code = c(selfrep, ICD9, ICD10, Read2, CTV3)
+  code = c(selfrep, ICD10, Read2, CTV3)
 )
+codes_df_hh$condition = "hh"
+codes_df_ckd = codes_df_ckd[,c("condition","vocab_id","code")]
 usethis::use_data(codes_df_hh, overwrite = TRUE, compress = 'xz')

@@ -1,3 +1,13 @@
+# ukbrapR v0.1.3 (8 June 2024)
+
+### New feature
+- It is quicker/easier to ascertain multiple conditions at once to supply `get_emr()` with all the codes (as before), but now can use `get_df()` with option "group_by" to indicate the condition names in the `codes_df` object provided. See documentation.
+
+### Changes 
+- It is no longer possible to provide custom names for the `codes_df` to `get_emr()` -- these now must be `vocab_id` and `code` -- makes things much simpler.
+- Remove ICD9 code from `codes_df_hh` example as these are not currently used
+
+
 # ukbrapR v0.1.2 (6 June 2024)
 
 ### New features

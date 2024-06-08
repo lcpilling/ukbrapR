@@ -3,7 +3,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.1.2-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.1.3-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
@@ -53,13 +53,13 @@ For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Ele
 ```r
 # example diagnostic codes for CKD from GEMINI multimorbidity project are included
 head(codes_df_ckd)
-#>   vocab_id  code
-#> 1    ICD10 N18.3
-#> 2    ICD10 N18.4
-#> 3    ICD10 N18.5
-#> 4    ICD10 N18.6
-#> 5    ICD10 N18.9
-#> 6    ICD10   N19
+#>   condition vocab_id  code
+#> 1       ckd    ICD10 N18.3
+#> 2       ckd    ICD10 N18.4
+#> 3       ckd    ICD10 N18.5
+#> 4       ckd    ICD10 N18.6
+#> 5       ckd    ICD10 N18.9
+#> 6       ckd    ICD10   N19
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_emr(codes_df_ckd) 
@@ -97,6 +97,23 @@ skimr::skim(diagnosis_df)
 #> 4 df                     6        1.00   1958-01-01 2022-12-01 2015-02-17     6367
 ```
 
+## Ascertaining multiple conditions at once 
+
+The most time-efficient way to do this is to run `get_emr()` once for codes matching all conditions you wish to ascertain, then get the "date first diagnosed" for each condition separately.
+
+```r
+# combine haemochromatosis and CKD codes together
+#   each contain there columns: condition, vocab_id, and code
+#   where `condition` is either "hh" or "ckd" and will become the variable prefix
+codes_df_combined = rbind(codes_df_hh, codes_df_ckd)
+
+# get diagnosis data - returns list of data frames (one per source)
+diagnosis_list <- get_emr(codes_df_combined)
+
+# for each participant, get Date First diagnosed with the condition
+diagnosis_df = get_df(diagnosis_list, group_by="condition")
+```
+
 ## Identify self-reported illness / cancer
 
 UK Biobank cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20001) and non-cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20002) illness codes can be included in the codes list:
@@ -104,23 +121,11 @@ UK Biobank cancer (https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20001) and
 ```r
 # Example, for haemochromatosis:
 print(codes_df_hh)
-#>         vocab_id   code
-#> 1  ukb_noncancer   1507
-#> 2           ICD9 275.03
-#> 3          ICD10  E83.1
-#> 4          Read2  126A.
-#> 5          Read2  4L41.
-#> 6          Read2  677C0
-#> 7          Read2  C350.
-#> 8          Read2  C3500
-#> 9           CTV3  C3500
-#> 10          CTV3  X40QQ
-#> 11          CTV3  XaIyI
-#> 12          CTV3  XaIyx
-#> 13          CTV3  XaXHI
-#> 14          CTV3  XE13K
-#> 15          CTV3  X307o
-#> 16          CTV3  X307p
+#>    condition      vocab_id   code
+#> 1         hh ukb_noncancer   1507
+#> 2         hh         ICD10  E83.1
+#> 3         hh         Read2  126A.
+#> ...
 ```
 
 The below function will by default pull the appropriate self-reported fields from **the DNAnexus Apache Spark** system to determine whether a participant has reported any of the provided codes, and identify the self-reported date of diagnosis:
@@ -160,6 +165,13 @@ diagnosis_df                <- get_df(diagnosis_list)
 Hypothesis: baseline age and sex are associated with risk of incident CKD diagnosis in the medical record follow-up 
 
 ```r 
+# get phenotype data (participant ID, sex, baseline age, and baseline assessment date)
+ukb <- get_rap_phenos(c("eid", "p31", "p21003_i0", "p53_i0"))
+
+# ascertain CKD diagnoses and determine date first diagnosed, any source:
+diagnosis_list <- get_emr(codes_df_ckd)
+diagnosis_df   <- get_df(diagnosis_list)
+
 # merge phenotype data with ascertained diagnoses
 ukb <- dplyr::left_join(ukb, diagnosis_df, by="eid")
 

@@ -11,6 +11,7 @@ get_df(
   include_hesin = TRUE,
   include_death_cause = TRUE,
   prefix = NULL,
+  group_by = NULL,
   verbose = FALSE
 )
 }
@@ -32,6 +33,10 @@ get_df(
 \item{prefix}{String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
 \code{default=NULL}}
 
+\item{group_by}{String. If the codes list provided to `get_emr()` (i.e., in diagnosis_list[['codes_df']]) contained a grouping variable, indicate the variable name here. 
+"Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
+\code{default=NULL}}
+
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
 }
@@ -42,7 +47,9 @@ Returns a single, "wide" data frame: the participant data for the requested diag
 For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
 }
 \examples{
-# example diagnostic codes for haemochromatosis
+
+###############################################
+# example 1. haemochromatosis
 print(codes_df_hh)
 
 # get diagnosis data - returns list of data frames (one per source)
@@ -55,13 +62,19 @@ selfrep_df <- get_selfrep_illness(codes_df_hh)
 diagnosis_list[["selfrep"]] <- selfrep_df
 
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df = get_df(diagnosis_list)
+diagnosis_df = get_df(diagnosis_list, prefox="hh")
 
-# save to files on the RAP worker node
-save(diagnosis_list, diagnosis_df, file="ukbrap.HH.date_first.20240221.RDat")
+###############################################
+# example 2. get multiple diseases at once
 
-# upload data to RAP storage
-upload_to_rap(file="ukbrap.HH.date_first.20240221.RDat", dir="")
+codes = rbind(codes_df_hh, codes_df_ckd)
+print(codes)
+
+# get diagnosis data - returns list of data frames (one per source)
+diagnosis_list <- get_emr(codes)
+
+# for each participant, get Date First diagnosed with the condition
+diagnosis_df = get_df(diagnosis_list, group_by="condition")
 
 }
 \author{

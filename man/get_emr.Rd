@@ -4,22 +4,10 @@
 \alias{get_emr}
 \title{Get UK Biobank participant Electronic Medical Records (EMR) data}
 \usage{
-get_emr(
-  codes_df,
-  vocab_col = "vocab_id",
-  codes_col = "code",
-  spark_master = "spark://master:41000",
-  verbose = FALSE
-)
+get_emr(codes_df, spark_master = "spark://master:41000", verbose = FALSE)
 }
 \arguments{
-\item{codes_df}{A data frame. Contains the `vocab_col` and `codes_col` i.e., a list of diagnostic codes, and an indicator of the vocabulary.}
-
-\item{vocab_col}{A string. Column name in `codes_df` that contains the vocabulary indicator for the code (vocab IDs should be 'ICD10' 'Read2' or 'CTV3').
-\code{default='vocab_id'}}
-
-\item{codes_col}{A string. Column name in `codes_df` that contains the diagnostic code ('ICD10' 'Read2' or 'CTV3' codes).
-\code{default='code'}}
+\item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.}
 
 \item{spark_master}{A string. The `master` argmuent passed to `sparklyr::spark_connect()`.
 \code{default='spark://master:41000'}}
