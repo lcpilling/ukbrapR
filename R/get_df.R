@@ -161,7 +161,7 @@ get_df <- function(
 		}
 		
 		cli::cli_alert_success("Finished getting date first diagnosed for each group/condition.")
-		cli::cli_alert("Warnings for a small number of participants are common and indicate missing dates.")
+		cli::cli_alert_info("Warnings for a small number of participants are common and indicate missing dates.")
 		
 		# return combined table
 		return(df_tbl)

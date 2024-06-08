@@ -144,7 +144,7 @@ get_emr_local <- function(
 		# death data ###########################################
 		#
 		
-		cli::cli_alert_info("Ascertaining cause of death data.")
+		cli::cli_alert("Ascertaining cause of death data.")
 		
 		death_cause_path = file_paths$path[ file_paths$object=="death_cause" ]
 		
@@ -185,7 +185,7 @@ get_emr_local <- function(
 		#
 		# HES data ###########################################
 		#
-		cli::cli_alert_info("Ascertaining HES data.")
+		cli::cli_alert("Ascertaining HES data.")
 		
 		hesin_diag_path = file_paths$path[ file_paths$object=="hesin_diag" ]
 		
@@ -225,7 +225,7 @@ get_emr_local <- function(
 	}
 	if (get_gp)  {
 		
-		cli::cli_alert_info("Ascertaining GP data (can take a few minutes).")
+		cli::cli_alert("Ascertaining GP data (can take a few minutes).")
 		
 		gp_clinical_path = file_paths$path[ file_paths$object=="gp_clinical" ]
 		
