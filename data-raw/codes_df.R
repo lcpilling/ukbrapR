@@ -36,5 +36,5 @@ codes_df_hh <- data.frame(
   code = c(selfrep, ICD10, Read2, CTV3)
 )
 codes_df_hh$condition = "hh"
-codes_df_ckd = codes_df_ckd[,c("condition","vocab_id","code")]
+codes_df_hh = codes_df_hh[,c("condition","vocab_id","code")]
 usethis::use_data(codes_df_hh, overwrite = TRUE, compress = 'xz')

@@ -41,6 +41,11 @@ get_emr <- function(
 	vocab_col = "vocab_id"
 	codes_col = "code"
 
+	# Connect to Spark
+	cli::cli_alert("Connecting to Spark {spark_master} -- if this fails you might be on the wrong cluster/server")
+	sc <- sparklyr::spark_connect(master = spark_master)
+	
+
 	# Check input
 	if (verbose) cat("Check inputs\n")
 	if (! any(class(codes_df) %in% c("data.frame","tbl_df")))  stop("Codelist needs to be provided as a data frame")
@@ -92,10 +97,6 @@ get_emr <- function(
 	#
 	#
 	#
-	
-	# Connect to Spark
-	if (verbose) cat("Connect to Spark [", spark_master, "]\n")
-	sc <- sparklyr::spark_connect(master = spark_master)
 	
 	# Get app database ID
 	if (verbose) cat("Get app database ID\n")
