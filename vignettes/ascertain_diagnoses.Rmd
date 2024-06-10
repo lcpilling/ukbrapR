@@ -1,0 +1,76 @@
+---
+title: "Ascertaining UK Biobank diagnoses"
+description: >
+  Learn how to ascertain diagnoses in UK Biobank Electronic Medical Records.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ascertaining UK Biobank diagnoses}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The goal of ukbrapR (phonetically: "U-K-B-wrapper"'") is to make ascertaining diagnoses in UK Biobank Electronic Medical Records (EMR) simple and reproducible. It takes just a couple of minutes to go from a list of diagnostic codes, to variables containing the"date first diagnosed, any source."
+
+This is simplest is you are using the UK Biobank Research Analysis Platform (RAP) on DNAnexus, but the functions work just as well using local servers if you have the raw data saved as text files.
+
+```{r}
+# First, load the package
+library(ukbrapR)
+```
+
+# List of diagnostic codes
+
+The outputted data is only ever as good as the diagnostic codes you provide. The UK Biobank has a number of quirks to be aware of. If you're not already familiar with the documentation (<https://biobank.ctsu.ox.ac.uk/crystal/label.cgi?id=100091>) this is recommended.
+
+Create a data frame containing the diagnostic codes. At minimum it needs two variables: `codes` and `vocab_id` but a third is recommended `condition`. Here, we will use codes for haemochromatosis.
+
+```{r}
+codes_df_hh[1:10,]
+```
+
+This data frame can contain codes for multiple conditions if desired. Indicate where the codes belong using the `condition` field.
+
+# Ascertain EMR data for all codes in `codes_df`
+
+This function searches the GP, HES, and mortality data for all codes in the provided data frame.
+
+The "long" data is returned as a list containing the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes.
+
+```{r, eval = FALSE}
+# If running on the RAP:
+diagnosis_list <- get_emr(codes_df_hh)
+#> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
+#> 298.18 sec elapsed
+
+# If running on your own server, use this function and provide paths to the files
+# Note: if you are in my group and using servers `indy`, `shpater` or `snow` you do not need to provide the paths
+diagnosis_list <- get_emr_local(codes_df_hh)
+#> 1 ICD10 code, 5 Read2 codes, 8 CTV3 codes 
+#> 27.4 sec elapsed
+```
+
+# Determine the data first diagnosed
+
+Identify the date first diagnosed for each participant from any of the "long" datasets ascertained above.
+
+```{r, eval = FALSE}
+# for each participant, get Date First diagnosed with the condition
+diagnosis_df <- get_df(diagnosis_list)
+#> 0.98 sec elapsed
+
+# by default the `date first` fields is simply "df" - you and add a prefix like:
+diagnosis_df <- get_df(diagnosis_list, prefix="hh")
+```
+
+By default this will use all provided data. If you ascertained multiple conditions above and want to identify the date first for each one, indicate this using `group_by="condition"` (assuming the field was called "condition").
+
+```{r, eval = FALSE}
+# combine haemochromatosis and CKD codes together
+codes_df_combined = rbind(codes_df_hh, codes_df_ckd)
+
+# get diagnosis data - returns list of data frames (one per source)
+diagnosis_list <- get_emr(codes_df_combined)
+
+# for each participant, get Date First diagnosed with the condition
+diagnosis_df = get_df(diagnosis_list, group_by="condition")
+```
