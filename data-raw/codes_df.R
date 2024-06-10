@@ -33,7 +33,7 @@ codes_df_hh <- data.frame(
     rep("CTV3", length(CTV3)),
     rep("ukb_noncancer", length(selfrep))
   ),
-  code = c(selfrep, ICD10, Read2, CTV3)
+  code = c(ICD10, Read2, CTV3, selfrep)
 )
 codes_df_hh$condition = "hh"
 codes_df_hh = codes_df_hh[,c("condition","vocab_id","code")]
