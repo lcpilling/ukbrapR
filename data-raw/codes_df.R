@@ -28,10 +28,10 @@ Read2   <- c("126A.","4L41.","677C0","C350.","C3500")
 CTV3    <- c("C3500","X40QQ","XaIyI","XaIyx","XaXHI","XE13K","X307o","X307p")
 codes_df_hh <- data.frame(
   vocab_id = c(
-    rep("ukb_noncancer", length(selfrep)),
     rep("ICD10", length(ICD10)),
     rep("Read2", length(Read2)),
-    rep("CTV3", length(CTV3))
+    rep("CTV3", length(CTV3)),
+    rep("ukb_noncancer", length(selfrep))
   ),
   code = c(selfrep, ICD10, Read2, CTV3)
 )
