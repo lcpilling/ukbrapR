@@ -41,28 +41,43 @@ The "long" data is returned as a list containing the subset of `gp_clinical`, `h
 diagnosis_list <- get_emr(codes_df_hh)
 #> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 #> 298.18 sec elapsed
-
-# If running on your own server, use this function and provide paths to the files
-# Note: if you are in my group and using servers `indy`, `shpater` or `snow` you do not need to provide the paths
-diagnosis_list <- get_emr_local(codes_df_hh)
-#> 1 ICD10 code, 5 Read2 codes, 8 CTV3 codes 
-#> 27.4 sec elapsed
 ```
 
-# Determine the data first diagnosed
+If running on your own server, use this function and provide paths to the files. Note: if you are in my group and using servers `indy`, `shpater` or `snow` you do not need to provide the paths
+
+```{r, eval = FALSE}
+diagnosis_list <- get_emr_local(codes_df_hh)
+```
+
+# Determine the date first diagnosed
 
 Identify the date first diagnosed for each participant from any of the "long" datasets ascertained above.
 
 ```{r, eval = FALSE}
 # for each participant, get Date First diagnosed with the condition
 diagnosis_df <- get_df(diagnosis_list)
-#> 0.98 sec elapsed
+#> takes <1 second
+```
 
-# by default the `date first` fields is simply "df" - you and add a prefix like:
+By default the `date first` fields is simply "df" - you can add a variable prefix like:
+
+```{r, eval = FALSE}
 diagnosis_df <- get_df(diagnosis_list, prefix="hh")
 ```
 
-By default this will use all provided data. If you ascertained multiple conditions above and want to identify the date first for each one, indicate this using `group_by="condition"` (assuming the field was called "condition").
+The function produces 5 variables for each condition. For haemochromatosis, as ran above, these are:
+
+| Field       | Description                          |
+|-------------|--------------------------------------|
+| hh_gp_df    | Date first diagnosed in GP data      |
+| hh_hes_df   | Date first diagnosed in HES data     |
+| hh_death_df | Date first diagnosed in death data   |
+| hh_df       | Date first diagnosed from any source |
+| hh_src      | Source of combined date first        |
+
+## Ascertaining multiple conditions at once
+
+By default `get_df()` will use all provided data. If you searched for codes for multiple conditions at once and want to identify the date first for each one, indicate this using `group_by="condition"` (assuming the field was called "condition").
 
 ```{r, eval = FALSE}
 # combine haemochromatosis and CKD codes together
