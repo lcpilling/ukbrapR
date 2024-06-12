@@ -125,6 +125,7 @@ get_df <- function(
 						stringr::str_sub(1, 5)
 				}
 				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+				colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
 				diagnosis_list_sub$hesin_diag = diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_detect(diag_icd10, !! ICD10_search))
 			}
 			

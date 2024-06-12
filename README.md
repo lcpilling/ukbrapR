@@ -3,7 +3,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.1.3-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.1.4-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
