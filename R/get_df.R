@@ -146,7 +146,7 @@ get_df <- function(
 			}
 			
 			# get DF for this condition
-			df_tbl_sub = ukbrapR:::get_df1(
+			df_tbl_sub = ukbrapR::get_df1(
 				diagnosis_list=diagnosis_list_sub, 
 				include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
 				prefix=group, verbose=verbose
@@ -162,7 +162,7 @@ get_df <- function(
 		}
 		
 		cli::cli_alert_success("Finished getting date first diagnosed for each group/condition.")
-		cli::cli_alert_info("Warnings for a small number of participants are common and indicate missing dates.")
+		#cli::cli_alert_info("Warnings for a small number of participants are common and indicate missing dates.")
 		
 		# return combined table
 		return(df_tbl)
@@ -231,6 +231,7 @@ get_df1 <- function(
 	if (use_gp_clinical)  {
 		if (verbose) cat("Get date first diagnosis: gp_df\n")
 		gp_clinical <- diagnosis_list$gp_clinical |>
+			dplyr::filter(!is.na(event_dt)) |>
 			dplyr::group_by(eid) |>
 			dplyr::summarize(gp_df=min(event_dt, na.rm=TRUE)) |>
 			dplyr::mutate(gp_df = dplyr::if_else(is.finite(gp_df), gp_df, NA))
@@ -244,6 +245,7 @@ get_df1 <- function(
 			dplyr::mutate(diagnosis_date = dplyr::if_else(is.na(diagnosis_date), epiend, diagnosis_date)) |>
 			dplyr::mutate(diagnosis_date = dplyr::if_else(is.na(diagnosis_date), admidate, diagnosis_date)) |>
 			dplyr::mutate(diagnosis_date = lubridate::as_date(dplyr::if_else(is.na(diagnosis_date), disdate, diagnosis_date))) |>
+			dplyr::filter(!is.na(diagnosis_date)) |>
 			dplyr::group_by(eid) |>
 			dplyr::summarize(hes_df=min(diagnosis_date, na.rm=TRUE)) |>
 			dplyr::mutate(hes_df = dplyr::if_else(is.finite(hes_df), hes_df, NA)) 
@@ -253,6 +255,7 @@ get_df1 <- function(
 	if (use_death_cause)  {
 		if (verbose) cat("Get date first diagnosis: death_df\n")
 		death_cause <- diagnosis_list$death_cause |>
+			dplyr::filter(!is.na(date_of_death)) |>
 			dplyr::group_by(eid) |>
 			dplyr::summarize(death_df=min(date_of_death, na.rm=TRUE)) |>
 			dplyr::mutate(death_df = dplyr::if_else(is.finite(death_df), death_df, NA))

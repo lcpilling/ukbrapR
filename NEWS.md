@@ -2,6 +2,7 @@
 
 ### Bug fixes
  - Fix problem identifying ICD10 column name in RAP HESIN
+ - Fix problem getting date first for GP data (excluding missing dates before summarizing)
 
 
 # ukbrapR v0.1.3 (8 June 2024)
