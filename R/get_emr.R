@@ -58,7 +58,7 @@ get_emr <- function(
 
 
 	# Check code lists - only first 5 digits are used by UK Biobank
-	if (verbose) cat("Check code lists - only first 5 digits are used by UK Biobank\n")
+	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
 	get_icd10 <- FALSE
 	get_read2 <- FALSE
 	get_ctv3  <- FALSE
@@ -172,7 +172,8 @@ get_emr <- function(
 	#
 	#
 	
-	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
+	cli::cli_alert_success("Finished getting EMR data for provided codes.")
+	if (verbose)  cat("Time taken:", Sys.time() - start_time, "\n")
 	
 	# Return data as list
 	output_list <- list(gp_clinical=gp_clinical, hesin_diag=hesin_diag, death_cause=death_cause, codes_df=codes_df)

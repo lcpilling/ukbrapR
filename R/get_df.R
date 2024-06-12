@@ -146,7 +146,7 @@ get_df <- function(
 			}
 			
 			# get DF for this condition
-			df_tbl_sub = ukbrapR::get_df1(
+			df_tbl_sub = ukbrapR:::get_df1(
 				diagnosis_list=diagnosis_list_sub, 
 				include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
 				prefix=group, verbose=verbose
