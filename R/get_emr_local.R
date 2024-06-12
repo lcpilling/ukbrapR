@@ -267,7 +267,7 @@ get_emr_local <- function(
 	time_taken = as.numeric(difftime(Sys.time(), start_time, units="secs"))
 	
 	cli::cli_alert_success(c("Finished. Time taken: ", "{prettyunits::pretty_sec(time_taken)}."))
-	cli::cli_alert_info("{.emph (Disregard any warnings regarding parsing issues)}.")
+	cli::cli_alert_info("{.emph (Normally safe to disregard warnings regarding parsing issues)}.")
 	
 	# Return data as list
 	output_list <- list(gp_clinical=gp_clinical_tbl, hesin_diag=hesin_diag_tbl, death_cause=death_cause_tbl, codes_df=tibble::as_tibble(codes_df))
