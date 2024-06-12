@@ -94,7 +94,7 @@ get_emr_local <- function(
 	#
 	
 	# Check code lists - only first 5 digits are used by UK Biobank
-	if (verbose) cat("Check code lists - only first 5 digits are used by UK Biobank\n")
+	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
 	get_icd10 <- FALSE
 	get_gp    <- FALSE
 	ICD10s    <- ""

@@ -172,8 +172,9 @@ get_emr <- function(
 	#
 	#
 	
-	cli::cli_alert_success("Finished getting EMR data for provided codes.")
-	if (verbose)  cat("Time taken:", Sys.time() - start_time, "\n")
+	time_taken = as.numeric(difftime(Sys.time(), start_time, units="secs"))
+	
+	cli::cli_alert_success(c("Finished. Time taken: ", "{prettyunits::pretty_sec(time_taken)}."))
 	
 	# Return data as list
 	output_list <- list(gp_clinical=gp_clinical, hesin_diag=hesin_diag, death_cause=death_cause, codes_df=codes_df)
