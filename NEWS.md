@@ -1,3 +1,13 @@
+# ukbrapR v0.1.5 (01 July 2024)
+
+### Bug fixes
+ - Fix `get_df()` error occurring when not all sources are desired
+
+### Changes
+ - `get_emr_local()` option "local_paths" is now "file_paths"
+ - Improve documentation and examples
+
+
 # ukbrapR v0.1.4 (12 June 2024)
 
 ### Bug fixes

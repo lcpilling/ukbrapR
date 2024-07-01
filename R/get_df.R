@@ -215,7 +215,7 @@ get_df1 <- function(
 	
 	# Check input
 	if (verbose) cat("Check inputs\n")
-	if (class(diagnosis_list) != "ukb_emr")  warning("This is designed to use output from function `get_emr()` - may not work properly\n")
+	if (class(diagnosis_list) != "ukb_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukb_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
 	use_selfrep <- use_gp_clinical <- use_hesin <- use_death_cause <- TRUE
 	if ( is.null(diagnosis_list$selfrep) )      use_selfrep <- FALSE
@@ -350,7 +350,7 @@ get_df1 <- function(
 	}
 	
 	# if src & df are empty drop these rows
-	diagnosis_df = diagnosis_df |> dplyr::filter(src!="" & (!is.na(df) | !is.na(gp_df) | !is.na(hes_df) | !is.na(death_df)))
+	diagnosis_df = diagnosis_df |> dplyr::filter(src!="" & !is.na(df))
 	
 	# adding variable name prefix?
 	if (!is.null(prefix))  {

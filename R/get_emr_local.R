@@ -9,7 +9,7 @@
 #' @name get_emr_local
 #'
 #' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.
-#' @param local_paths A data frame. Columns must be `object` and `path` containing paths to: 
+#' @param file_paths A data frame. Columns must be `object` and `path` containing paths to: 
 #'        `death`, `death_cause`, `hesin`, `hesin_diag` & `gp_clinical` 
 #'        \code{default=NULL}
 #' @param verbose Logical. Be verbose,
@@ -19,8 +19,14 @@
 #' # example diagnostic codes for CKD from GEMINI multimorbidity project
 #' head(codes_df_ckd)
 #'
+#' # set location of file paths (if using one of my group servers `indy`, `snow` or `shapter` you can ignore this option)
+#' paths = data.frame(
+#'   object = c("death","death_cause","hesin","hesin_diag","gp_clinical"),
+#'   path = c("/path/to/death.tsv","/path/to/death_cause.tsv","/path/to/hesin.tsv","/path/to/hesin_diag.tsv","/path/to/gp_clinical.tsv")
+#' )
+#'
 #' # get EMR data - returns list of data frames (one per source)
-#' emr_dat <- get_emr_local(codes_df_ckd)
+#' emr_dat <- get_emr_local(codes_df_ckd, file_paths = paths)
 #'
 #' # save to data either as an R object, or separate as text files:
 #' save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
@@ -30,9 +36,16 @@
 #'
 get_emr_local <- function(
 	codes_df,
-	local_paths = NULL,
-	verbose = FALSE
+	file_paths = NULL,
+	verbose = FALSE,
+	local_paths = lifecycle::deprecated()
 )  {
+	
+	# using old options?
+	if (lifecycle::is_present(local_paths))  {
+		lifecycle::deprecate_warn("0.1.5", "get_emr_local(local_paths)", "get_emr_local(file_paths)")
+		file_paths = local_paths 
+	}
 	
 	start_time <- Sys.time()
 	
