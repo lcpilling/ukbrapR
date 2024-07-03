@@ -3,7 +3,7 @@
 {ukbrapR} (phonetically: 'U-K-B-wrapper') is an R package for use in the UK Biobank Research Analysis Platform (RAP).
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.1.5-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.1.6-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
@@ -47,7 +47,7 @@ summary(ukb$p21003_i0)
 
 ## Get medical records diagnoses
 
-For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes. **Default behaviour is to use Apache Spark on DNAnexus. But if you have `gp_clinical` and `hesin` text files it is possible to run locally with [`get_emr_local()`](reference/get_emr_local.html).**
+For a given set of diagnostic codes (ICD10, Read2, CTV3) get the participant Electronic Medical Records (EMR) data. Returns a list containing 3 data frames in "long" format (>1 row per participant): the subset of `gp_clinical`, `hesin_diag` and `death_cause` with matched codes. **Default behaviour is to use Apache Spark on DNAnexus. But if you have `gp_clinical` and `hesin` text files exported you can provide these to the `file_paths` option and run on any cluster/server.**
 
 ```r
 # example diagnostic codes for CKD from GEMINI multimorbidity project are included

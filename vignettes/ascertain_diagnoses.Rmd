@@ -43,10 +43,10 @@ diagnosis_list <- get_emr(codes_df_hh)
 #> 298.18 sec elapsed
 ```
 
-If running on your own server, use this function and provide paths to the files. Note: if you are in my group and using servers `indy`, `shapter` or `snow` you do not need to provide the paths
+If running on your own server, provide paths to the files. Note: if you are in my group and using servers `indy`, `shapter` or `snow` you do not need to provide the paths
 
 ```{r, eval = FALSE}
-diagnosis_list <- get_emr_local(codes_df_hh)
+diagnosis_list <- get_emr(codes_df_hh, file_paths=paths)
 ```
 
 # Determine the date first diagnosed

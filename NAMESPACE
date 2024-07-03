@@ -2,7 +2,7 @@
 
 export(get_df)
 export(get_emr)
-export(get_emr_local)
+export(get_emr_spark)
 export(get_rap_phenos)
 export(get_selfrep_illness)
 export(upload_to_rap)
