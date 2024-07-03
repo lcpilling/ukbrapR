@@ -2,7 +2,6 @@
 % Please edit documentation in R/get_emr.R
 \name{get_emr}
 \alias{get_emr}
-\alias{get_emr_spark}
 \title{Get UK Biobank participant Electronic Medical Records (EMR) data}
 \usage{
 get_emr(
@@ -12,8 +11,6 @@ get_emr(
   verbose = FALSE,
   local_paths = lifecycle::deprecated()
 )
-
-get_emr_spark(codes_df, spark_master = "spark://master:41000", verbose = FALSE)
 }
 \arguments{
 \item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.}
@@ -30,8 +27,6 @@ get_emr_spark(codes_df, spark_master = "spark://master:41000", verbose = FALSE)
 }
 \value{
 Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
-
-Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 }
 \description{
 Get UK Biobank medical records for specific diagnostic codes list
@@ -39,8 +34,6 @@ Get UK Biobank medical records for specific diagnostic codes list
 If `file_paths` argument is blank and this is launched on a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), will get info from Spark environment.
 
 If `file_paths` to exported tables are provided, will extract records from these (i.e., does not need to be launched in a Spark cluster)
-
-Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
 }
 \examples{
 # example diagnostic codes for CKD from GEMINI multimorbidity project
@@ -61,19 +54,6 @@ paths = data.frame(
 
 # get EMR data - returns list of data frames (one per source)
 emr_dat <- get_emr(codes_df_ckd, file_paths = paths)
-
-# save to files on the RAP worker node -- either as an R object, or separate as text files:
-save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
-readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
-
-# upload data to RAP storage
-upload_to_rap(file="ukbrap.CKD.*.20231114.*", dir="")
-
-# example diagnostic codes for CKD from GEMINI multimorbidity project
-head(codes_df_ckd)
-
-# get EMR data - returns list of data frames (one per source)
-emr_dat <- get_emr(codes_df_ckd)
 
 # save to files on the RAP worker node -- either as an R object, or separate as text files:
 save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")

@@ -107,8 +107,14 @@ get_df <- function(
 			if (!is.null(diagnosis_list_sub$gp_clinical) & any(codes_sub$vocab_id %in% c("Read2","CTV3")))  {  
 				Read2s = ""
 				CTV3s  = ""
-				if (any(codes_sub$vocab_id == "Read2"))  Read2s = codes_sub$code[codes_sub$vocab_id == "Read2"]
-				if (any(codes_sub$vocab_id == "CTV3"))   CTV3s  = codes_sub$code[codes_sub$vocab_id == "CTV3"]
+				if (any(codes_sub$vocab_id == "Read2"))  {
+					Read2s <- codes_sub$code[codes_sub$vocab_id == "Read2"]
+					Read2s <- stringr::str_sub(Read2s, 1, 5) |> unique()
+				}
+				if (any(codes_sub$vocab_id == "CTV3"))  {
+					CTV3s  = codes_sub$code[codes_sub$vocab_id == "CTV3"]
+					CTV3s <- stringr::str_sub(CTV3s, 1, 5) |> unique()
+				}
 				diagnosis_list_sub$gp_clinical = diagnosis_list_sub$gp_clinical |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
 			}
 			

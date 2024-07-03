@@ -1,5 +1,8 @@
 # ukbrapR v0.1.6 (03 July 2024)
 
+### Bug fixes
+ - Fix `get_df()` error when ascertaining GP diagnoses if 7-character codes were provided rather than 5
+
 ### Changes
  - `get_emr()` now accepts option "file_paths" - if not provided, attempts to get from Spark
  - Improve documentation and examples
