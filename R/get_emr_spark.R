@@ -58,6 +58,12 @@ get_emr <- function(
 	local_paths = lifecycle::deprecated()
 )  {
 	
+	# using old options?
+	if (lifecycle::is_present(local_paths))  {
+		lifecycle::deprecate_warn("0.1.5", "get_emr_local(local_paths)", "get_emr_local(file_paths)")
+		file_paths = local_paths 
+	}
+	
 	# Is this one of my systems? If so, get the internal file_paths 
 	nodename <- as.character(Sys.info()['nodename'])
 	if ( nodename %in% c("SNOW","SHAPTER") )  {
@@ -73,7 +79,7 @@ get_emr <- function(
 	if (is.null(file_paths))  {
 		ukbrapR:::get_emr_spark(codes_df=codes_df, spark_master=spark_master, verbose=verbose)
 	} else {
-		ukbrapR:::get_emr_local(codes_df=codes_df, file_paths=file_paths, verbose=verbose, local_paths=local_paths)
+		ukbrapR:::get_emr_local(codes_df=codes_df, file_paths=file_paths, verbose=verbose)
 	}
 	
 }
@@ -109,8 +115,7 @@ get_emr <- function(
 #' # upload data to RAP storage
 #' upload_to_rap(file="ukbrap.CKD.*.20231114.*", dir="")
 #'
-#' @export
-#'
+#' @noRd
 get_emr_spark <- function(
 	codes_df,
 	spark_master = "spark://master:41000",
@@ -303,6 +308,7 @@ get_emr_spark <- function(
 #' save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
 #' readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
 #'
+#' @noRd
 get_emr_local <- function(
 	codes_df,
 	file_paths = NULL,
