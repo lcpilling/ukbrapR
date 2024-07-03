@@ -93,7 +93,7 @@ get_emr <- function(
 #'
 #' @author Luke Pilling
 #'
-#' @name get_emr_spark
+#' @name get_emr
 #'
 #' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.
 #' @param spark_master A string. The `master` argmuent passed to `sparklyr::spark_connect()`.
@@ -106,7 +106,7 @@ get_emr <- function(
 #' head(codes_df_ckd)
 #'
 #' # get EMR data - returns list of data frames (one per source)
-#' emr_dat <- get_emr_spark(codes_df_ckd)
+#' emr_dat <- get_emr(codes_df_ckd)
 #'
 #' # save to files on the RAP worker node -- either as an R object, or separate as text files:
 #' save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
@@ -116,6 +116,10 @@ get_emr <- function(
 #' upload_to_rap(file="ukbrap.CKD.*.20231114.*", dir="")
 #'
 #' @noRd
+<<<<<<< Updated upstream:R/get_emr_spark.R
+=======
+#'
+>>>>>>> Stashed changes:R/get_emr.R
 get_emr_spark <- function(
 	codes_df,
 	spark_master = "spark://master:41000",
@@ -309,6 +313,10 @@ get_emr_spark <- function(
 #' readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
 #'
 #' @noRd
+<<<<<<< Updated upstream:R/get_emr_spark.R
+=======
+#'
+>>>>>>> Stashed changes:R/get_emr.R
 get_emr_local <- function(
 	codes_df,
 	file_paths = NULL,
