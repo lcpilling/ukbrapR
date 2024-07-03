@@ -1,3 +1,10 @@
+# ukbrapR v0.1.6 (03 July 2024)
+
+### Changes
+ - `get_emr()` now accepts option "file_paths" - if not provided, attempts to get from Spark
+ - Improve documentation and examples
+
+
 # ukbrapR v0.1.5 (01 July 2024)
 
 ### Bug fixes
