@@ -116,10 +116,7 @@ get_emr <- function(
 #' upload_to_rap(file="ukbrap.CKD.*.20231114.*", dir="")
 #'
 #' @noRd
-<<<<<<< Updated upstream:R/get_emr_spark.R
-=======
 #'
->>>>>>> Stashed changes:R/get_emr.R
 get_emr_spark <- function(
 	codes_df,
 	spark_master = "spark://master:41000",
@@ -313,10 +310,7 @@ get_emr_spark <- function(
 #' readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
 #'
 #' @noRd
-<<<<<<< Updated upstream:R/get_emr_spark.R
-=======
 #'
->>>>>>> Stashed changes:R/get_emr.R
 get_emr_local <- function(
 	codes_df,
 	file_paths = NULL,
