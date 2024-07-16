@@ -1,15 +1,16 @@
-ukbrap_paths = data.frame(
-	object=c("death","death_cause","hesin","hesin_diag","hesin_oper","gp_clinical","gp_scripts","selfrep_illness","cancer_registry"),
+ukbrapr_paths = data.frame(
+	object=c("death","death_cause","hesin","hesin_diag","hesin_oper","gp_clinical","gp_scripts","selfrep_illness","cancer_registry","baseline_dates"),
 	path=c(
-		"ukbrap_data/death.tsv",
-		"ukbrap_data/death_cause.tsv",
-		"ukbrap_data/hesin.tsv",
-		"ukbrap_data/hesin_diag.tsv",
-		"ukbrap_data/hesin_oper.tsv",
-		"ukbrap_data/gp_clinical.tsv",
-		"ukbrap_data/gp_scripts.tsv",
-		"ukbrap_data/selfrep_illness.tsv",
-		"ukbrap_data/cancer_registry.tsv"
+		"ukbrapr_data/death.tsv",
+		"ukbrapr_data/death_cause.tsv",
+		"ukbrapr_data/hesin.tsv",
+		"ukbrapr_data/hesin_diag.tsv",
+		"ukbrapr_data/hesin_oper.tsv",
+		"ukbrapr_data/gp_clinical.tsv",
+		"ukbrapr_data/gp_scripts.tsv",
+		"ukbrapr_data/selfrep_illness.tsv",
+		"ukbrapr_data/cancer_registry.tsv",
+		"ukbrapr_data/baseline_dates.tsv"
 	)
 )
 indy_paths = data.frame(
@@ -40,5 +41,5 @@ snow_paths = data.frame(
 		"H:/Projects/BioBank/14631_ageing-well/diagnoses/ukb14631.cancer_registry.txt.gz"
 	)
 )
-usethis::use_data(indy_paths, snow_paths, internal = TRUE, overwrite = TRUE, compress = 'xz')
+usethis::use_data(ukbrap_paths, indy_paths, snow_paths, internal = TRUE, overwrite = TRUE, compress = 'xz')
 
