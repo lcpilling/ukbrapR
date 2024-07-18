@@ -43,11 +43,11 @@
 #' )
 #' ukbrapr_paths
 #'
-#' # submit run to see `dx run table-exporter` commands - but will not submit jobs
-#' export_tables(submit=TRUE)
+#' # test run to see `dx run table-exporter` commands - but will not submit jobs
+#' export_tables()
 #'
 #' # Submit all `dx run table-exporter` commands. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
-#' export_tables()
+#' export_tables(submit=TRUE)
 #'
 #' @export
 #'
@@ -102,6 +102,7 @@ export_tables <- function(
 	ukbrapR:::export_tables_baseline_dates(dataset=dataset, submit=submit, verbose=verbose)
 	
 	cli::cli_alert_success("Submitted all table-exporter jobs.")
+	cli::cli_alert_info("Can take ~15mins to complete.")
 	cli::cli_alert_info("Files will be saved to `ukbrapr_data` directory in your RAP project presistent storage space.")
 	cli::cli_alert_warning("~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.")
 	
