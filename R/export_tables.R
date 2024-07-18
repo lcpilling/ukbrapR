@@ -18,7 +18,7 @@
 #'        \code{default=NULL}
 #' @param ignore_warnings Logical. If an exported table already exists do not submit the table-exporter command unless this is TRUE,
 #'        \code{default=FALSE}
-#' @param test Logical. Do not actually run any `dx` commands just check inputs & file paths, then print the commands,
+#' @param submit Logical. Actually submit `dx` commands. Default is FALSE i.e., just check inputs & file paths, then print the commands,
 #'        \code{default=FALSE}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
@@ -43,8 +43,8 @@
 #' )
 #' ukbrapr_paths
 #'
-#' # Test run to see `dx run table-exporter` commands - but will not submit jobs
-#' export_tables(test=TRUE)
+#' # submit run to see `dx run table-exporter` commands - but will not submit jobs
+#' export_tables(submit=TRUE)
 #'
 #' # Submit all `dx run table-exporter` commands. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
 #' export_tables()
@@ -55,13 +55,13 @@ export_tables <- function(
 	dataset = NULL,
 	file_paths = NULL,
 	ignore_warnings = FALSE,
-	test = FALSE,
+	submit = FALSE,
 	verbose = FALSE
 )  {
 	
-	# is this just a test? (Will not actually run any dx commands)
-	if (test)  {
-		cli::cli_alert_info("Test run. Will not submit any {.code dx} system commands")
+	# is this just a submit? (Will not actually run any dx commands)
+	if (submit)  {
+		cli::cli_alert_info("submit run. Will not submit any {.code dx} system commands")
 		ignore_warnings = TRUE
 	}
 	
@@ -82,17 +82,27 @@ export_tables <- function(
 		fp_dir = stringr::str_split(fp_dir, "/")[[1]][1]
 		if (!dir.exists(stringr::str_c("/mnt/project/", fp_dir)))  {
 			if (verbose) cli::cli_alert("Creating output directory in your RAP storage space: {.code dx mkdir {fp_dir}}")
-			if (!test)  system(stringr::str_c("dx mkdir ", fp_dir))
+			if (!submit)  system(stringr::str_c("dx mkdir ", fp_dir))
 		}
 	}
 	
-	# run table exporter commands
-	ukbrapR:::export_tables_emr(dataset=dataset, test=test, verbose=verbose)
-	ukbrapR:::export_tables_selfrep_illness(dataset=dataset, test=test, verbose=verbose)
-	ukbrapR:::export_tables_cancer_registry(dataset=dataset, test=test, verbose=verbose)
-	ukbrapR:::export_tables_baseline_dates(dataset=dataset, test=test, verbose=verbose)
+	# get dataset id 
+	if (is.null(dataset))  {
+			# get dataset id - will just take the first
+			#DATASET=($(ls /mnt/project/*.dataset))
+			#DATASET=$(basename ${DATASET[0]})
+		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
+		dataset = dataset[1]
+	}
 	
-	cli::cli_alert_info("Once the jobs have all finished (can take up to an hour), move the files to directory `ukbrapr_data` in your project")
+	# run table exporter commands
+	ukbrapR:::export_tables_emr(dataset=dataset, submit=submit, verbose=verbose)
+	ukbrapR:::export_tables_selfrep_illness(dataset=dataset, submit=submit, verbose=verbose)
+	ukbrapR:::export_tables_cancer_registry(dataset=dataset, submit=submit, verbose=verbose)
+	ukbrapR:::export_tables_baseline_dates(dataset=dataset, submit=submit, verbose=verbose)
+	
+	cli::cli_alert_info("Submitted all table-exporter jobs. Files will be saved to `ukbrapr_data` directory in your RAP project presistent storage space.")
+	cli::cli_alert_info("~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.")
 	
 }
 
@@ -109,7 +119,7 @@ export_tables <- function(
 #'
 export_tables_emr <- function(
 	dataset = NULL,
-	test = FALSE,
+	submit = FALSE,
 	verbose = FALSE
 )  {
 
@@ -117,48 +127,45 @@ export_tables_emr <- function(
 
 	# get dataset id 
 	if (is.null(dataset))  {
-			# get dataset id - will just take the first
-			#DATASET=($(ls /mnt/project/*.dataset))
-			#DATASET=$(basename ${DATASET[0]})
 		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
 		dataset = dataset[1]
 	}
 	
 	# submit table-exporter 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'death'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='death' -ioutput='death' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='death' -ioutput='death' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'death_cause'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='death_cause' -ioutput='death_cause' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='death_cause' -ioutput='death_cause' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'hesin'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin' -ioutput='hesin' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin' -ioutput='hesin' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'hesin_diag'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin_diag' -ioutput='hesin_diag' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin_diag' -ioutput='hesin_diag' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'hesin_oper'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin_oper' -ioutput='hesin_oper' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='hesin_oper' -ioutput='hesin_oper' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'gp_clinical'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_clinical' -ioutput='gp_clinical' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_clinical' -ioutput='gp_clinical' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 	if (verbose) cli::cli_alert("dx run table-exporter for 'gp_scripts'")
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_scripts' -ioutput='gp_scripts' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_scripts' -ioutput='gp_scripts' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 }
 
@@ -180,7 +187,7 @@ export_tables_selfrep_illness <- function(
 	n_noncancer_arrays = 30,
 	n_instances = 3,
 	dataset = NULL,
-	test = FALSE,
+	submit = FALSE,
 	verbose = FALSE
 )  {
 	
@@ -231,7 +238,7 @@ export_tables_selfrep_illness <- function(
 	
 	# save and upload names file 
 	readr::write_tsv(data.frame(names), "fieldnames_selfrep_illness.txt", col_names=FALSE)
-	if (!test)  ukbrapR::upload_to_rap("fieldnames_selfrep_illness.txt", dir="ukbrapr_data")
+	if (!submit)  ukbrapR::upload_to_rap("fieldnames_selfrep_illness.txt", dir="ukbrapr_data")
 
 	# get dataset id 
 	if (is.null(dataset))  {
@@ -240,9 +247,9 @@ export_tables_selfrep_illness <- function(
 	}
 	
 	# submit table-exporter 
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='ukbrapr_data/fieldnames_selfrep_illness.txt' -ioutput='selfrep_illness' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='ukbrapr_data/fieldnames_selfrep_illness.txt' -ientity='participant' -ioutput='selfrep_illness' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 
 }
@@ -262,7 +269,7 @@ export_tables_selfrep_illness <- function(
 export_tables_cancer_registry <- function(
 	n_cancer_arrays = 21,
 	dataset = NULL,
-	test = FALSE,
+	submit = FALSE,
 	verbose = FALSE
 )  {
 	
@@ -292,7 +299,7 @@ export_tables_cancer_registry <- function(
 	
 	# save and upload names file 
 	readr::write_tsv(data.frame(names), "fieldnames_cancer_registry.txt", col_names=FALSE)
-	if (!test)  ukbrapR::upload_to_rap("fieldnames_cancer_registry.txt", dir="ukbrapr_data")
+	if (!submit)  ukbrapR::upload_to_rap("fieldnames_cancer_registry.txt", dir="ukbrapr_data")
 
 	# get dataset id 
 	if (is.null(dataset))  {
@@ -301,9 +308,9 @@ export_tables_cancer_registry <- function(
 	}
 	
 	# submit table-exporter 
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='ukbrapr_data/fieldnames_cancer_registry.txt' -ioutput='cancer_registry' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='ukbrapr_data/fieldnames_cancer_registry.txt' -ientity='participant' -ioutput='cancer_registry' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 }
 
@@ -323,7 +330,7 @@ export_tables_cancer_registry <- function(
 #'
 export_tables_baseline_dates <- function(
 	dataset = NULL,
-	test = FALSE,
+	submit = FALSE,
 	verbose = FALSE
 )  {
 	
@@ -336,9 +343,9 @@ export_tables_baseline_dates <- function(
 	}
 	
 	# submit table-exporter 
-	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names=\"eid\" -ifield_names=\"p53_i0\" -ifield_names=\"p53_i1\" -ifield_names=\"p53_i2\" -ifield_names=\"p53_i3\" -ifield_names=\"p52\" -ifield_names=\"p34\" -ifield_names=\"p53_i0\" -ifield_names=\"p31\" -ioutput='baseline_dates' -ioutput_format='TSV' -icoding_option='RAW'")
-	if (verbose|test) cli::cli_text(table_exporter_command)
-	if (!test)  system(table_exporter_command)
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names=\"eid\" -ifield_names=\"p53_i0\" -ifield_names=\"p53_i1\" -ifield_names=\"p53_i2\" -ifield_names=\"p53_i3\" -ifield_names=\"p52\" -ifield_names=\"p34\" -ifield_names=\"p53_i0\" -ifield_names=\"p31\" -ientity='participant' -ioutput='baseline_dates' -ioutput_format='TSV' -icoding_option='RAW' --destination ukbrapr_data/")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (!submit)  system(table_exporter_command)
 
 }
 

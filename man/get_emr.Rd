@@ -6,8 +6,8 @@
 \usage{
 get_emr(
   codes_df,
-  spark_master = "spark://master:41000",
   file_paths = NULL,
+  spark_master = "spark://master:41000",
   verbose = FALSE,
   local_paths = lifecycle::deprecated()
 )
@@ -15,12 +15,12 @@ get_emr(
 \arguments{
 \item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.}
 
+\item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to required files. Default assumes you have the tables exported in the RAP environment from
+ukbrapR::export_tables() 
+\code{default=NULL}}
+
 \item{spark_master}{A string. The `master` argmuent passed to `sparklyr::spark_connect()`.
 \code{default='spark://master:41000'}}
-
-\item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to: 
-`death`, `death_cause`, `hesin`, `hesin_diag` & `gp_clinical` 
-\code{default=NULL}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
