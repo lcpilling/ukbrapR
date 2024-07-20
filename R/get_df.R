@@ -22,6 +22,12 @@
 #' @param group_by String. If the codes list provided to `get_emr()` (i.e., in diagnosis_list[['codes_df']]) contained a grouping variable, indicate the variable name here. 
 #'        "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
 #'        \code{default=NULL}
+#' @param use_baseline_dates logical. If `baseline_dates` file available in file paths, 
+#'        \code{default=TRUE}
+#' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
+#'        \code{default=NULL}
+#' @param censoring_date A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
+#'        \code{default="30-10-2022"}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
@@ -65,17 +71,49 @@ get_df <- function(
 	include_death_cause = TRUE,
 	prefix = NULL,
 	group_by = NULL,
+	use_baseline_dates = TRUE,
+	file_paths = NULL,
+	censoring_date = "30-10-2022",
 	verbose = FALSE
 )  {
+	
+	# use baseline dates?
+	if (use_baseline_dates)  {
+		# if file_paths not provided assume default paths
+		if (is.null(file_paths))  file_paths = ukbrapR:::ukbrapr_paths
+		
+		# does baseline_dates file exist?
+		bl_file_path = file_paths$path[ file_paths$object=="baseline_dates" ]
+		if (file.exists(bl_file_path))  {
+			
+			# read baseline dates
+			bl_data = readr::read_tsv(bl_file_path, show_col_types = FALSE, progress = FALSE)
+			
+			# rename assessment date (p53_i0) for ease later
+			bl_data = bl_data |> 
+				dplyr::rename(assessment_date_0 = p53_i0) |>
+				dplyr::select(eid, assessment_date_0)
+			
+			# censoring date provided?
+			if (!is.na(censoring_date))  censoring_date = lubridate::dmy(censoring_date)
+			
+		} else {
+			use_baseline_dates = FALSE
+			cli::cli_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}}")
+		}
+	}
 	
 	# are we using a grouping variable?
 	if (is.null(group_by))  {
 		
-		ukbrapR:::get_df1(
+		df_tbl = ukbrapR:::get_df1(
 			diagnosis_list=diagnosis_list, 
 			include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
 			prefix=prefix, verbose=verbose
 		)
+		
+		# add binary variables (ever, prev) & censoring date (if provided)
+		if (use_baseline_dates)  df_tbl = ukbrapR:::get_df1_add_bin(df=df_tbl_sub, bd=bl_data, cd=censoring_date, prefix=prefix, verbose=verbose)
 		
 	} else {
 		
@@ -158,6 +196,9 @@ get_df <- function(
 				prefix=group, verbose=verbose
 			)
 			
+			# add binary variables (ever, prev) & censoring date (if provided)
+			if (use_baseline_dates)  df_tbl_sub = ukbrapR:::get_df1_add_bin(df=df_tbl_sub, bd=bl_data, cd=censoring_date, prefix=group, verbose=verbose)
+			
 			# merge with main DF table
 			if (is.null(df_tbl))  {
 				df_tbl = df_tbl_sub
@@ -168,12 +209,12 @@ get_df <- function(
 		}
 		
 		cli::cli_alert_success("Finished getting date first diagnosed for each group/condition.")
-		#cli::cli_alert_info("Warnings for a small number of participants are common and indicate missing dates.")
-		
-		# return combined table
-		return(df_tbl)
 		
 	}
+	
+	# return table
+	return(df_tbl)
+
 }
 
 
@@ -220,7 +261,7 @@ get_df1 <- function(
 	start_time <- Sys.time()
 	
 	# Check input
-	if (verbose) cat("Check inputs\n")
+	if (verbose) cli::cli_alert("Check inputs\n")
 	if (class(diagnosis_list) != "ukb_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukb_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
 	use_selfrep <- use_gp_clinical <- use_hesin <- use_death_cause <- TRUE
@@ -235,7 +276,7 @@ get_df1 <- function(
 	
 	# Convert gp_clinical to "wide" Date First
 	if (use_gp_clinical)  {
-		if (verbose) cat("Get date first diagnosis: gp_df\n")
+		if (verbose) cli::cli_alert("Get date first diagnosis: gp_df\n")
 		gp_clinical <- diagnosis_list$gp_clinical |>
 			dplyr::filter(!is.na(event_dt)) |>
 			dplyr::group_by(eid) |>
@@ -245,7 +286,7 @@ get_df1 <- function(
 	
 	# Convert hesin_diag to "wide" Date First
 	if (use_hesin)  {
-		if (verbose) cat("Get date first diagnosis: hes_df\n")
+		if (verbose) cli::cli_alert("Get date first diagnosis: hes_df\n")
 		hesin_diag <- diagnosis_list$hesin_diag |>
 			dplyr::mutate(diagnosis_date = epistart) |>
 			dplyr::mutate(diagnosis_date = dplyr::if_else(is.na(diagnosis_date), epiend, diagnosis_date)) |>
@@ -259,7 +300,7 @@ get_df1 <- function(
 	
 	# Convert death_cause to "wide" Date First
 	if (use_death_cause)  {
-		if (verbose) cat("Get date first diagnosis: death_df\n")
+		if (verbose) cli::cli_alert("Get date first diagnosis: death_df\n")
 		death_cause <- diagnosis_list$death_cause |>
 			dplyr::filter(!is.na(date_of_death)) |>
 			dplyr::group_by(eid) |>
@@ -272,7 +313,7 @@ get_df1 <- function(
 	#
 	
 	# Combine into single data frame
-	if (verbose) cat("Combine into single wide data frame\n")
+	if (verbose) cli::cli_alert("Combine into single wide data frame\n")
 	diagnosis_df <- NULL
 	if (use_selfrep)  {
 		diagnosis_df <- na.omit(diagnosis_list$selfrep)
@@ -304,7 +345,7 @@ get_df1 <- function(
 	#
 	
 	# Combined "date first, any source" variable & "source" variable
-	if (verbose) cat("Combined \"date first, any source\" variable\n")
+	if (verbose) cli::cli_alert("Combined \"date first, any source\" variable\n")
 	diagnosis_df$df <- NA
 	diagnosis_df$src <- ""
 	
@@ -363,7 +404,7 @@ get_df1 <- function(
 		if (is.character(prefix) & length(prefix) == 1)  {
 			names(diagnosis_df)[2:ncol(diagnosis_df)] = stringr::str_c(prefix, "_", names(diagnosis_df)[2:ncol(diagnosis_df)])
 		} else {
-			warning("Prefix was not a single string - variables names left as default")
+			cli::cli_warning("Prefix was not a single string - variables names left as default")
 		}
 	}
 	
@@ -382,4 +423,67 @@ get_df1 <- function(
 	
 }
 
+
+
+#' Add binary variables and censoring date
+#'
+#' @description Ever and prevalent binary vars. Censoring date. Only to the combined _df variable
+#'
+#' @return NA
+#'
+#' @author Luke Pilling
+#'
+#' @name get_df1_add_bin
+#'
+#' @noRd
+get_df1_add_bin = function(
+	df,
+	bd,
+	cd,
+	prefix = NULL,
+	verbose = FALSE
+)  {
+	
+	# if no prefix them colnames are just `df` etc. - if one provided then include an underscore
+	if (is.null(prefix))  {
+		prefix = ""
+	} else {
+		prefix = stringr::str_c(prefix, "_")
+	}
+	
+	# define new variable names 
+	var_df       = rlang::sym(stringr::str_c(prefix, "df"))
+	var_bin      = rlang::sym(stringr::str_c(prefix, "bin"))
+	var_df_prev  = rlang::sym(stringr::str_c(prefix, "df_prev"))
+	var_bin_prev = rlang::sym(stringr::str_c(prefix, "bin_prev"))
+	
+	# merge df and baseline data 
+	df = dplyr::full_join(df, bd, by="eid")
+	
+	# create binary "ever"
+	df = df |> dplyr::mutate(!!var_bin := dplyr::if_else(!is.na(!!var_df), 1, 0))
+	
+	# create prevalent variables 
+	df = df |> dplyr::mutate(!!var_df_prev := dplyr::if_else(!!var_bin==1 & !!var_df<assessment_date_0, !!var_df, NA))
+	df = df |> dplyr::mutate(!!var_bin_prev := dplyr::if_else(!is.na(!!var_df_prev), 1, 0))
+	
+	# remove extra cols 
+	df = df |> dplyr:select(!assessment_date_0)
+	
+	# relocate src to end
+	df = df |> dplyr:relocate(!!rlang::sym(stringr::str_c(prefix, "_src")), .after = dplyr::last_col())
+	
+	# add censoring date
+	if (!is.na(cd))  {
+		
+		# ever variable
+		df = df |> dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0, cd, var_df))
+		
+		# prevalent variable
+		df = df |> dplyr::mutate(!!var_df_prev := dplyr::if_else(!!var_bin_prev==0, cd, var_df_prev))
+	}
+	
+	# return
+	return(df)
+}
 

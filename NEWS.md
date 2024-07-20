@@ -1,3 +1,20 @@
+# ukbrapR v0.2.0 (20 July 2024)
+
+This is a major update as I move away from using Spark as the default environment, mostly due to the cost implications; it is significantly cheaper (and quicker!) to store and search exported raw text files in the RAP persistant storage than do everything in a Spark environment (plus added benefit of RStudio interface in "normal" instances). 
+
+The Spark functionality remains as before, but all updates are to improve functionality in "normal" instances using RStudio, as we move to the new era of RAP-only UK Biobank analysis.
+
+To make it absolutely clear: the Spark version of `get_emr()` has not been updated. I no longer recommend doing things this way. If you want to submit Pull Requests to improve functions please do. The below changes are to substantially improve the experience of using exported tables in the RAP environment only (if you have all the data on a local system already it will work, assuming you format correctly and provide the paths, but the RAP is the future).
+
+### Changes
+ - Added internal data frame containing default paths for exported files in a RAP project (view with `ukbrapR:::ukbrapr_paths`)
+ - Added function `export_tables()` which only needs to be run once when a new project is created. This submits the required table exporter commands to extract each of the tables in `ukbrapR:::ukbrapr_paths`. This can take ~15 minutes to export all the tables. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
+ - Added functionality for `hesin_oper` (HES OPCS operations) searching for ICD10 codes in `get_emr()`
+ - Added functionality for `cancer_registry` (cancer registry) searching for ICD10 codes in `get_emr()`
+ - `get_df()` now also identifies date of first in matched `cancer_registry` and `hesin_oper` entries, in addition to `hes_diag`, `gp_clinical`, `death_cause` and `selfrep_illness` as before.
+ - When getting "date first" using `get_df()` the baseline data is used to create binary case/control variables (for ever and prevalent), and for controls the censoring date is included in the overall `_df` variable (default is 30-10-2022).
+
+
 # ukbrapR v0.1.6 (03 July 2024)
 
 ### Bug fixes
