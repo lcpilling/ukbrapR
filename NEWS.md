@@ -1,3 +1,9 @@
+# ukbrapR v0.1.6.9000 (23 July 2024)
+
+### Bug fixes
+ - Fix Spark database error when >1 dataset file is available. Fixes issue #3
+
+
 # ukbrapR v0.1.6 (03 July 2024)
 
 ### Bug fixes
