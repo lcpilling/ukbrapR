@@ -18,11 +18,11 @@ get_rap_phenos(
 \item{value_coding}{A string. How to handle coded fields. "replace" if a coding value exists, replace the raw value with the code; "raw" export the raw values of the field; "exclude" if a coding value exists, do not export the value (most commonly used with sparse fields).
 \code{default="replace"}}
 
-\item{names_are_titles}{Logical. Passing DNAnexus variable "titles" e.g., c("Age at recruitment", "Standing height | Instance 0"),
+\item{names_are_titles}{Logical. Passing DNAnexus variable "titles" e.g., c("Age at recruitment", "Standing height | Instance 0").
 \code{default=FALSE}}
 
-\item{record}{A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update
-\code{default=most recent dataset update}}
+\item{record}{A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recently dispensed dataset.
+\code{default=most recent dataset}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}

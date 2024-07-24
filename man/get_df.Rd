@@ -6,25 +6,28 @@
 \usage{
 get_df(
   diagnosis_list,
-  include_selfrep = TRUE,
+  include_selfrep_illness = TRUE,
   include_gp_clinical = TRUE,
-  include_hesin = TRUE,
+  include_hesin_diag = TRUE,
   include_death_cause = TRUE,
   prefix = NULL,
   group_by = NULL,
+  use_baseline_dates = TRUE,
+  file_paths = NULL,
+  censoring_date = "30-10-2022",
   verbose = FALSE
 )
 }
 \arguments{
 \item{diagnosis_list}{A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.}
 
-\item{include_selfrep}{logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+\item{include_selfrep_illness}{logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 \code{default=TRUE}}
 
 \item{include_gp_clinical}{logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 \code{default=TRUE}}
 
-\item{include_hesin}{logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+\item{include_hesin_diag}{logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 \code{default=TRUE}}
 
 \item{include_death_cause}{logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
@@ -36,6 +39,15 @@ get_df(
 \item{group_by}{String. If the codes list provided to `get_emr()` (i.e., in diagnosis_list[['codes_df']]) contained a grouping variable, indicate the variable name here. 
 "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
 \code{default=NULL}}
+
+\item{use_baseline_dates}{logical. If `baseline_dates` file available in file paths, 
+\code{default=TRUE}}
+
+\item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
+\code{default=NULL}}
+
+\item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
+\code{default="30-10-2022"}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
@@ -59,7 +71,7 @@ diagnosis_list <- get_emr(codes_df_hh)
 selfrep_df <- get_selfrep_illness(codes_df_hh)
 
 # add self-reported to the `diagnosis_list` object
-diagnosis_list[["selfrep"]] <- selfrep_df
+diagnosis_list[["selfrep_illness"]] <- selfrep_df
 
 # for each participant, get Date First diagnosed with the condition
 diagnosis_df = get_df(diagnosis_list, prefox="hh")

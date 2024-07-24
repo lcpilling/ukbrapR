@@ -468,10 +468,10 @@ get_df1_add_bin = function(
 	df = df |> dplyr::mutate(!!var_bin_prev := dplyr::if_else(!is.na(!!var_df_prev), 1, 0))
 	
 	# remove extra cols 
-	df = df |> dplyr:select(!assessment_date_0)
+	df = df |> dplyr::select(!assessment_date_0)
 	
 	# relocate src to end
-	df = df |> dplyr:relocate(!!rlang::sym(stringr::str_c(prefix, "_src")), .after = dplyr::last_col())
+	df = df |> dplyr::relocate(!!rlang::sym(stringr::str_c(prefix, "_src")), .after = dplyr::last_col())
 	
 	# add censoring date
 	if (!is.na(cd))  {

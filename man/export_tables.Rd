@@ -5,25 +5,25 @@
 \title{Export tables for {ukbrapR} analyses}
 \usage{
 export_tables(
-  dataset = NULL,
-  file_paths = NULL,
-  ignore_warnings = FALSE,
   submit = FALSE,
+  ignore_warnings = FALSE,
+  file_paths = ukbrapR:::ukbrapr_paths,
+  dataset = NULL,
   verbose = FALSE
 )
 }
 \arguments{
-\item{dataset}{A string. If you wish to specify dataset. If blank, will use the first in the project.
-\code{default=app#####.dataset}}
-
-\item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to outputted files. 
-\code{default=NULL}}
+\item{submit}{Logical. Actually submit `dx` commands. Default is FALSE i.e., just check inputs & file paths, then print the commands,
+\code{default=FALSE}}
 
 \item{ignore_warnings}{Logical. If an exported table already exists do not submit the table-exporter command unless this is TRUE,
 \code{default=FALSE}}
 
-\item{submit}{Logical. Actually submit `dx` commands. Default is FALSE i.e., just check inputs & file paths, then print the commands,
-\code{default=FALSE}}
+\item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to outputted files. If blank, will use the default paths,
+\code{default=ukbrapR:::ukbrapr_paths}}
+
+\item{dataset}{A string. If you wish to specify dataset. If blank, will use the most recently dispensed dataset in the main project directory.
+\code{default=app#####_#####.dataset}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
@@ -58,11 +58,11 @@ ukbrapr_paths = data.frame(
 )
 ukbrapr_paths
 
-# submit run to see `dx run table-exporter` commands - but will not submit jobs
-export_tables(submit=TRUE)
+# test run to see `dx run table-exporter` commands - but will not submit jobs
+export_tables()
 
 # Submit all `dx run table-exporter` commands. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
-export_tables()
+export_tables(submit=TRUE)
 
 }
 \author{
