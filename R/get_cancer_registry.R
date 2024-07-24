@@ -98,7 +98,7 @@ get_cancer_registry <- function(
 		)
 	
 	# finish
-	if (verbose)  cli::cli_alert_success(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	#if (verbose)  cli::cli_alert_success(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	
 	# Return data
 	return(ukb_dat_cr)

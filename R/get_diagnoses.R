@@ -46,7 +46,7 @@ get_diagnoses <- function(
 	codes_col = "code"
 	
 	# Check input
-	if (verbose) cat("Check inputs\n")
+	if (verbose) cli::cli_alert("Checking inputs (codes, file paths, etc)")
 	if (! any(class(codes_df) %in% c("data.frame","tbl","tbl_df")))  {
 		cli::cli_abort(c(
 			"{.var codes_df} must be a data.frame or tibble",
@@ -162,7 +162,7 @@ get_diagnoses <- function(
 	#
 	
 	# Get data for each code vocabulary
-	if (verbose) cat("Ascertaining codes from long EMR files\n")
+	if (verbose) cli::cli_alert("Ascertaining codes from long EMR files")
 	death_cause_tbl     <- NULL
 	hesin_diag_tbl      <- NULL
 	hesin_oper_tbl      <- NULL
@@ -190,10 +190,9 @@ get_diagnoses <- function(
 		
 		# use search string to only read lines that matched a code
 		death_cause_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
-		death_cause_tbl_nrow <- nrow(death_cause_tbl)
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name) and the dates are dates
-		if (death_cause_tbl_nrow>0)  {
+		if (nrow(death_cause_tbl)>0)  {
 			if (!unix)  {
 				death_cause_tbl <- death_cause_tbl |> 
 					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(death_cause_path))) |>
@@ -205,11 +204,12 @@ get_diagnoses <- function(
 			death_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="death" ], show_col_types=FALSE, progress=FALSE)
 			if (! "eid" %in% colnames(death_tbl))  colnames(death_tbl)[1] <- "eid"
 			death_cause_tbl = dplyr::inner_join(death_tbl, death_cause_tbl, by=c("eid"="eid", "ins_index"="ins_index"))
-			death_cause_tbl <- death_cause_tbl |> dplyr::mutate(date_of_death = lubridate::dmy(date_of_death))
+			
+			# format date col if not "Date"
+			if (!lubridate::is.Date(death_cause_tbl$date_of_death))  death_cause_tbl <- death_cause_tbl |> dplyr::mutate(date_of_death = lubridate::dmy(date_of_death))
 		}
 		
-		death_cause_tbl_nrow <- nrow(death_cause_tbl)
-		cli::cli_alert_success("Loaded {.var death_cause} with {death_cause_tbl_nrow} matched rows.")
+		cli::cli_alert_success("Loaded {.var death_cause} with {nrow(death_cause_tbl)} matched rows.")
 		
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 		
@@ -246,7 +246,15 @@ get_diagnoses <- function(
 			hesin_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE)
 			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
 			hesin_diag_tbl = dplyr::inner_join(hesin_tbl, hesin_diag_tbl, by=c("eid"="eid", "ins_index"="ins_index"))
-			hesin_diag_tbl = hesin_diag_tbl |> dplyr::mutate(epistart = lubridate::dmy(epistart), epiend = lubridate::dmy(epiend), elecdate = lubridate::dmy(elecdate), admidate = lubridate::dmy(admidate), disdate = lubridate::dmy(disdate))
+			
+			# format date cols if not "Date"
+			date_cols = c("epistart", "epiend", "elecdate", "admidate", "disdate")
+			for (dc in date_cols)  {
+				dc = rlang::sym(dc)
+				if (!lubridate::is.Date(hesin_diag_tbl |> dplyr::select(!!dc) |> dplyr::pull()))  {
+					hesin_diag_tbl <- hesin_diag_tbl |> dplyr::mutate(!!dc := lubridate::dmy(!!dc))
+				}
+			}
 		}
 		
 		cli::cli_alert_success("Loaded {.var hesin_diag} with {nrow(hesin_diag_tbl)} matched rows.")
@@ -323,10 +331,9 @@ get_diagnoses <- function(
 		
 		# use search string to only read lines that matched a code
 		gp_clinical_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
-		gp_clinical_tbl_nrow <- nrow(gp_clinical_tbl)
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), the codes are definite matches, and the dates are dates
-		if (gp_clinical_tbl_nrow>0)  {
+		if (nrow(gp_clinical_tbl)>0)  {
 			if (!unix)  {
 				gp_clinical_tbl <- gp_clinical_tbl |> 
 					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(gp_clinical_path))) |>
@@ -334,7 +341,9 @@ get_diagnoses <- function(
 					dplyr::mutate(eid = as.numeric(eid))
 			}
 			gp_clinical_tbl <- gp_clinical_tbl |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
-			gp_clinical_tbl <- gp_clinical_tbl |> dplyr::mutate(event_dt = lubridate::dmy(event_dt))
+			
+			# format date col if not "Date"
+			if (!lubridate::is.Date(gp_clinical_tbl$event_dt))  gp_clinical_tbl <- gp_clinical_tbl |> dplyr::mutate(event_dt = lubridate::dmy(event_dt))
 		}
 		
 		cli::cli_alert_success("Loaded {.var gp_clinical} with {nrow(gp_clinical_tbl)} matched rows.")

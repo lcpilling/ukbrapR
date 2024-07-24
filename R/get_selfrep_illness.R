@@ -51,7 +51,7 @@ get_selfrep_illness <- function(
 	# get codes
 	if (verbose) cat("Get codes, determine if cancer\n")
 	codes <- codes_df[ codes_df[,vocab_col] %in% c("ukb_cancer","ukb_noncancer") ,codes_col]
-	cat("Getting data on ", length(unique(codes)), " codes\n")
+	if (verbose) cat("Getting data on ", length(unique(codes)), " codes\n")
 	
 	# is cancer?
 	is_cancer <- TRUE
