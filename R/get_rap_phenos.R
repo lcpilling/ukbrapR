@@ -62,10 +62,11 @@ get_rap_phenos <- function(
 	if (verbose) cat("Connect to the dataset\n")
 	project <- system("dx env | grep project- | awk -F '\t' '{print $2}'", intern = TRUE)
 	if (is.null(record))  {
-		record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | head -n 1" , intern = TRUE)
+		record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | sort | tail -n 1" , intern = TRUE)
 	}
 	DATASET_ID <- paste0(project, ":", record)
 	dataset <- dxdata$load_dataset(id=DATASET_ID)
+	if (verbose) cat(" - [", DATASET_ID, "]\n")
 	
 	# Select participant table
 	if (verbose) cat("Select participant table\n")

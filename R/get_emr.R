@@ -186,7 +186,7 @@ get_emr_spark <- function(
 	
 	# Get app database ID
 	if (verbose) cat("Get app database ID\n")
-	app_id <- system("dx describe *dataset | grep  app | awk -F ' ' '{print $2}' | head -n 1", intern = TRUE) |>
+	app_id <- system("dx describe *dataset | grep  app | awk -F ' ' '{print $2}' | sort | head -n 1", intern = TRUE) |>
 		stringr::str_replace(".dataset", "")
 	if (verbose) cat(" - [", app_id, "]\n")
 	
