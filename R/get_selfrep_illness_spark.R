@@ -1,25 +1,34 @@
 #' Get UK Biobank participant self-reported illness/year data for specific codes
 #'
 #' @description For a specific self-reported illness code or codes, identify whether the participant has self-reported at any visit, and identify the year. 
+#' Intended for use on the UK Biobank DNnexus Research Analysis Platform, but if the user provides their own dataframe of UK Biobank self-reported fields this works on any system.
 #'
 #' @return Returns a data frame with four variables: eid, selfrep [binary, codes identified?], selfrep_df [date of reported illness], selfrep_i [instance the illness was first reported]
 #'
 #' @author Luke Pilling
 #'
-#' @name get_selfrep_illness
+#' @name get_selfrep_illness_spark
 #'
 #' @param codes_df A data frame. Contains the `vocab_col` and `codes_col` i.e., an indicator of the vocabulary and the diagnostic codes.
-#' @param ukb_dat A data frame. Contains the participant-level self-reported illness fields e.g., `p20008_i0_a0`.
+#' @param vocab_col A string. Column name in `codes_df` that contains the vocabulary indicator for the code (for self-reported it needs to be either "ukb_cancer" or "ukb_noncancer").
+#'        \code{default='vocab_id'}
+#' @param codes_col A string. Column name in `codes_df` that contains the self-reported disease code (e.g., 1507).
+#'        \code{default='code'}
+#' @param ukb_dat A data frame. Optional. If not provided, will get the phenotypes from the RAP. Contains the self-reported illness fields e.g., `p20008_i0_a0`.
+#'        \code{default=NULL}
+#' @param n_cancer_arrays An integer. It is not trivial to determine the max number of arrays to request from Spark for the self-reported illnesses. The defaults match the currently (Feb 2024) available data but may need increasing in the future.
+#'        \code{default=5}
+#' @param n_noncancer_arrays An integer. It is not trivial to determine the max number of arrays to request from Spark for the self-reported illnesses. The defaults match the currently (Feb 2024) available data but may need increasing in the future.
+#'        \code{default=30}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
-#'
 #' # example diagnostic codes for haemochromatosis
 #' print(codes_df_hh)
 #'
 #' # get self-reported data - a data frame
-#' selfrep_df <- get_selfrep_illness(codes_df_hh)
+#' selfrep_df <- get_selfrep_illness_spark(codes_df_hh)
 #'
 #' # inspect variables
 #' table(selfrep_df$selfrep)
@@ -28,16 +37,17 @@
 #'
 #' @export
 #'
-get_selfrep_illness <- function(
+get_selfrep_illness_spark <- function(
 	codes_df,
-	ukb_dat,
+	vocab_col = "vocab_id",
+	codes_col = "code",
+	ukb_dat = NULL,
+	n_cancer_arrays = 5,
+	n_noncancer_arrays = 30,
 	verbose = FALSE
 )  {
 	
 	start_time <- Sys.time()
-	
-	vocab_col = "vocab_id"
-	codes_col = "code"
 	
 	# Check input
 	if (verbose) cat("Check inputs\n")
@@ -56,6 +66,60 @@ get_selfrep_illness <- function(
 	# is cancer?
 	is_cancer <- TRUE
 	if ("ukb_noncancer" %in% codes_df[,vocab_col])  is_cancer <- FALSE
+	
+	# if `ukb_dat` is NULL use `get_rap_phenos()` to get phenotype data - all instances, all arrays
+	#    need: eid, 20001, 20002, 20006, 20007, 20008, 20009
+	if (is.null(ukb_dat))  {
+		
+		if (verbose) cat("No `ukb_dat` object provided - will get from RAP\n")
+		
+		# Determine variable names needed (depends if cancer or non-cancer)
+		#   will use 20001 (cancer code) and 20002 (non-cancer code)
+		#   will use the interpolated year (20006 = cancer year, 20008 = non-cancer year)
+		
+		# RAP stores arrays as separate variables
+		
+		# get field names 
+		if (verbose) cat("Determine field names to request\n")
+		names = "eid"
+		
+		# if cancer or non-cancer code:
+		if (is_cancer)  {
+			#   cancer code = 20001
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20001_i", 0, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20001_i", 1, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20001_i", 2, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20001_i", 3, "_a", a))
+			#   cancer year = 20006
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20006_i", 0, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20006_i", 1, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20006_i", 2, "_a", a))
+			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p20006_i", 3, "_a", a))
+		}  else  {
+			#   non-cancer illness code = 20002
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20002_i", 0, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20002_i", 1, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20002_i", 2, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20002_i", 3, "_a", a))
+			#   non-cancer illness year = 20008
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20008_i", 0, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20008_i", 1, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20008_i", 2, "_a", a))
+			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p20008_i", 3, "_a", a))
+		}
+		
+		if (verbose) print(names)
+
+		# get fields from the RAP
+		if (verbose) cat("Get fields from the RAP\n")
+		ukb_dat <- ukbrapR::get_rap_phenos(names, value_coding = "raw", verbose = verbose)
+		
+	}  else  {
+		cat("User is providing own `ukb_dat` with self-reported illness fields\n")
+	}
+	
+	# remove any cols with all missing values
+	ukb_dat = ukb_dat |> dplyr::select_if(~ !all(is.na(.)))
 	
 	# check all visits for participant - create `selfrep` (binary, ever), `selfrep_df` (the "Date First" variable) and `selfrep_i` (the "instance" i.e., visit)
 	#   https://biobank.ctsu.ox.ac.uk/crystal/label.cgi?id=100074
@@ -126,7 +190,7 @@ get_selfrep_illness <- function(
 	ukb_dat = dplyr::mutate(ukb_dat, selfrep_df = lubridate::as_date(lubridate::date_decimal(selfrep_df)))
 	
 	# finish
-	if (verbose)  if (verbose)  cli::cli_alert_info(c("Finished self-reported illness: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
 	
 	# Return data
 	return(ukb_dat[,c("eid", "selfrep", "selfrep_df", "selfrep_i")])

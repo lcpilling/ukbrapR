@@ -11,10 +11,10 @@
 #' @param names A string or vector of strings. The variable name(s) required. e.g., c("eid","p31","p21003_i0")
 #' @param value_coding A string. How to handle coded fields. "replace" if a coding value exists, replace the raw value with the code; "raw" export the raw values of the field; "exclude" if a coding value exists, do not export the value (most commonly used with sparse fields).
 #'        \code{default="replace"}
-#' @param names_are_titles Logical. Passing DNAnexus variable "titles" e.g., c("Age at recruitment", "Standing height | Instance 0"),
+#' @param names_are_titles Logical. Passing DNAnexus variable "titles" e.g., c("Age at recruitment", "Standing height | Instance 0").
 #'        \code{default=FALSE}
-#' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recent update
-#'        \code{default=most recent dataset update}
+#' @param record A string. The `dnanexus_link` file descriptor of the .dataset to use. Default (if left as NULL) is to use the most recently dispensed dataset.
+#'        \code{default=most recent dataset}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
@@ -62,10 +62,11 @@ get_rap_phenos <- function(
 	if (verbose) cat("Connect to the dataset\n")
 	project <- system("dx env | grep project- | awk -F '\t' '{print $2}'", intern = TRUE)
 	if (is.null(record))  {
-		record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | head -n 1" , intern = TRUE)
+		record <- system("dx describe *dataset | grep  record- | awk -F ' ' '{print $2}' | sort | tail -n 1" , intern = TRUE)
 	}
 	DATASET_ID <- paste0(project, ":", record)
 	dataset <- dxdata$load_dataset(id=DATASET_ID)
+	if (verbose) cat(" - [", DATASET_ID, "]\n")
 	
 	# Select participant table
 	if (verbose) cat("Select participant table\n")

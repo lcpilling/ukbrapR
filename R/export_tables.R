@@ -12,14 +12,14 @@
 #'
 #' @name export_tables
 #'
-#' @param dataset A string. If you wish to specify dataset. If blank, will use the first in the project.
-#'        \code{default=app#####.dataset}
-#' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. 
-#'        \code{default=NULL}
-#' @param ignore_warnings Logical. If an exported table already exists do not submit the table-exporter command unless this is TRUE,
-#'        \code{default=FALSE}
 #' @param submit Logical. Actually submit `dx` commands. Default is FALSE i.e., just check inputs & file paths, then print the commands,
 #'        \code{default=FALSE}
+#' @param ignore_warnings Logical. If an exported table already exists do not submit the table-exporter command unless this is TRUE,
+#'        \code{default=FALSE}
+#' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. If blank, will use the default paths,
+#'        \code{default=ukbrapR:::ukbrapr_paths}
+#' @param dataset A string. If you wish to specify dataset. If blank, will use the most recently dispensed dataset in the main project directory.
+#'        \code{default=app#####_#####.dataset}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
@@ -52,21 +52,18 @@
 #' @export
 #'
 export_tables <- function(
-	dataset = NULL,
-	file_paths = NULL,
-	ignore_warnings = FALSE,
 	submit = FALSE,
+	ignore_warnings = FALSE,
+	file_paths = ukbrapR:::ukbrapr_paths,
+	dataset = NULL,
 	verbose = FALSE
 )  {
 	
-	# is this just a submit? (Will not actually run any dx commands)
-	if (submit)  {
-		cli::cli_alert_info("submit run. Will not submit any {.code dx} system commands")
+	# is this just a test? (Will not actually run any dx commands)
+	if (!submit)  {
+		cli::cli_alert_info("Test run. Will not submit any {.code dx} system commands")
 		ignore_warnings = TRUE
 	}
-	
-	# if none provided assume default paths
-	if (is.null(file_paths))  file_paths = ukbrapR:::ukbrapr_paths
 	
 	# do any files already exist? Warn if so!
 	for (fp in file_paths$path)  {
@@ -88,12 +85,9 @@ export_tables <- function(
 	
 	# get dataset id 
 	if (is.null(dataset))  {
-			# get dataset id - will just take the first
-			#DATASET=($(ls /mnt/project/*.dataset))
-			#DATASET=$(basename ${DATASET[0]})
-		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
-		dataset = dataset[1]
+		dataset = system("dx describe *dataset | grep  app | awk -F ' ' '{print $2}' | sort | tail -n 1", intern = TRUE)
 	}
+	if (verbose) cli::cli_alert_info("Using dataset {.file {dataset}}")
 	
 	# run table exporter commands
 	ukbrapR:::export_tables_emr(dataset=dataset, submit=submit, verbose=verbose)
@@ -106,6 +100,11 @@ export_tables <- function(
 	cli::cli_alert_info("Files will be saved to `ukbrapr_data` directory in your RAP project presistent storage space.")
 	cli::cli_alert_warning("~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.")
 	
+	# was this just a test? 
+	if (!submit)  {
+		cli::cli_abort("This was a test run. No {.code dx table-exporter} commands were submitted. Re-run with {.code submit = TRUE} to submit.")
+	}
+
 }
 
 

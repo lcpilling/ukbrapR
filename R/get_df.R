@@ -9,11 +9,11 @@
 #' @name get_df
 #'
 #' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
-#' @param include_selfrep logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_selfrep_illness logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param include_gp_clinical logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
-#' @param include_hesin logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_hesin_diag logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
@@ -44,7 +44,7 @@
 #' selfrep_df <- get_selfrep_illness(codes_df_hh)
 #'
 #' # add self-reported to the `diagnosis_list` object
-#' diagnosis_list[["selfrep"]] <- selfrep_df
+#' diagnosis_list[["selfrep_illness"]] <- selfrep_df
 #'
 #' # for each participant, get Date First diagnosed with the condition
 #' diagnosis_df = get_df(diagnosis_list, prefox="hh")
@@ -65,9 +65,9 @@
 #'
 get_df <- function(
 	diagnosis_list,
-	include_selfrep = TRUE,
+	include_selfrep_illness = TRUE,
 	include_gp_clinical = TRUE,
-	include_hesin = TRUE,
+	include_hesin_diag = TRUE,
 	include_death_cause = TRUE,
 	prefix = NULL,
 	group_by = NULL,
@@ -108,7 +108,7 @@ get_df <- function(
 		
 		df_tbl = ukbrapR:::get_df1(
 			diagnosis_list=diagnosis_list, 
-			include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
+			include_selfrep_illness=include_selfrep_illness, include_gp_clinical=include_gp_clinical, include_hesin_diag=include_hesin_diag, include_death_cause=include_death_cause,
 			prefix=prefix, verbose=verbose
 		)
 		
@@ -120,7 +120,7 @@ get_df <- function(
 		if (verbose) cli::cli_alert("Grouping variable detected - checking codes")
 		
 		# check input codes and group variable
-		if (class(diagnosis_list) != "ukb_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukb_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
+		if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 		
 		codes = as.data.frame(diagnosis_list[['codes_df']])
 		
@@ -192,7 +192,7 @@ get_df <- function(
 			# get DF for this condition
 			df_tbl_sub = ukbrapR:::get_df1(
 				diagnosis_list=diagnosis_list_sub, 
-				include_selfrep=include_selfrep, include_gp_clinical=include_gp_clinical, include_hesin=include_hesin, include_death_cause=include_death_cause,
+				include_selfrep_illness=include_selfrep_illness, include_gp_clinical=include_gp_clinical, include_hesin_diag=include_hesin_diag, include_death_cause=include_death_cause,
 				prefix=group, verbose=verbose
 			)
 			
@@ -229,11 +229,11 @@ get_df <- function(
 #' @name get_df1
 #'
 #' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
-#' @param include_selfrep logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_selfrep_illness logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param include_gp_clinical logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
-#' @param include_hesin logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_hesin_diag logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
@@ -250,9 +250,9 @@ get_df <- function(
 #' @noRd
 get_df1 <- function(
 	diagnosis_list,
-	include_selfrep = TRUE,
+	include_selfrep_illness = TRUE,
 	include_gp_clinical = TRUE,
-	include_hesin = TRUE,
+	include_hesin_diag = TRUE,
 	include_death_cause = TRUE,
 	prefix = NULL,
 	verbose = FALSE
@@ -262,10 +262,10 @@ get_df1 <- function(
 	
 	# Check input
 	if (verbose) cli::cli_alert("Check inputs\n")
-	if (class(diagnosis_list) != "ukb_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukb_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
+	if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
 	use_selfrep <- use_gp_clinical <- use_hesin <- use_death_cause <- TRUE
-	if ( is.null(diagnosis_list$selfrep) )      use_selfrep <- FALSE
+	if ( is.null(diagnosis_list$selfrep_illness) ) use_selfrep <- FALSE
 	if ( is.null(diagnosis_list$gp_clinical) )  use_gp_clinical <- FALSE
 	if ( is.null(diagnosis_list$hesin_diag) )   use_hesin <- FALSE
 	if ( is.null(diagnosis_list$death_cause) )  use_death_cause <- FALSE
@@ -316,7 +316,7 @@ get_df1 <- function(
 	if (verbose) cli::cli_alert("Combine into single wide data frame\n")
 	diagnosis_df <- NULL
 	if (use_selfrep)  {
-		diagnosis_df <- na.omit(diagnosis_list$selfrep)
+		diagnosis_df <- na.omit(diagnosis_list$selfrep_illness)
 	}
 	if (use_gp_clinical)  {
 		if (is.null(diagnosis_df))  {
@@ -349,7 +349,7 @@ get_df1 <- function(
 	diagnosis_df$df <- NA
 	diagnosis_df$src <- ""
 	
-	if (include_selfrep & use_selfrep)  {
+	if (include_selfrep_illness & use_selfrep)  {
 		diagnosis_df <- diagnosis_df |> 
 			dplyr::mutate(
 				df = selfrep_df,
@@ -370,7 +370,7 @@ get_df1 <- function(
 		)
 	}
 	
-	if (include_hesin & use_hesin)  {
+	if (include_hesin_diag & use_hesin)  {
 		diagnosis_df <- diagnosis_df |> dplyr::mutate(
 			src = dplyr::case_when(
 				!is.na(hes_df) & is.na(df)  ~ "hes",
@@ -485,5 +485,81 @@ get_df1_add_bin = function(
 	
 	# return
 	return(df)
+}
+
+
+#' Get date first for cancer registry data
+#'
+#' @return NA
+#'
+#' @author Luke Pilling
+#'
+#' @name get_cancer_registry_df
+#'
+#' @noRd
+
+get_cancer_registry_df <- function(
+	codes,
+	ukb_dat,
+	verbose = FALSE
+)  {
+	
+	start_time <- Sys.time()
+	
+	# Check input
+	if (verbose) cat("Getting data on ", length(unique(codes)), " codes\n")
+	
+	# check all visits for participant - create `canreg` (binary, ever), `canreg_df` (date first) and `canreg_i` (the "instance" i.e., visit)
+	#   https://biobank.ctsu.ox.ac.uk/crystal/label.cgi?id=100092
+	#   date vars = 40005
+	#   cancer vars = 40006
+	#   age vars = 40008
+	#   histology vars = 40011
+	#   behaviour vars = 40012
+	
+	# create empty vars in ukb_dat to modify
+	ukb_dat$cancer_icd10     <- NA
+	ukb_dat$cancer_date      <- NA
+	ukb_dat$cancer_age       <- NA
+	ukb_dat$cancer_histology <- NA
+	ukb_dat$cancer_behaviour <- NA
+	
+	# for this instance, check if participant self-reported this code and record which array
+	
+	# variable prefix 
+	v_icd10     <- "p40006_"
+	v_date      <- "p40005_"
+	v_age       <- "p40008_"
+	v_histology <- "p40011_"
+	v_behaviour <- "p40012_"
+	
+	# Number of diagnosis columns
+	n_cols <- sum(stringr::str_detect(names(ukb_dat), v_icd10))
+	
+	# Iterate through each diagnosis column
+	for (i in 0:(n_cols-1)) {
+		
+		if (verbose) cat("Get cancer registry data from instance ", i, "\n")
+		
+		i_icd10 <- rlang::sym(paste0(v_icd10, "_i", i))
+		i_date  <- rlang::sym(paste0(v_date, "_i", i))
+		i_age   <- rlang::sym(paste0(v_age, "_i", i))
+		i_hist  <- rlang::sym(paste0(v_hist, "_i", i))
+		i_beha  <- rlang::sym(paste0(v_beha, "_i", i))
+	
+		# Update where the code matches
+		ukb_dat <- ukb_dat |> dplyr::mutate(
+			canreg_i  = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, i, canreg_i, canreg_i),
+			canreg_df = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, !!date_col, canreg_df, canreg_df),
+			canreg    = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, 1, canreg, canreg)
+			)
+	}
+	
+	# finish
+	if (verbose)  cli::cli_alert_info(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	
+	# Return data
+	return(ukb_dat[,c("eid", "canreg", "canreg_df", "canreg_i")])
+	
 }
 
