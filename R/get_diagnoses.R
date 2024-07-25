@@ -93,15 +93,18 @@ get_diagnoses <- function(
 		if (!file.exists(stringr::str_c("~/", files[1])))  {
 			cli::cli_progress_bar("Downloading files from the RAP", total = length(files))
 			# create directory
-			dir.create("~/ukbrapr_data", showWarnings = FALSE)
+			home_path = as.character(Sys.getenv()["HOME"])
+			dir.create(stringr::str_c(home_path, "/ukbrapr_data"), showWarnings = FALSE)
+			system("dx cd ukbrapr_data")
 			# copy file from RAP space to instance
 			for (file in files)  {
-				system(stringr::str_c("cp /mnt/project/", file, " ~/ukbrapr_data/"))
+				#system(stringr::str_c("cp /mnt/project/", file, " ~/ukbrapr_data/"))
+				system(stringr::str_c("dx download \"", basename(file), "\" -o \"", home_path, "/ukbrapr_data\""))
 				cli::cli_progress_update()
 			}
 			cli::cli_progress_done()
 			# add home directory prefix to file paths
-			file_paths$path = stringr::str_c("~/", file_paths$path)
+			file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
 			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 		}
 	}
