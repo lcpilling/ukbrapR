@@ -2,15 +2,15 @@
 #'
 #' @description Get UK Biobank medical records for specific diagnostic codes list
 #'
-#' This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables are provided.
+#' If `file_paths` to exported tables are provided, will extract records from these (i.e., does not need to be launched in a Spark cluster)
 #'
-#' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, `hesin_oper`, `gp_clinical`, `cancer_registry` and `selfrep_illness`. Also includes the original codes list)
+#' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 #'
 #' @author Luke Pilling
 #'
 #' @name get_diagnoses
 #'
-#' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary (ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, and ukb_noncancer are recognised). Other columns are ignored.
+#' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary. Other columns are ignored.
 #' @param file_paths A data frame. Columns must be `object` and `path` containing paths to required files. Default assumes you have the tables exported in the RAP environment from
 #'        ukbrapR::export_tables() 
 #'        \code{default=ukbrapR:::ukbrapr_paths}
@@ -128,12 +128,9 @@ get_diagnoses <- function(
 	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
 	get_icd10 <- FALSE
 	get_gp    <- FALSE
-	get_oper  <- FALSE
 	ICD10s    <- ""
 	Read2s    <- ""
 	CTV3s     <- ""
-	OPCS3s    <- ""
-	OPCS4s    <- ""
 	
 	# get ICD10s. Remove "." dot characters. First 5 characters only.
 	if (any(codes_df[,vocab_col] == "ICD10"))  {
@@ -163,50 +160,18 @@ get_diagnoses <- function(
 	}
 	gp_codes = c(Read2s, CTV3s)
 	
-	# get OPCS codes? Remove "." dot characters. First 5 characters only.
-	oper_codes = NULL
-	if (any(codes_df[,vocab_col] == "OPCS3"))  {
-		get_oper <- TRUE
-		OPCS3s   <- codes_df |>
-			dplyr::filter(!!rlang::sym(vocab_col) == "OPCS3") |>
-			dplyr::select(!!rlang::sym(codes_col)) |>
-			dplyr::pull() |>
-			unique() |>
-			stringr::str_remove(stringr::fixed(".")) |> 
-			stringr::str_sub(1, 5)
-		cat(" - N unique OPCS3 codes:", length(OPCS3s), "\n")
-		oper_codes = OPCS3s
-	}
-	if (any(codes_df[,vocab_col] == "OPCS4"))  {
-		get_oper <- TRUE
-		OPCS4s   <- codes_df |>
-			dplyr::filter(!!rlang::sym(vocab_col) == "OPCS4") |>
-			dplyr::select(!!rlang::sym(codes_col)) |>
-			dplyr::pull() |>
-			unique() |>
-			stringr::str_remove(stringr::fixed(".")) |> 
-			stringr::str_sub(1, 5)
-		cat(" - N unique OPCS4 codes:", length(OPCS4s), "\n")
-		oper_codes = c(oper_codes, OPCS4s)
-	}
-	
-	# check for self-reported codes
-	n_selfrep = nrow(codes_df[c("ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col],])
-	if (n_selfrep>0)  cat(" - N unique UKB-self-reported codes:", n_selfrep, "\n")
-	
 	#
 	#
 	#
 	
 	# Get data for each code vocabulary
 	if (verbose) cli::cli_alert("Ascertaining codes from long EMR files")
-	death_cause_tbl     <- NULL  # ICD10
-	hesin_diag_tbl      <- NULL  # ICD10
-	cancer_registry_tbl <- NULL  # ICD10
-	gp_clinical_tbl     <- NULL  # Read2 / CTV3
-	hesin_oper_tbl      <- NULL  # OPCS3 / OPCS4
-	selfrep_illness_tbl <- NULL  # ukb_cancer / ukb_noncancer
-	
+	death_cause_tbl     <- NULL
+	hesin_diag_tbl      <- NULL
+	hesin_oper_tbl      <- NULL
+	gp_clinical_tbl     <- NULL
+	cancer_registry_tbl <- NULL
+	selfrep_illness_tbl <- NULL
 	if (get_icd10)  {
 		
 		#
@@ -300,6 +265,39 @@ get_diagnoses <- function(
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 		
 		#
+		# HES operations data ###########################################
+		#
+		cli::cli_alert("Ascertaining HES operations data.")
+		
+		hesin_oper_path = file_paths$path[ file_paths$object=="hesin_oper" ]
+		
+		# create search string
+		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(ICD10s, collapse = "|")), " ", sprintf('%s', hesin_oper_path))
+		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(ICD10s, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_oper_path))
+		if (verbose)  cat(" -- search string: ", search_string, "\n")
+		
+		# get file headers
+		headers <- colnames(readr::read_tsv(hesin_oper_path, n_max=1, show_col_types=FALSE, progress=FALSE))
+		if (! "eid" %in% headers)  headers[1] <- "eid"
+		
+		# use search string to only read lines that matched a code
+		hesin_oper_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		
+		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
+		if (nrow(hesin_oper_tbl)>0)  {
+			if (!unix)  {
+				hesin_oper_tbl <- hesin_oper_tbl |> 
+					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_oper_path))) |>
+					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
+					dplyr::mutate(eid = as.numeric(eid))
+			}
+		}
+		
+		cli::cli_alert_success("Loaded {.var hesin_oper} with {nrow(hesin_oper_tbl)} matched rows.")
+		
+		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+		
+		#
 		# cancer registry ####################################
 		#
 		cli::cli_alert("Ascertaining cancer registry data.")
@@ -317,50 +315,11 @@ get_diagnoses <- function(
 	}
 	
 	#
-	# HES operations data ###########################################
-	#
-	if (get_oper)  {
-		
-		cli::cli_alert("Ascertaining HES operations data.")
-		
-		hesin_oper_path = file_paths$path[ file_paths$object=="hesin_oper" ]
-		
-		# create search string
-		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(oper_codes, collapse = "|")), " ", sprintf('%s', hesin_oper_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(oper_codes, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_oper_path))
-		if (verbose)  cat(" -- search string: ", search_string, "\n")
-		
-		# get file headers
-		headers <- colnames(readr::read_tsv(hesin_oper_path, n_max=1, show_col_types=FALSE, progress=FALSE))
-		if (! "eid" %in% headers)  headers[1] <- "eid"
-		
-		# use search string to only read lines that matched a code
-		hesin_oper_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
-		
-		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
-		# make sure OPCS3 are exact
-		if (nrow(hesin_oper_tbl)>0)  {
-			if (!unix)  {
-				hesin_oper_tbl <- hesin_oper_tbl |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_oper_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
-			hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(oper3 %in% !!OPCS3s | stringr::str_detect(oper4, stringr::str_flatten(oper_codes, collapse = "|"))) 
-		}
-		
-		cli::cli_alert_success("Loaded {.var hesin_oper} with {nrow(hesin_oper_tbl)} matched rows.")
-		
-		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-		
-	}
-
-	#
 	# Ascertaining GP clinical  ########################################################
 	#
 	if (get_gp)  {
 		
-		cli::cli_alert("Ascertaining GP data.")
+		cli::cli_alert("Ascertaining GP data (can take a few minutes).")
 		
 		gp_clinical_path = file_paths$path[ file_paths$object=="gp_clinical" ]
 		
@@ -425,9 +384,9 @@ get_diagnoses <- function(
 	output_list <- list(
 		gp_clinical=gp_clinical_tbl, 
 		hesin_diag=hesin_diag_tbl, 
+		hesin_oper=hesin_oper_tbl, 
 		death_cause=death_cause_tbl, 
 		cancer_registry=cancer_registry_tbl, 
-		hesin_oper=hesin_oper_tbl, 
 		selfrep_illness=selfrep_illness_tbl,
 		codes_df=tibble::as_tibble(codes_df)
 	)

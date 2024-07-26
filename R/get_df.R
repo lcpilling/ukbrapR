@@ -11,11 +11,15 @@
 #' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
 #' @param include_selfrep_illness logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
+#' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
 #' @param include_gp_clinical logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
-#' @param include_hesin_diag logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_hesin_diag logical. Include the HES diagnosis data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
-#' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#' @param include_hesin_oper logical. Include the HES OPCS (operations) data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
+#'        \code{default=TRUE}
+#' @param include_cancer_registry logical. Include the cancer registry data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
 #'        \code{default=NULL}
@@ -66,9 +70,11 @@
 get_df <- function(
 	diagnosis_list,
 	include_selfrep_illness = TRUE,
+	include_death_cause = TRUE,
 	include_gp_clinical = TRUE,
 	include_hesin_diag = TRUE,
-	include_death_cause = TRUE,
+	include_hesin_oper = TRUE,
+	include_cancer_registry = TRUE,
 	prefix = NULL,
 	group_by = NULL,
 	use_baseline_dates = TRUE,
@@ -99,7 +105,7 @@ get_df <- function(
 			
 		} else {
 			use_baseline_dates = FALSE
-			cli::cli_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}}")
+			cli::cli_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}} - continued without using it")
 		}
 	}
 	
@@ -107,9 +113,15 @@ get_df <- function(
 	if (is.null(group_by))  {
 		
 		df_tbl = ukbrapR:::get_df1(
-			diagnosis_list=diagnosis_list, 
-			include_selfrep_illness=include_selfrep_illness, include_gp_clinical=include_gp_clinical, include_hesin_diag=include_hesin_diag, include_death_cause=include_death_cause,
-			prefix=prefix, verbose=verbose
+			diagnosis_list=diagnosis_list_sub, 
+			include_selfrep_illness=include_selfrep_illness, 
+			include_gp_clinical=include_gp_clinical, 
+			include_death_cause=include_death_cause, 
+			include_hesin_diag=include_hesin_diag, 
+			include_cancer_registry=include_cancer_registry,
+			include_hesin_oper=include_hesin_oper,
+			prefix=prefix, 
+			verbose=verbose
 		)
 		
 		# add binary variables (ever, prev) & censoring date (if provided)
@@ -189,11 +201,63 @@ get_df <- function(
 				diagnosis_list_sub$death_cause = diagnosis_list_sub$death_cause |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))
 			}
 			
+			## cancer_registry
+			if (!is.null(diagnosis_list_sub$cancer_registry) & any(codes_sub$vocab_id == "ICD10"))  {  
+				ICD10s = ""
+				if (any(codes_sub$vocab_id == "ICD10"))  {
+					ICD10s <- codes_sub |>
+						dplyr::filter(vocab_id == "ICD10") |>
+						dplyr::select(code) |>
+						dplyr::pull() |>
+						unique() |>
+						stringr::str_remove(stringr::fixed(".")) |> 
+						stringr::str_sub(1, 5)
+				}
+				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))   ############### check icd col name
+			}
+			
+			## hesin_oper
+			if (!is.null(diagnosis_list_sub$hesin_oper) & any(codes_sub$vocab_id %in% c("OPCS3","OPCS4"))  {  
+				OPCS4s = ""
+				if (any(codes_sub$vocab_id == "OPCS4"))  {
+					OPCS4s <- codes_sub |>
+						dplyr::filter(vocab_id == "OPCS4") |>
+						dplyr::select(code) |>
+						dplyr::pull() |>
+						unique() |>
+						stringr::str_remove(stringr::fixed(".")) |> 
+						stringr::str_sub(1, 5)
+				}
+				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
+				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
+				
+				if (any(codes_sub$vocab_id == "OPCS3"))  {
+					OPCS3s <- codes_sub |>
+						dplyr::filter(vocab_id == "OPCS3") |>
+						dplyr::select(code) |>
+						dplyr::pull() |>
+						unique() |>
+						stringr::str_remove(stringr::fixed(".")) |> 
+						stringr::str_sub(1, 5)
+				}
+				OPCS3_search = stringr::str_flatten(OPCS3s, collapse = "|")
+				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
+			}
+			
+			#
+			#
 			# get DF for this condition
 			df_tbl_sub = ukbrapR:::get_df1(
 				diagnosis_list=diagnosis_list_sub, 
-				include_selfrep_illness=include_selfrep_illness, include_gp_clinical=include_gp_clinical, include_hesin_diag=include_hesin_diag, include_death_cause=include_death_cause,
-				prefix=group, verbose=verbose
+				include_selfrep_illness=include_selfrep_illness, 
+				include_gp_clinical=include_gp_clinical, 
+				include_death_cause=include_death_cause, 
+				include_hesin_diag=include_hesin_diag, 
+				include_cancer_registry=include_cancer_registry,
+				include_hesin_oper=include_hesin_oper,
+				prefix=group, 
+				verbose=verbose
 			)
 			
 			# add binary variables (ever, prev) & censoring date (if provided)
@@ -228,32 +292,15 @@ get_df <- function(
 #'
 #' @name get_df1
 #'
-#' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
-#' @param include_selfrep_illness logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
-#'        \code{default=TRUE}
-#' @param include_gp_clinical logical. Include the GP data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
-#'        \code{default=TRUE}
-#' @param include_hesin_diag logical. Include the HES data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
-#'        \code{default=TRUE}
-#' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
-#'        \code{default=TRUE}
-#' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
-#'        \code{default=NULL}
-#' @param verbose Logical. Be verbose,
-#'        \code{default=FALSE}
-#'
-#' @examples
-#'
-#' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_df1(diagnosis_list, prefix="cdk")
-#'
 #' @noRd
 get_df1 <- function(
 	diagnosis_list,
 	include_selfrep_illness = TRUE,
 	include_gp_clinical = TRUE,
-	include_hesin_diag = TRUE,
 	include_death_cause = TRUE,
+	include_hesin_diag = TRUE,
+	include_cancer_registry = TRUE,
+	include_hesin_oper = TRUE,
 	prefix = NULL,
 	verbose = FALSE
 )  {
@@ -264,11 +311,14 @@ get_df1 <- function(
 	if (verbose) cli::cli_alert("Check inputs\n")
 	if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
-	use_selfrep <- use_gp_clinical <- use_hesin <- use_death_cause <- TRUE
-	if ( is.null(diagnosis_list$selfrep_illness) ) use_selfrep <- FALSE
-	if ( is.null(diagnosis_list$gp_clinical) )  use_gp_clinical <- FALSE
-	if ( is.null(diagnosis_list$hesin_diag) )   use_hesin <- FALSE
-	if ( is.null(diagnosis_list$death_cause) )  use_death_cause <- FALSE
+	# "use" if there is any data (i.e., provide an individual _df column) -- "include" in the main combined only if specified by user
+	use_selfrep <- use_gp_clinical <- use_death_cause <- use_hesin_diag <- use_cancer_registry <- use_hesin_oper <- TRUE
+	if ( is.null(diagnosis_list$selfrep_illness) )  use_selfrep         <- FALSE
+	if ( is.null(diagnosis_list$gp_clinical) )      use_gp_clinical     <- FALSE
+	if ( is.null(diagnosis_list$death_cause) )      use_death_cause     <- FALSE
+	if ( is.null(diagnosis_list$hesin_diag) )       use_hesin_diag      <- FALSE
+	if ( is.null(diagnosis_list$cancer_registry) )  use_cancer_registry <- FALSE
+	if ( is.null(diagnosis_list$hesin_oper) )       use_hesin_oper      <- FALSE
 	
 	#
 	#
@@ -284,8 +334,18 @@ get_df1 <- function(
 			dplyr::mutate(gp_df = dplyr::if_else(is.finite(gp_df), gp_df, NA))
 	}
 	
+	# Convert death_cause to "wide" Date First
+	if (use_death_cause)  {
+		if (verbose) cli::cli_alert("Get date first diagnosis: death_df\n")
+		death_cause <- diagnosis_list$death_cause |>
+			dplyr::filter(!is.na(date_of_death)) |>
+			dplyr::group_by(eid) |>
+			dplyr::summarize(death_df=min(date_of_death, na.rm=TRUE)) |>
+			dplyr::mutate(death_df = dplyr::if_else(is.finite(death_df), death_df, NA))
+	}
+	
 	# Convert hesin_diag to "wide" Date First
-	if (use_hesin)  {
+	if (use_hesin_diag)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: hes_df\n")
 		hesin_diag <- diagnosis_list$hesin_diag |>
 			dplyr::mutate(diagnosis_date = epistart) |>
@@ -298,14 +358,20 @@ get_df1 <- function(
 			dplyr::mutate(hes_df = dplyr::if_else(is.finite(hes_df), hes_df, NA)) 
 	}
 	
-	# Convert death_cause to "wide" Date First
-	if (use_death_cause)  {
-		if (verbose) cli::cli_alert("Get date first diagnosis: death_df\n")
-		death_cause <- diagnosis_list$death_cause |>
-			dplyr::filter(!is.na(date_of_death)) |>
+	# Convert cancer registry to "wide" Date First 
+	if (use_cancer_registry)  {
+		if (verbose) cli::cli_alert("Get date first diagnosis: canreg_df\n")
+		cancer_registry <- get_cancer_registry_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$cancer_registry, verbose=verbose)
+	}
+	
+	# Convert hesin_oper to "wide" Date First
+	if (use_hesin_oper)  {
+		if (verbose) cli::cli_alert("Get date first diagnosis: oper_df\n")
+		hesin_oper <- diagnosis_list$hesin_oper |>
+			dplyr::filter(!is.na(opdate)) |>
 			dplyr::group_by(eid) |>
-			dplyr::summarize(death_df=min(date_of_death, na.rm=TRUE)) |>
-			dplyr::mutate(death_df = dplyr::if_else(is.finite(death_df), death_df, NA))
+			dplyr::summarize(oper_df=min(opdate, na.rm=TRUE)) |>
+			dplyr::mutate(oper_df = dplyr::if_else(is.finite(oper_df), oper_df, NA))
 	}
 	
 	#
@@ -325,7 +391,7 @@ get_df1 <- function(
 			diagnosis_df <- dplyr::full_join(diagnosis_df, gp_clinical, by="eid")
 		}
 	}
-	if (use_hesin)  {
+	if (use_hesin_diag)  {
 		if (is.null(diagnosis_df))  {
 			diagnosis_df <- hesin_diag
 		} else {
@@ -337,6 +403,20 @@ get_df1 <- function(
 			diagnosis_df <- death_cause
 		} else {
 			diagnosis_df <- dplyr::full_join(diagnosis_df, death_cause, by="eid")
+		}
+	}
+	if (use_cancer_registry)  {
+		if (is.null(diagnosis_df))  {
+			diagnosis_df <- cancer_registry
+		} else {
+			diagnosis_df <- dplyr::full_join(diagnosis_df, cancer_registry, by="eid")
+		}
+	}
+	if (use_hesin_oper)  {
+		if (is.null(diagnosis_df))  {
+			diagnosis_df <- hesin_oper
+		} else {
+			diagnosis_df <- dplyr::full_join(diagnosis_df, hesin_oper, by="eid")
 		}
 	}
 	
@@ -370,7 +450,7 @@ get_df1 <- function(
 		)
 	}
 	
-	if (include_hesin_diag & use_hesin)  {
+	if (include_hesin_diag & use_hesin_diag)  {
 		diagnosis_df <- diagnosis_df |> dplyr::mutate(
 			src = dplyr::case_when(
 				!is.na(hes_df) & is.na(df)  ~ "hes",
@@ -396,6 +476,32 @@ get_df1 <- function(
 		)
 	}
 	
+	if (include_cancer_registry & use_cancer_registry)  {
+		diagnosis_df <- diagnosis_df |> dplyr::mutate(
+			src = dplyr::case_when(
+				!is.na(canreg_df) & is.na(df)  ~ "canreg",
+				!is.na(canreg_df) & !is.na(df) & canreg_df<df ~ "canreg",
+				TRUE ~ src),
+			df = dplyr::case_when(
+				!is.na(canreg_df) & is.na(df)  ~ canreg_df,
+				!is.na(canreg_df) & !is.na(df) & canreg_df<df ~ canreg_df,
+				TRUE ~ df)
+		)
+	}
+	
+	if (include_hesin_oper & use_hesin_oper)  {
+		diagnosis_df <- diagnosis_df |> dplyr::mutate(
+			src = dplyr::case_when(
+				!is.na(oper_df) & is.na(df)  ~ "hesin_oper",
+				!is.na(oper_df) & !is.na(df) & oper_df<df ~ "hesin_oper",
+				TRUE ~ src),
+			df = dplyr::case_when(
+				!is.na(oper_df) & is.na(df)  ~ oper_df,
+				!is.na(oper_df) & !is.na(df) & oper_df<df ~ oper_df,
+				TRUE ~ df)
+		)
+	}
+	
 	# if src & df are empty drop these rows
 	diagnosis_df = diagnosis_df |> dplyr::filter(src!="" & !is.na(df))
 	
@@ -410,7 +516,7 @@ get_df1 <- function(
 	
 	#
 	#
-	#
+	# done!
 	
 	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
 	
@@ -499,59 +605,46 @@ get_df1_add_bin = function(
 #' @noRd
 
 get_cancer_registry_df <- function(
-	codes,
+	codes_df,
 	ukb_dat,
 	verbose = FALSE
 )  {
 	
 	start_time <- Sys.time()
 	
-	# Check input
-	if (verbose) cat("Getting data on ", length(unique(codes)), " codes\n")
+	if (verbose) cat("Getting cancer registry data\n")
 	
-	# check all visits for participant - create `canreg` (binary, ever), `canreg_df` (date first) and `canreg_i` (the "instance" i.e., visit)
-	#   https://biobank.ctsu.ox.ac.uk/crystal/label.cgi?id=100092
-	#   date vars = 40005
-	#   cancer vars = 40006
-	#   age vars = 40008
-	#   histology vars = 40011
-	#   behaviour vars = 40012
+	# format codes 
+	vocab_col = "vocab_id"
+	codes_col = "code"
+
+	codes <- codes_df |>
+		dplyr::filter(!!rlang::sym(vocab_col) == "ICD10") |>
+		dplyr::select(!!rlang::sym(codes_col)) |>
+		dplyr::pull() |>
+		unique() |>
+		stringr::str_remove(stringr::fixed(".")) |> 
+		stringr::str_sub(1, 5)
+	codes_string = stringr::str_flatten(codes, collapse = "|")
 	
 	# create empty vars in ukb_dat to modify
-	ukb_dat$cancer_icd10     <- NA
-	ukb_dat$cancer_date      <- NA
-	ukb_dat$cancer_age       <- NA
-	ukb_dat$cancer_histology <- NA
-	ukb_dat$cancer_behaviour <- NA
+	ukb_dat$canreg    <- 0
+	ukb_dat$canreg_df <- NA
 	
 	# for this instance, check if participant self-reported this code and record which array
 	
-	# variable prefix 
-	v_icd10     <- "p40006_"
-	v_date      <- "p40005_"
-	v_age       <- "p40008_"
-	v_histology <- "p40011_"
-	v_behaviour <- "p40012_"
-	
 	# Number of diagnosis columns
-	n_cols <- sum(stringr::str_detect(names(ukb_dat), v_icd10))
+	n_i <- length(unique(ukb_dat$instance))
 	
 	# Iterate through each diagnosis column
-	for (i in 0:(n_cols-1)) {
+	for (i in 0:(n_i-1)) {
 		
 		if (verbose) cat("Get cancer registry data from instance ", i, "\n")
-		
-		i_icd10 <- rlang::sym(paste0(v_icd10, "_i", i))
-		i_date  <- rlang::sym(paste0(v_date, "_i", i))
-		i_age   <- rlang::sym(paste0(v_age, "_i", i))
-		i_hist  <- rlang::sym(paste0(v_hist, "_i", i))
-		i_beha  <- rlang::sym(paste0(v_beha, "_i", i))
 	
 		# Update where the code matches
 		ukb_dat <- ukb_dat |> dplyr::mutate(
-			canreg_i  = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, i, canreg_i, canreg_i),
-			canreg_df = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, !!date_col, canreg_df, canreg_df),
-			canreg    = dplyr::if_else(canreg == 0 & !!diag_col %in% codes, 1, canreg, canreg)
+			canreg_df = dplyr::if_else(canreg == 0 & stringr::str_detect(icd10, codes_string), date, canreg_df, canreg_df),
+			canreg    = dplyr::if_else(canreg == 0 & stringr::str_detect(icd10, codes_string), 1, canreg, canreg)
 			)
 	}
 	
@@ -559,7 +652,7 @@ get_cancer_registry_df <- function(
 	if (verbose)  cli::cli_alert_info(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	
 	# Return data
-	return(ukb_dat[,c("eid", "canreg", "canreg_df", "canreg_i")])
+	return(ukb_dat[,c("eid", "canreg", "canreg_df")])
 	
 }
 
