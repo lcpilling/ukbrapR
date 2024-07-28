@@ -26,6 +26,7 @@
 #' summary(selfrep_df$selfrep_df)
 #' table(selfrep_df$selfrep_i)
 #'
+#' @noRd
 get_cancer_registry <- function(
 	codes,
 	ukb_dat,

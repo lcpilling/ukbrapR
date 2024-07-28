@@ -7,9 +7,9 @@
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
 <!-- badges: end -->
 
-`{ukbrapR}` (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank data Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
+ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank data Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
-:information\_source: Since version `0.2.0` the package works best in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with Spark clusters in mind. These functions are still available but are not updated.
+> Since version `0.2.0` the package works best in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with Spark clusters in mind. These functions are still available but are not updated.
 
 <sub>Wrapped server icon by DALL-E</sub>
 

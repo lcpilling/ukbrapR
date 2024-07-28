@@ -118,6 +118,7 @@ export_tables <- function(
 #'
 #' @name export_tables_emr
 #'
+#' @noRd
 export_tables_emr <- function(
 	dataset = NULL,
 	submit = FALSE,
@@ -183,6 +184,7 @@ export_tables_emr <- function(
 #'
 #' @name export_tables_selfrep_illness
 #'
+#' @noRd
 export_tables_selfrep_illness <- function(
 	n_cancer_arrays = 5,
 	n_noncancer_arrays = 30,
@@ -267,6 +269,7 @@ export_tables_selfrep_illness <- function(
 #'
 #' @name export_tables_cancer_registry
 #'
+#' @noRd
 export_tables_cancer_registry <- function(
 	n_cancer_arrays = 21,
 	dataset = NULL,
@@ -329,6 +332,7 @@ export_tables_cancer_registry <- function(
 #'
 #' @name export_tables_baseline_dates
 #'
+#' @noRd
 export_tables_baseline_dates <- function(
 	dataset = NULL,
 	submit = FALSE,
