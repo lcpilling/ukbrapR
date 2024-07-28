@@ -2,7 +2,13 @@
 #'
 #' @description Get UK Biobank medical records for specific diagnostic codes list
 #'
-#' This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables are provided.
+#' This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables. Recommend to run `export_tables()` once in your project to export the tables to the default paths for the package.
+#'
+#' Valid code vocabularies are:
+#'  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
+#'  - Read2 / CTV3 (for `gp_clinical`)
+#'  - OPCS3 / OPCS4 (for `hesin_oper`)
+#'  - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched)
 #'
 #' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, `hesin_oper`, `gp_clinical`, `cancer_registry` and `selfrep_illness`. Also includes the original codes list)
 #'
@@ -19,17 +25,15 @@
 #'
 #' @examples
 #' # example diagnostic codes for CKD from GEMINI multimorbidity project
+#' codes_df_ckd <- ukbrapR:::codes_df_ckd
 #' head(codes_df_ckd)
 #'
-#' # get EMR data - returns list of data frames (one per source)
-#' # Assumes exported data are in the default RAP locations from `export_tables()` (ukbrapR:::ukbrapr_paths)
-#' emr_dat <- get_diagnoses(codes_df_ckd)
+#' # Get diagnosis data - returns list of data frames (one per source)
+#' # -- Requires exported tables - see `export_tables()` 
+#' diagnosis_list <- get_diagnoses(codes_df_ckd)
 #'
-#' # save to files on the RAP worker node -- either as an R object, or separate as text files:
-#' save(emr_dat, "ukbrap.CKD.emr.20231114.RDat")
-#' readr::write_tsv(emr_dat$hesin_diag,  "ukbrap.CKD.hesin_diag.20231114.txt.gz")
-#' 
-#' # upload data to RAP storage
+#' # don't forget to save and upload data to RAP persistent storage!
+#' save(diagnosis_list, "ukbrap.CKD.emr.20231114.RDat")
 #' upload_to_rap(file="ukbrap.CKD.*", dir="")
 #'
 #' @export
@@ -191,7 +195,7 @@ get_diagnoses <- function(
 	}
 	
 	# check for self-reported codes
-	n_selfrep = nrow(codes_df[c("ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col],])
+	n_selfrep = length(unique(codes_df[codes_df[,vocab_col] %in% c("ukb_cancer","ukb_noncancer"),codes_col]))
 	if (n_selfrep>0)  cat(" - N unique UKB-self-reported codes:", n_selfrep, "\n")
 	
 	#
@@ -302,18 +306,24 @@ get_diagnoses <- function(
 		#
 		# cancer registry ####################################
 		#
-		cli::cli_alert("Ascertaining cancer registry data.")
 		
-		# load data 
-		cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
-		
-		# get cancer registry data for these ICD10s
-		cancer_registry_tbl <- ukbrapR::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
-		cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
-		
-		rm(cancer_registry_dat)
-		
-		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+		# do any ICD10s start with a C? Skip if not.
+		if (any(stringr::str_starts(ICD10s, "C")))  {
+			
+			cli::cli_alert("Ascertaining cancer registry data.")
+			
+			# load data 
+			cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
+			
+			# get cancer registry data for these ICD10s
+			cancer_registry_tbl <- ukbrapR::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
+			cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
+			
+			rm(cancer_registry_dat)
+			
+			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+			
+		}
 	}
 	
 	#
@@ -398,7 +408,7 @@ get_diagnoses <- function(
 	#
 	# Ascertaining self-reported illness  ########################################################
 	#
-	if (any(c("ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col]))  {
+	if (n_selfrep>0)  {
 		
 		cli::cli_alert("Ascertaining self-reported illness data.")
 		

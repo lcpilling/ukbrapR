@@ -26,8 +26,6 @@
 #' summary(selfrep_df$selfrep_df)
 #' table(selfrep_df$selfrep_i)
 #'
-#' @export
-#'
 get_selfrep_illness <- function(
 	codes_df,
 	ukb_dat,

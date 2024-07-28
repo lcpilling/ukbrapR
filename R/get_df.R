@@ -2,13 +2,20 @@
 #'
 #' @description For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
 #'
+#' If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently 30 October 2022).
+#'
 #' @return Returns a single, "wide" data frame: the participant data for the requested diagnosis codes with "date first" `_df` variables. One for each source of data, and a combined variable.
 #'
 #' @author Luke Pilling
 #'
 #' @name get_df
 #'
-#' @param diagnosis_list A list of data frames. The participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`.
+#' @param diagnosis_list A list of data frames. The output of `get_diagnoses()` i.e., the raw diagnosis and self-reported illness data that matched the provided codes list.
+#' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd" the output variables would be "chd_gp_df", "chd_hes_df", "chd_df" etc.)
+#'        \code{default=NULL}
+#' @param group_by String. If the codes list provided to `get_diagnoses()` (i.e., in diagnosis_list$codes_df) contained a grouping/condition variable, indicate the variable name here. 
+#'        "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
+#'        \code{default=NULL}
 #' @param include_selfrep_illness logical. Include self-reported diagnosesin the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
 #' @param include_death_cause logical. Include the cause of death in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
@@ -21,12 +28,7 @@
 #'        \code{default=TRUE}
 #' @param include_cancer_registry logical. Include the cancer registry data in the combined Date First output? If present in `diagnosis_list` will still provide a separate `_df` variable
 #'        \code{default=TRUE}
-#' @param prefix String. Prefix to add to variable names (e.g., if prefix="chd") the output variables would be "chd_selfrep_df", "chd_df" etc.
-#'        \code{default=NULL}
-#' @param group_by String. If the codes list provided to `get_emr()` (i.e., in diagnosis_list[['codes_df']]) contained a grouping variable, indicate the variable name here. 
-#'        "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
-#'        \code{default=NULL}
-#' @param use_baseline_dates logical. If `baseline_dates` file available in file paths, 
+#' @param use_baseline_dates logical. If `baseline_dates` available in file paths, produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently see `censoring_date` option).
 #'        \code{default=TRUE}
 #' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
 #'        \code{default=NULL}
@@ -39,49 +41,45 @@
 #'
 #' ###############################################
 #' # example 1. haemochromatosis
-#' print(codes_df_hh)
 #'
 #' # get diagnosis data - returns list of data frames (one per source)
-#' diagnosis_list <- get_emr(codes_df_hh)
-#'
-#' # get self-reported illess data - returns a data frame
-#' selfrep_df <- get_selfrep_illness(codes_df_hh)
-#'
-#' # add self-reported to the `diagnosis_list` object
-#' diagnosis_list[["selfrep_illness"]] <- selfrep_df
+#' diagnosis_list <- get_diagnoses(ukbrapR:::codes_df_hh)
 #'
 #' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_df(diagnosis_list, prefox="hh")
+#' diagnosis_df <- get_df(diagnosis_list, prefix="hh")
 #'
 #' ###############################################
 #' # example 2. get multiple diseases at once
+#' #            don't have to all have the same code types/data sources
 #'
-#' codes = rbind(codes_df_hh, codes_df_ckd)
+#' codes = rbind(ukbrapR:::codes_df_hh, ukbrapR:::codes_df_ckd)
 #' print(codes)
 #'
 #' # get diagnosis data - returns list of data frames (one per source)
-#' diagnosis_list <- get_emr(codes)
+#' diagnosis_list <- get_diagnoses(codes)
 #'
 #' # for each participant, get Date First diagnosed with the condition
-#' diagnosis_df = get_df(diagnosis_list, group_by="condition")
+#' diagnosis_df <- get_df(diagnosis_list, group_by="condition")
 #'
 #' @export
 #'
 get_df <- function(
 	diagnosis_list,
+	prefix = NULL,
+	group_by = NULL,
 	include_selfrep_illness = TRUE,
 	include_death_cause = TRUE,
 	include_gp_clinical = TRUE,
 	include_hesin_diag = TRUE,
 	include_hesin_oper = TRUE,
 	include_cancer_registry = TRUE,
-	prefix = NULL,
-	group_by = NULL,
 	use_baseline_dates = TRUE,
 	file_paths = NULL,
 	censoring_date = "30-10-2022",
 	verbose = FALSE
 )  {
+	
+	start_time <- Sys.time()
 	
 	# use baseline dates?
 	if (use_baseline_dates)  {
@@ -113,7 +111,7 @@ get_df <- function(
 	if (is.null(group_by))  {
 		
 		df_tbl = ukbrapR:::get_df1(
-			diagnosis_list=diagnosis_list_sub, 
+			diagnosis_list=diagnosis_list, 
 			include_selfrep_illness=include_selfrep_illness, 
 			include_gp_clinical=include_gp_clinical, 
 			include_death_cause=include_death_cause, 
@@ -125,7 +123,7 @@ get_df <- function(
 		)
 		
 		# add binary variables (ever, prev) & censoring date (if provided)
-		if (use_baseline_dates)  df_tbl = ukbrapR:::get_df1_add_bin(df=df_tbl_sub, bd=bl_data, cd=censoring_date, prefix=prefix, verbose=verbose)
+		if (use_baseline_dates)  df_tbl = ukbrapR:::get_df1_add_bin(df=df_tbl, bd=bl_data, cd=censoring_date, prefix=prefix, verbose=verbose)
 		
 	} else {
 		
@@ -272,9 +270,11 @@ get_df <- function(
 			
 		}
 		
-		cli::cli_alert_success("Finished getting date first diagnosed for each group/condition.")
+		cli::cli_alert_info("Finished getting date first diagnosed for each group/condition.")
 		
 	}
+	
+	if (verbose)  cli::cli_alert_success(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	
 	# return table
 	return(df_tbl)
@@ -305,20 +305,20 @@ get_df1 <- function(
 	verbose = FALSE
 )  {
 	
-	start_time <- Sys.time()
+	#start_time <- Sys.time()
 	
 	# Check input
 	if (verbose) cli::cli_alert("Check inputs\n")
 	if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
 	# "use" if there is any data (i.e., provide an individual _df column) -- "include" in the main combined only if specified by user
-	use_selfrep <- use_gp_clinical <- use_death_cause <- use_hesin_diag <- use_cancer_registry <- use_hesin_oper <- TRUE
-	if ( is.null(diagnosis_list$selfrep_illness) )  use_selfrep         <- FALSE
-	if ( is.null(diagnosis_list$gp_clinical) )      use_gp_clinical     <- FALSE
-	if ( is.null(diagnosis_list$death_cause) )      use_death_cause     <- FALSE
-	if ( is.null(diagnosis_list$hesin_diag) )       use_hesin_diag      <- FALSE
-	if ( is.null(diagnosis_list$cancer_registry) )  use_cancer_registry <- FALSE
-	if ( is.null(diagnosis_list$hesin_oper) )       use_hesin_oper      <- FALSE
+	use_selfrep <- use_gp_clinical <- use_death_cause <- use_hesin_diag <- use_cancer_registry <- use_hesin_oper <- FALSE
+	if ( !is.null(diagnosis_list$selfrep_illness) )  if ( nrow(diagnosis_list$selfrep_illness)>0 )  use_selfrep         <- TRUE
+	if ( !is.null(diagnosis_list$gp_clinical) )      if ( nrow(diagnosis_list$gp_clinical)>0 )      use_gp_clinical     <- TRUE
+	if ( !is.null(diagnosis_list$death_cause) )      if ( nrow(diagnosis_list$death_cause)>0 )      use_death_cause     <- TRUE
+	if ( !is.null(diagnosis_list$hesin_diag) )       if ( nrow(diagnosis_list$hesin_diag)>0 )       use_hesin_diag      <- TRUE
+	if ( !is.null(diagnosis_list$cancer_registry) )  if ( nrow(diagnosis_list$cancer_registry)>0 )  use_cancer_registry <- TRUE
+	if ( !is.null(diagnosis_list$hesin_oper) )       if ( nrow(diagnosis_list$hesin_oper)>0 )       use_hesin_oper      <- TRUE
 	
 	#
 	#
@@ -518,7 +518,7 @@ get_df1 <- function(
 	#
 	# done!
 	
-	if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
+	#if (verbose)  cat("Done. Time taken:", Sys.time() - start_time, "\n")
 	
 	diagnosis_df_nrow = nrow(diagnosis_df)
 	if (is.null(prefix))   cli::cli_alert_success("Identified date of first diagnosis in {diagnosis_df_nrow} participants.")
@@ -550,6 +550,8 @@ get_df1_add_bin = function(
 	verbose = FALSE
 )  {
 	
+	if (verbose) cli::cli_alert("Creating binary \"ever diagnosed\" field - adding censoring date {cd} to date first `_df` field")
+	
 	# if no prefix them colnames are just `df` etc. - if one provided then include an underscore
 	if (is.null(prefix))  {
 		prefix = ""
@@ -560,7 +562,6 @@ get_df1_add_bin = function(
 	# define new variable names 
 	var_df       = rlang::sym(stringr::str_c(prefix, "df"))
 	var_bin      = rlang::sym(stringr::str_c(prefix, "bin"))
-	var_df_prev  = rlang::sym(stringr::str_c(prefix, "df_prev"))
 	var_bin_prev = rlang::sym(stringr::str_c(prefix, "bin_prev"))
 	
 	# merge df and baseline data 
@@ -570,24 +571,16 @@ get_df1_add_bin = function(
 	df = df |> dplyr::mutate(!!var_bin := dplyr::if_else(!is.na(!!var_df), 1, 0))
 	
 	# create prevalent variables 
-	df = df |> dplyr::mutate(!!var_df_prev := dplyr::if_else(!!var_bin==1 & !!var_df<assessment_date_0, !!var_df, NA))
-	df = df |> dplyr::mutate(!!var_bin_prev := dplyr::if_else(!is.na(!!var_df_prev), 1, 0))
+	df = df |> dplyr::mutate(!!var_bin_prev := dplyr::if_else(!!var_bin==1 & !!var_df<assessment_date_0, 1, 0))
 	
 	# remove extra cols 
 	df = df |> dplyr::select(!assessment_date_0)
 	
 	# relocate src to end
-	df = df |> dplyr::relocate(!!rlang::sym(stringr::str_c(prefix, "_src")), .after = dplyr::last_col())
+	df = df |> dplyr::relocate(!!rlang::sym(stringr::str_c(prefix, "src")), .after = dplyr::last_col())
 	
 	# add censoring date
-	if (!is.na(cd))  {
-		
-		# ever variable
-		df = df |> dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0, cd, var_df))
-		
-		# prevalent variable
-		df = df |> dplyr::mutate(!!var_df_prev := dplyr::if_else(!!var_bin_prev==0, cd, var_df_prev))
-	}
+	if (!is.na(cd))  df = df |> dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0, cd, !!var_df))
 	
 	# return
 	return(df)

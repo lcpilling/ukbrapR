@@ -11,8 +11,8 @@ To make it absolutely clear: the Spark function `get_emr_spark()` has not been u
  - Added function `export_tables()` which only needs to be run once when a new project is created. This submits the required table exporter commands to extract each of the tables in `ukbrapR:::ukbrapr_paths`. This can take ~15 minutes to export all the tables. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
  - `get_emr()` is split into two primary underlying functions: `get_emr_spark()` which has not changed, and `get_emr()` which is the "new way" (i.e., `get_emr_local()` is entirely removed)
  - Added functionality for `hesin_oper` (HES OPCS operations) searching for ICD10 codes in `get_emr()`
- - New function `get_cancer_registry()` asceratains cases using ICD10s in the `cancer_registry` data, and works much the same as `get_selfrep_illness()`
- - New function `get_diagnoses()` is a wrapper for `get_emr()`, `get_cancer_registry()` and `get_selfrep_illness()` -- i.e., once function to provide all codes to, and return all health-related data
+ - New/updated internal functions `get_cancer_registry()` asceratains cases using ICD10s in the `cancer_registry` data, and works much the same as `get_selfrep_illness()`
+ - New function `get_diagnoses()` is a wrapper to get HES diagnosis, operations, cause of death, GP, cancer registry, and self-reported illness data -- i.e., once function to provide all codes to, and return all health-related data
  - `get_df()` takes all output from `get_diagnoses()` i.e., now also identifies date of first in matched `cancer_registry` and `hesin_oper` entries, in addition to `hes_diag`, `gp_clinical`, `death_cause` and `selfrep_illness` as before.
  - When getting "date first" using `get_df()` the baseline data is used to create binary case/control variables (for ever and prevalent), and for controls the censoring date is included in the overall `_df` variable (default is 30-10-2022).
 
