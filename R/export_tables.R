@@ -1,4 +1,4 @@
-#' Export tables for {ukbrapR} analyses
+#' Export diagnosis files to RAP persistent storage
 #'
 #' @description In the UK Biobank RAP export tables for HES, GP, death, and cancer registry data, plus self-reported illness fields, using the table-exporter. This is essentially a wrapper function to submit jobs to the table exporter.
 #'
