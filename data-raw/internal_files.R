@@ -81,18 +81,17 @@ codes_df_ckd = codes_df_ckd[,c("condition","vocab_id","code")]
 
 # Haemochromatosis (include self-reported)
 selfrep <- c("1507")
-ICD9    <- c("275.03")
 ICD10   <- c("E83.1")
 Read2   <- c("126A.","4L41.","677C0","C350.","C3500")
 CTV3    <- c("C3500","X40QQ","XaIyI","XaIyx","XaXHI","XE13K","X307o","X307p")
 codes_df_hh <- data.frame(
   vocab_id = c(
+    rep("ukb_noncancer", length(selfrep)),
     rep("ICD10", length(ICD10)),
     rep("Read2", length(Read2)),
-    rep("CTV3", length(CTV3)),
-    rep("ukb_noncancer", length(selfrep))
+    rep("CTV3", length(CTV3))
   ),
-  code = c(ICD10, Read2, CTV3, selfrep)
+  code = c(selfrep, ICD10, Read2, CTV3)
 )
 codes_df_hh$condition = "hh"
 codes_df_hh = codes_df_hh[,c("condition","vocab_id","code")]
