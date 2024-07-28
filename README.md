@@ -11,11 +11,11 @@
 
 <sub>Wrapped server icon by DALL-E</sub>
 
+:information\_source: The aim of `ukbrapR` is to make working in the RAP quicker, easier, and more reproducible. Since version `0.2.0` the package is mostly designed to work in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with the Spark clusters in mind. These functions are still available but are not updated.
+
 ## Installation
 
-**Some functions only work on [DNAnexus](https://ukbiobank.dnanexus.com) in a UK Biobank project in JupyterLab on a Spark Cluster.**
-
-In tools, launch a JupyterLab environment on a Spark Cluster. In R, install {ukbrapR}. This will install the necessary dependencies for interacting with Python, Apache Spark, and the Arrow C++ library.
+In the DNAnexus Tools menu launch an RStudio environment on a normal priority instance. Install {ukbrapR} as below:
 
 ```r
 remotes::install_github("lcpilling/ukbrapR")        # development version
@@ -23,28 +23,11 @@ remotes::install_github("lcpilling/ukbrapR")        # development version
 remotes::install_github("lcpilling/ukbrapR@v0.1.0") # specific release (see tags)
 ```
 
-I highly recommend saving a "snapshot" once all the packages are installed, and loading this when launching JupyterLab.
+## Export tables of raw data
 
+This only needs to happen once per project. Running `ukbrapR::export_tables()` will submit the necessary `table-exporter` jobs to save the raw medical records files to the RAP persistent storage for the project. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
 
-## Get phenotype data
-
-**Pull phenotypes from Apache Spark on DNAnexus to an R data frame.** Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
-
-The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb). 
-
-```r
-# get phenotype data (participant ID, sex, baseline age, and baseline assessment date)
-ukb <- get_rap_phenos(c("eid", "p31", "p21003_i0", "p53_i0"))
-#> 48.02 sec elapsed
-
-# summary of data
-table(ukb$p31)
-#> Female   Male 
-#> 273297 229067
-summary(ukb$p21003_i0)
-#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>  37.00   50.00   58.00   56.53   63.00   73.00 
-```
+Once the files are exported (~15mins) these can then be used by the below functions to extract diagnoses based on codes lists. 
 
 ## Get medical records diagnoses
 
@@ -229,6 +212,26 @@ readr::write_tsv(diagnosis_list$gp_clinical, "ukbrap.CKD.gp_clinical.20231114.tx
 readr::write_tsv(diagnosis_df, "ukbrap.CKD.date_first.20231114.txt.gz")
 
 upload_to_rap("ukbrap.*.20231114.txt.gz", dir="extracts/")
+```
+
+## Get phenotype data
+
+**Pull phenotypes from Apache Spark on DNAnexus to an R data frame.** Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
+
+The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb). 
+
+```r
+# get phenotype data (participant ID, sex, baseline age, and baseline assessment date)
+ukb <- get_rap_phenos(c("eid", "p31", "p21003_i0", "p53_i0"))
+#> 48.02 sec elapsed
+
+# summary of data
+table(ukb$p31)
+#> Female   Male 
+#> 273297 229067
+summary(ukb$p21003_i0)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>  37.00   50.00   58.00   56.53   63.00   73.00 
 ```
 
 ## Benchmarking

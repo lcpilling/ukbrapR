@@ -218,7 +218,7 @@ get_df <- function(
 			}
 			
 			## hesin_oper
-			if (!is.null(diagnosis_list_sub$hesin_oper) & any(codes_sub$vocab_id %in% c("OPCS3","OPCS4"))  {  
+			if (!is.null(diagnosis_list_sub$hesin_oper) & any(codes_sub$vocab_id %in% c("OPCS3","OPCS4")))  {  
 				OPCS4s = ""
 				if (any(codes_sub$vocab_id == "OPCS4"))  {
 					OPCS4s <- codes_sub |>
