@@ -2,7 +2,7 @@
 % Please edit documentation in R/export_tables.R
 \name{export_tables}
 \alias{export_tables}
-\title{Export tables for {ukbrapR} analyses}
+\title{Export diagnosis files to RAP persistent storage}
 \usage{
 export_tables(
   submit = FALSE,
