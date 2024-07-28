@@ -316,7 +316,7 @@ get_diagnoses <- function(
 			cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
 			
 			# get cancer registry data for these ICD10s
-			cancer_registry_tbl <- ukbrapR::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
+			cancer_registry_tbl <- ukbrapR:::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
 			cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
 			
 			rm(cancer_registry_dat)
@@ -416,7 +416,7 @@ get_diagnoses <- function(
 		selfrep_illness_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="selfrep_illness" ], show_col_types = FALSE, progress = FALSE)
 		
 		# get cancer registry data for these ICD10s
-		selfrep_illness_tbl <- ukbrapR::get_selfrep_illness(codes_df = codes_df, ukb_dat = selfrep_illness_dat, verbose = verbose)
+		selfrep_illness_tbl <- ukbrapR:::get_selfrep_illness(codes_df = codes_df, ukb_dat = selfrep_illness_dat, verbose = verbose)
 		cli::cli_alert_success("Loaded {.var selfrep_illness} with {nrow(selfrep_illness_tbl)} matched rows.")
 		
 		rm(selfrep_illness_dat)

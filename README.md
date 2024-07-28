@@ -9,7 +9,7 @@
 
 `{ukbrapR}` (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank data Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
-:information\_source: Since version `0.2.0` the package is mostly designed to work in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with the Spark clusters in mind. These functions are still available but are not updated.
+:information\_source: Since version `0.2.0` the package works best in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with Spark clusters in mind. These functions are still available but are not updated.
 
 <sub>Wrapped server icon by DALL-E</sub>
 
@@ -39,18 +39,20 @@ Codes need to be provided as a data frame with two fields: `vocab_id` and `code`
  - "ukb_cancer" and "ukb_noncancer" (for self-reported illness at UK Biobank assessments - all available will be searched)
 
 ```r
-# example codes for haemochromatosis
-codes_df_hh <- ukbrapR:::codes_df_hh
-head(codes_df_hh, n=4)
-#>   condition      vocab_id  code
-#> 1        hh ukb_noncancer  1507
-#> 2        hh         ICD10 E83.1
-#> 3        hh         Read2 126A.
-#> 4        hh         Read2 4L41.
+# example diagnostic codes for CKD 
+codes_df_ckd <- ukbrapR:::codes_df_ckd
+head(codes_df_ckd)
+#>   condition vocab_id  code
+#> 1       ckd    ICD10 N18.3
+#> 2       ckd    ICD10 N18.4
+#> 3       ckd    ICD10 N18.5
+#> 4       ckd    ICD10 N18.6
+#> 5       ckd    ICD10 N18.9
+#> 6       ckd    ICD10   N19
 
 # get diagnosis data - returns list of data frames (one per source)
-diagnosis_list <- get_diagnoses(codes_df_hh) 
-#> 1 ICD10 codes, 5 Read2 codes, 8 CTV3 codes 
+diagnosis_list <- get_diagnoses(codes_df_ckd) 
+#> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
 #> ~3 minutes
 
 # N records for each source
