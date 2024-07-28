@@ -1,10 +1,8 @@
-# ukbrapR v0.1.9.9000 (20 July 2024)
+# ukbrapR v0.2.0 (20 July 2024)
 
 This is a major update as I move away from using Spark as the default environment, mostly due to the cost implications; it is significantly cheaper (and quicker!) to store and search exported raw text files in the RAP persistant storage than do everything in a Spark environment (plus the added benefit that the RStudio interface is available in "normal" instances). 
 
 The Spark functions are available as before but all updates are to improve functionality in "normal" instances using RStudio, as we move to the new era of RAP-only UK Biobank analysis. 
-
-To make it absolutely clear: the Spark function `get_emr_spark()` has not been updated but I am no longer focussed on doing things this way. If you want to submit Pull Requests to improve functions please do. The below changes are to substantially improve the experience of using exported tables in the RAP environment only (if you have all the data on a local system already it will work, assuming you format correctly and provide the paths, but the RAP is the future).
 
 ### Changes
  - Added internal data frame containing default paths for exported files in a RAP project (view with `ukbrapR:::ukbrapr_paths`)
@@ -16,8 +14,10 @@ To make it absolutely clear: the Spark function `get_emr_spark()` has not been u
  - `get_df()` takes all output from `get_diagnoses()` i.e., now also identifies date of first in matched `cancer_registry` and `hesin_oper` entries, in addition to `hes_diag`, `gp_clinical`, `death_cause` and `selfrep_illness` as before.
  - When getting "date first" using `get_df()` the baseline data is used to create binary case/control variables (for ever and prevalent), and for controls the censoring date is included in the overall `_df` variable (default is 30-10-2022).
 
+**To make it absolutely clear:** the Spark function `get_emr_spark()` has not been updated but I am no longer focussed on doing things this way. If you want to submit Pull Requests to improve functions please do. The below changes are to substantially improve the experience of using exported tables in the RAP environment only (if you have all the data on a local system already it will work, assuming you format correctly and provide the paths, but the RAP is the future).
 
-# ukbrapR v0.1.6.9000 (23 July 2024)
+
+# ukbrapR v0.1.7 (28 July 2024)
 
 ### Bug fixes
  - Fix Spark database error when >1 dataset file is available. Fixes issue #3
