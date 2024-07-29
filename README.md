@@ -7,7 +7,7 @@
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
 <!-- badges: end -->
 
-ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank data Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
+ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
 > Since version `0.2.0` the package works best in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with Spark clusters in mind. These functions are still available but are not updated.
 
@@ -33,10 +33,10 @@ Once the files are exported (~15mins) these can then be used by the below functi
 For a given set of diagnostic codes get the participant Electronic Medical Records (EMR) and self-reported illess data. Returns a list containing up to 6 data frames: the subset of the clinical files with matched codes. 
 
 Codes need to be provided as a data frame with two fields: `vocab_id` and `code`. Valid code vocabularies are:
- - "ICD10" (for `hesin`, `death_cause` and `cancer_registry` searches)
- - "Read2" and "CTV3" (for `gp_clinical`)
- - "OPCS3" and "OPCS4" (for `hesin_oper`)
- - "ukb_cancer" and "ukb_noncancer" (for self-reported illness at UK Biobank assessments - all available will be searched)
+ - `ICD10` (for searching HES diagnoses, cause of death, and cancer registry)
+ - `Read2` and `CTV3` (for GP clinical events)
+ - `OPCS3` and `OPCS4` (for HES operations)
+ - `ukb_cancer` and `ukb_noncancer` (for self-reported illness at UK Biobank assessments - all instances will be searched)
 
 ```r
 # example diagnostic codes for CKD 
