@@ -75,69 +75,23 @@ get_diagnoses <- function(
 		if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
 	}
 	
-	# Check file paths are provided
-	if (is.null(file_paths))  cli::cli_abort("Need to provide {.var file_paths}")
-	if (! any(class(file_paths) %in% c("data.frame","tbl","tbl_df")))  {
-		cli::cli_abort(c(
-			"{.var file_paths} must be a data.frame or tibble",
-			"x" = "You've supplied a {.cls {class(file_paths)}} vector."
-		))
-	}
-	if (colnames(file_paths)[1] != "object" | colnames(file_paths)[2] != "path")  cli::cli_abort("{.var file_paths} needs two columns: `object` and `path`")
 	
-	# check all the required files are included
-	must_include = c("death","death_cause","hesin","hesin_diag","hesin_oper","gp_clinical","cancer_registry","selfrep_illness")
-	for (file in must_include)  if (! file %in% file_paths$object) cli::cli_abort("{.var file_paths} must contain {.path {file}}")
-	
-	# if files not already downloaded to RAP then download them to user's home directory
-	#   only do this if the file paths are to "ukbrapr_data"
-	files = file_paths$path
-	if (stringr::str_detect(files[1], "ukbrapr_data"))  {
-		# if the directory exists already then no need to do again
-		if (!file.exists(stringr::str_c("~/", files[1])))  {
-			cli::cli_progress_bar("Downloading files from the RAP", total = length(files))
-			# create directory
-			home_path = as.character(Sys.getenv()["HOME"])
-			dir.create(stringr::str_c(home_path, "/ukbrapr_data"), showWarnings = FALSE)
-			system("dx cd ukbrapr_data")
-			# copy file from RAP space to instance
-			for (file in files)  {
-				#system(stringr::str_c("cp /mnt/project/", file, " ~/ukbrapr_data/"))
-				system(stringr::str_c("dx download \"", basename(file), "\" -o \"", home_path, "/ukbrapr_data\""))
-				cli::cli_progress_update()
-			}
-			cli::cli_progress_done()
-			# add home directory prefix to file paths
-			file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
-			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-		}
-	}
-	
-	# check files exist
-	for (file in file_paths$path[file_paths$object %in% must_include])  if (! file.exists(file))  cli::cli_abort("Could not find file {.path {file}}")
-	
-	# assume OS in UNIX... check if Windows -- i.e., should we use `grep` or `findstr`
-	unix = TRUE
-	if (as.character(Sys.info()['sysname'])=="Windows")  {
-		unix = FALSE
-		# paths need converting from unix to dos with escape characters?
-		file_paths = file_paths |> dplyr::mutate(path = stringr::str_replace_all(path, "/", "\\\\"))
-	}
-	
+	#########################################################################################################
 	#
-	#
-	#
+	# check codes provided, determine what datasets we are going to search
 	
 	# Check code lists - only first 5 digits are used by UK Biobank
 	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
-	get_icd10 <- FALSE
-	get_gp    <- FALSE
-	get_oper  <- FALSE
-	ICD10s    <- ""
-	Read2s    <- ""
-	CTV3s     <- ""
-	OPCS3s    <- ""
-	OPCS4s    <- ""
+	get_icd10   <- FALSE
+	get_canreg  <- FALSE
+	get_gp      <- FALSE
+	get_oper    <- FALSE
+	get_selfrep <- FALSE
+	ICD10s      <- ""
+	Read2s      <- ""
+	CTV3s       <- ""
+	OPCS3s      <- ""
+	OPCS4s      <- ""
 	
 	# get ICD10s. Remove "." dot characters. First 5 characters only.
 	if (any(codes_df[,vocab_col] == "ICD10"))  {
@@ -150,6 +104,8 @@ get_diagnoses <- function(
 			stringr::str_remove(stringr::fixed(".")) |> 
 			stringr::str_sub(1, 5)
 		cat(" - N unique ICD10 codes:", length(ICD10s), "\n")
+		
+		if (any(stringr::str_starts(ICD10s, "C")))  get_canreg <- TRUE
 	}
 	
 	# get Read2 and CTV3s. First 5 characters only. 
@@ -196,10 +152,91 @@ get_diagnoses <- function(
 	
 	# check for self-reported codes
 	n_selfrep = length(unique(codes_df[codes_df[,vocab_col] %in% c("ukb_cancer","ukb_noncancer"),codes_col]))
-	if (n_selfrep>0)  cat(" - N unique UKB-self-reported codes:", n_selfrep, "\n")
+	if (n_selfrep>0)  {
+		get_selfrep <- TRUE
+		cat(" - N unique UKB-self-reported codes:", n_selfrep, "\n")
+	}
 	
+
+	#########################################################################################################
 	#
+	# check data is available, download if required 
+	
+	# Check file paths are provided
+	if (is.null(file_paths))  cli::cli_abort("Need to provide {.var file_paths}")
+	if (! any(class(file_paths) %in% c("data.frame","tbl","tbl_df")))  {
+		cli::cli_abort(c(
+			"{.var file_paths} must be a data.frame or tibble",
+			"x" = "You've supplied a {.cls {class(file_paths)}} vector."
+		))
+	}
+	if (colnames(file_paths)[1] != "object" | colnames(file_paths)[2] != "path")  cli::cli_abort("{.var file_paths} needs two columns: `object` and `path`")
+	
+	# check all the required files are included
+	must_include = NULL
+	if (get_icd10)    must_include <- c(must_include, c("death","death_cause","hesin","hesin_diag"))
+	if (get_canreg)   must_include <- c(must_include, c("cancer_registry"))
+	if (get_gp)       must_include <- c(must_include, c("gp_clinical"))
+	if (get_oper)     must_include <- c(must_include, c("hesin_oper"))
+	if (get_selfrep)  must_include <- c(must_include, c("selfrep_illness"))
+	
+	for (file in must_include)  if (! file %in% file_paths$object) cli::cli_abort("{.var file_paths} must contain {.path {file}}")
+	
+	# if files not already downloaded from RAP then copy to user's home directory
+	#   only do this if the file paths are to "ukbrapr_data"
+	files = file_paths$path[file_paths$object %in% must_include]
+	if (stringr::str_detect(files[1], "ukbrapr_data"))  {
+		
+		# get path to users home directory - create ukbrapr_data directory on worker (if already exists then nothing happens)
+		home_path = as.character(Sys.getenv()["HOME"])
+		dir.create(stringr::str_c(home_path, "/ukbrapr_data"), showWarnings = FALSE)
+		
+		# do any need downloading from RAP? Or already been done?
+		#     each file now has two paths: a RAP path and a local path:
+		dx_files = NULL
+		for (file in stringr::str_c(home_path, "/", files))  if (! file.exists(file))  dx_files = c(dx_files, file)
+		
+		# if any were missing, download them
+		if (!is.null(dx_files))  {
+			
+			options(cli.progress_show_after = 0)
+			#cli::cli_progress_bar("Downloading files from the RAP", total = length(files))
+			cli::cli_progress_bar(format = "Downloading {.path {basename(file)}} from the RAP [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar} {cli::pb_percent}", total = length(dx_files))
+			
+			# move to RAP directory
+			dx_pwd = system("dx pwd", intern=TRUE)
+			if (! stringr::str_detect(dx_pwd, "ukbrapr_data"))  system("dx cd ukbrapr_data")
+			
+			# copy file from RAP space to instance
+			for (file in dx_files)  {
+				#system(stringr::str_c("cp /mnt/project/", file, " ~/ukbrapr_data/"))
+				cli::cli_progress_update()
+				system(stringr::str_c("dx download \"", basename(file), "\" -o \"", home_path, "/ukbrapr_data\""))
+			}
+			cli::cli_progress_done()
+			options(cli.progress_show_after = 2)
+			
+			# add home directory prefix to file paths
+			file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
+			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+			
+		}
+		
+	}
+	
+	# check files exist
+	for (file in file_paths$path[file_paths$object %in% must_include])  if (! file.exists(file))  cli::cli_abort("Could not find file {.path {file}}")
+	
+	# assume OS in UNIX... check if Windows -- i.e., should we use `grep` or `findstr`
+	unix = TRUE
+	if (as.character(Sys.info()['sysname'])=="Windows")  {
+		unix = FALSE
+		# paths need converting from unix to dos with escape characters?
+		file_paths = file_paths |> dplyr::mutate(path = stringr::str_replace_all(path, "/", "\\\\"))
+	}
+
 	#
+	#########################################################################################################
 	#
 	
 	# Get data for each code vocabulary
@@ -308,7 +345,7 @@ get_diagnoses <- function(
 		#
 		
 		# do any ICD10s start with a C? Skip if not.
-		if (any(stringr::str_starts(ICD10s, "C")))  {
+		if (get_canreg)  {
 			
 			cli::cli_alert("Ascertaining cancer registry data.")
 			
@@ -408,7 +445,7 @@ get_diagnoses <- function(
 	#
 	# Ascertaining self-reported illness  ########################################################
 	#
-	if (n_selfrep>0)  {
+	if (get_selfrep)  {
 		
 		cli::cli_alert("Ascertaining self-reported illness data.")
 		
