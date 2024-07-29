@@ -63,9 +63,9 @@ nrow(diagnosis_list$death_cause)  #   1,962
 
 ## Get date first diagnosis
 
-Identify the date first diagnosed for each participant from any of the "long" datasets ascertained from `get_emr()` (cause of death, HES, and GP). 
+Identify the date first diagnosed for each participant from any of datasets searched with `get_diagnoses()` (cause of death, HES diagnoses, GP clinical, cancer registry, HES operations, and self-reported illness fields). 
 
-Also includes a column indicating the source of the date of first diagnosis (gp, hes, death [or self-reported, if provided]).
+Also includes a column indicating the source of the date of first diagnosis.
 
 ```r
 # for each participant, get Date First diagnosed with the condition
@@ -110,6 +110,7 @@ diagnosis_df = get_df(diagnosis_list, group_by="condition")
 ```
 
 In the above example we also included a UK Biobank self-reported illness code for haemochromatosis, that was also ascertained (the Date First is run on each condition separately, they do not all need to have the same data sources).
+
 
 ## Pull phenotype data from Spark environment
 
