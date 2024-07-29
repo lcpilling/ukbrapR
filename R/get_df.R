@@ -212,7 +212,7 @@ get_df <- function(
 						stringr::str_sub(1, 5)
 				}
 				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
-				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))   ############### check icd col name
+				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))  
 			}
 			
 			## hesin_oper
@@ -242,6 +242,19 @@ get_df <- function(
 				OPCS3_search = stringr::str_flatten(OPCS3s, collapse = "|")
 				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
 			}
+			
+			## self-reported illness 
+			if (!is.null(diagnosis_list_sub$selfrep_illness) & any(codes_sub$vocab_id %in% c("ukb_cancer","ukb_noncancer")))  {
+				if (any(codes_sub$vocab_id == "ukb_cancer"))  {
+					codes_cancer = codes_sub$code[ codes_sub$vocab_id == "ukb_cancer" ]
+					diagnosis_list_sub$selfrep_illness = diagnosis_list_sub$selfrep_illness |> dplyr::filter(cancer_code %in% codes_cancer)
+				}
+				if (any(codes_sub$vocab_id == "ukb_noncancer"))  {
+					codes_noncancer = codes_sub$code[ codes_sub$vocab_id == "ukb_noncancer" ]
+					diagnosis_list_sub$selfrep_illness = diagnosis_list_sub$selfrep_illness |> dplyr::filter(noncancer_code %in% codes_noncancer)
+				}
+			}
+			
 			
 			#
 			#
@@ -324,6 +337,12 @@ get_df1 <- function(
 	#
 	#
 	
+	# Convert self-reported illness to "wide" Date First 
+	if (use_selfrep)  {
+		if (verbose) cli::cli_alert("Get date first diagnosis: selfrep_df\n")
+		selfrep_illness <- get_selfrep_illness_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$selfrep_illness, verbose=verbose)
+	}
+	
 	# Convert gp_clinical to "wide" Date First
 	if (use_gp_clinical)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: gp_df\n")
@@ -382,7 +401,7 @@ get_df1 <- function(
 	if (verbose) cli::cli_alert("Combine into single wide data frame\n")
 	diagnosis_df <- NULL
 	if (use_selfrep)  {
-		diagnosis_df <- na.omit(diagnosis_list$selfrep_illness)
+		diagnosis_df <- selfrep_illness
 	}
 	if (use_gp_clinical)  {
 		if (is.null(diagnosis_df))  {
@@ -648,4 +667,77 @@ get_cancer_registry_df <- function(
 	return(ukb_dat[,c("eid", "canreg", "canreg_df")])
 	
 }
+
+
+#' Get date first for self-reported illness data
+#'
+#' @return NA
+#'
+#' @author Luke Pilling
+#'
+#' @name get_selfrep_illness_df
+#'
+#' @noRd
+get_selfrep_illness_df <- function(
+	codes_df,
+	ukb_dat,
+	verbose = FALSE
+)  {
+	
+	start_time <- Sys.time()
+	
+	if (verbose) cat("Getting self-reported illness data\n")
+	
+	# format codes 
+	vocab_col = "vocab_id"
+	codes_col = "code"
+	
+	# get codes
+	codes_cancer <- codes_noncancer <- NULL
+	if (any(codes_df$vocab_id == "ukb_cancer"))     codes_cancer = codes_df$code[ codes_df$vocab_id == "ukb_cancer" ]
+	if (any(codes_df$vocab_id == "ukb_noncancer"))  codes_noncancer = codes_df$code[ codes_df$vocab_id == "ukb_noncancer" ]
+	
+	# create empty vars in ukb_dat to modify
+	ukb_dat$selfrep    <- 0
+	ukb_dat$selfrep_df <- NA
+	ukb_dat$selfrep_i  <- NA
+	
+	# for each instance, check if participant self-reported this code and record which array
+	
+	# Update where the code matches
+	if (!is.null(codes_cancer))  {
+		ukb_dat <- ukb_dat |> dplyr::mutate(
+			selfrep_i  = dplyr::if_else(selfrep == 0 & cancer_code %in% codes_cancer, stringr::str_c(instance, "_cancer"), selfrep_i, selfrep_i),
+			selfrep_df = dplyr::if_else(selfrep == 0 & cancer_code %in% codes_cancer, cancer_year, selfrep_df, selfrep_df),
+			selfrep    = dplyr::if_else(selfrep == 0 & cancer_code %in% codes_cancer, 1, selfrep, selfrep)
+			)
+	}
+	if (!is.null(codes_noncancer))  {
+		ukb_dat <- ukb_dat |> dplyr::mutate(
+			selfrep_i  = dplyr::if_else(selfrep == 0 & noncancer_code %in% codes_noncancer, stringr::str_c(instance, "_noncancer"), selfrep_i, selfrep_i),
+			selfrep_df = dplyr::if_else(selfrep == 0 & noncancer_code %in% codes_noncancer, noncancer_year, selfrep_df, selfrep_df),
+			selfrep    = dplyr::if_else(selfrep == 0 & noncancer_code %in% codes_noncancer, 1, selfrep, selfrep)
+			)
+	}
+	
+	# determine earliest date
+	ukb_dat <- ukb_dat |>
+		dplyr::filter(!is.na(selfrep_df)) |>
+		dplyr::group_by(eid) |>
+		dplyr::slice(which.min(selfrep_df)) |>
+		dplyr::ungroup()
+	
+	# make sure date is actually a date and not year
+	if (! lubridate::is.Date(ukb_dat$selfrep_df))  ukb_dat <- ukb_dat |> dplyr::mutate(selfrep_df = lubridate::as_date(lubridate::date_decimal(selfrep_df)))
+	
+	# finish
+	if (verbose)  cli::cli_alert_info(c("Finished self-reported illness: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	
+	# Return data
+	return(ukb_dat[,c("eid", "selfrep", "selfrep_df", "selfrep_i")])
+	
+}
+
+
+
 

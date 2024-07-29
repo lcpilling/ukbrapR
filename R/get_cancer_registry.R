@@ -1,30 +1,8 @@
-#' Get UK Biobank participant self-reported illness/year data for specific codes
-#'
-#' @description For a specific self-reported illness code or codes, identify whether the participant has self-reported at any visit, and identify the year. 
-#' Intended for use on the UK Biobank DNnexus Research Analysis Platform, but if the user provides their own dataframe of UK Biobank self-reported fields this works on any system.
-#'
-#' @return Returns a data frame with four variables: eid, selfrep [binary, codes identified?], selfrep_df [date of reported illness], selfrep_i [instance the illness was first reported]
+#' Get cancer registry data for specific codes
 #'
 #' @author Luke Pilling
 #'
 #' @name get_cancer_registry
-#'
-#' @param codes A vector. The ICD10 codes to ascertain cancer registry entires
-#' @param ukb_dat A data frame. Contains the participant-level cancer registry fields e.g., `p40005_i0`
-#' @param verbose Logical. Be verbose,
-#'        \code{default=FALSE}
-#'
-#' @examples
-#' # example diagnostic codes for haemochromatosis
-#' print(codes_df_hh)
-#'
-#' # get self-reported data - a data frame
-#' selfrep_df <- get_selfrep_illness(codes_df_hh)
-#'
-#' # inspect variables
-#' table(selfrep_df$selfrep)
-#' summary(selfrep_df$selfrep_df)
-#' table(selfrep_df$selfrep_i)
 #'
 #' @noRd
 get_cancer_registry <- function(

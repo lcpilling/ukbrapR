@@ -116,7 +116,7 @@ table(diagnosis_df$ckd_src)
 #>      224      12394      19310         85         16         63          3
 
 # date of diagnosis for prevalent cases (i.e., before UK Biobank baseline assessment)
-summary(diagnosis_df$df[ diagnosis_df$bin_prev == 1 ])
+summary(diagnosis_df$ckd_df[ diagnosis_df$ckd_bin_prev == 1 ])
 #>         Min.      1st Qu.       Median         Mean      3rd Qu.         Max. 
 #> "1958-01-01" "2006-06-21" "2007-01-12" "2006-06-24" "2007-11-19" "2010-06-16" 
 ```

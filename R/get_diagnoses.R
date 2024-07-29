@@ -452,7 +452,7 @@ get_diagnoses <- function(
 		# load data 
 		selfrep_illness_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="selfrep_illness" ], show_col_types = FALSE, progress = FALSE)
 		
-		# get cancer registry data for these ICD10s
+		# get self-reported illness data - convert to long
 		selfrep_illness_tbl <- ukbrapR:::get_selfrep_illness(codes_df = codes_df, ukb_dat = selfrep_illness_dat, verbose = verbose)
 		cli::cli_alert_success("Loaded {.var selfrep_illness} with {nrow(selfrep_illness_tbl)} matched rows.")
 		
