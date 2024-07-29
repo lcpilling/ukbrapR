@@ -65,7 +65,9 @@ nrow(diagnosis_list$death_cause)  #   1,962
 
 Identify the date first diagnosed for each participant from any of datasets searched with `get_diagnoses()` (cause of death, HES diagnoses, GP clinical, cancer registry, HES operations, and self-reported illness fields). 
 
-Also includes a column indicating the source of the date of first diagnosis.
+Also included are:
+ - a `src` field indicating the source of the date of first diagnosis.
+ - a `bin` field indicating the cases [1] and controls [0]. This relies on a small number of baseline fields also exported. The `df` field for the controls is the date of censoring (currently 30 October 2022).
 
 ```r
 # for each participant, get Date First diagnosed with the condition
