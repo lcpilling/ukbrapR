@@ -173,7 +173,7 @@ get_diagnoses <- function(
 	if (colnames(file_paths)[1] != "object" | colnames(file_paths)[2] != "path")  cli::cli_abort("{.var file_paths} needs two columns: `object` and `path`")
 	
 	# check all the required files are included
-	must_include = NULL
+	must_include = "baseline_dates"
 	if (get_icd10)    must_include <- c(must_include, c("death","death_cause","hesin","hesin_diag"))
 	if (get_canreg)   must_include <- c(must_include, c("cancer_registry"))
 	if (get_gp)       must_include <- c(must_include, c("gp_clinical"))

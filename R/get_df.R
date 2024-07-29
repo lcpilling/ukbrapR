@@ -103,7 +103,7 @@ get_df <- function(
 			
 		} else {
 			use_baseline_dates = FALSE
-			cli::cli_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}} - continued without using it")
+			cli::cli_alert_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}} - continued without using it")
 		}
 	}
 	
@@ -130,7 +130,7 @@ get_df <- function(
 		if (verbose) cli::cli_alert("Grouping variable detected - checking codes")
 		
 		# check input codes and group variable
-		if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
+		if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_alert_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 		
 		codes = as.data.frame(diagnosis_list[['codes_df']])
 		
@@ -309,7 +309,7 @@ get_df1 <- function(
 	
 	# Check input
 	if (verbose) cli::cli_alert("Check inputs\n")
-	if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
+	if (class(diagnosis_list) != "ukbrapr_emr")  cli::cli_alert_warning(c("{.var diagnosis_list} should be of class {.cls ukbrapr_emr}", "x" = "You've supplied a {.cls {class(diagnosis_list)}} - behaviour may not be as intended."))
 	
 	# "use" if there is any data (i.e., provide an individual _df column) -- "include" in the main combined only if specified by user
 	use_selfrep <- use_gp_clinical <- use_death_cause <- use_hesin_diag <- use_cancer_registry <- use_hesin_oper <- FALSE
@@ -510,7 +510,7 @@ get_df1 <- function(
 		if (is.character(prefix) & length(prefix) == 1)  {
 			names(diagnosis_df)[2:ncol(diagnosis_df)] = stringr::str_c(prefix, "_", names(diagnosis_df)[2:ncol(diagnosis_df)])
 		} else {
-			cli::cli_warning("Prefix was not a single string - variables names left as default")
+			cli::cli_alert_warning("Prefix was not a single string - variables names left as default")
 		}
 	}
 	
