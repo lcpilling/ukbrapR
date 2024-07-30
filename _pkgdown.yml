@@ -5,3 +5,24 @@ template:
 authors:
   Luke Pilling:
     href: "https://lcpilling.github.io"
+
+reference:
+- title: Export required data
+- contents:
+  - export_tables
+- title: Ascertain diagnoses
+- contents:
+  - get_diagnoses
+- title: Determine date first diagnosed from any source
+- contents:
+  - get_df
+- title: Upload/download from RAP/worker storage
+- contents:
+  - upload_to_rap
+  - download_from_rap
+- title: Spark
+  des:   These functions do not require intermediate files but must be executed in a DNAnexus Spark environment.
+- contents:
+  - get_rap_phenos
+  - get_emr_spark
+  - get_selfrep_illness_spark
