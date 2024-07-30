@@ -327,7 +327,9 @@ get_df1 <- function(
 	
 	# "use" if there is any data (i.e., provide an individual _df column) -- "include" in the main combined only if specified by user
 	use_selfrep <- use_gp_clinical <- use_death_cause <- use_hesin_diag <- use_cancer_registry <- use_hesin_oper <- FALSE
-	if ( !is.null(diagnosis_list$selfrep_illness) )  if ( nrow(diagnosis_list$selfrep_illness)>0 )  use_selfrep         <- TRUE
+	
+	if (include_selfrep_illness)  if ( !is.null(diagnosis_list$selfrep_illness) )  if ( nrow(diagnosis_list$selfrep_illness)>0 )  use_selfrep <- TRUE
+	
 	if ( !is.null(diagnosis_list$gp_clinical) )      if ( nrow(diagnosis_list$gp_clinical)>0 )      use_gp_clinical     <- TRUE
 	if ( !is.null(diagnosis_list$death_cause) )      if ( nrow(diagnosis_list$death_cause)>0 )      use_death_cause     <- TRUE
 	if ( !is.null(diagnosis_list$hesin_diag) )       if ( nrow(diagnosis_list$hesin_diag)>0 )       use_hesin_diag      <- TRUE
@@ -339,7 +341,7 @@ get_df1 <- function(
 	#
 	
 	# Convert self-reported illness to "wide" Date First 
-	if (include_selfrep_illness & use_selfrep)  {
+	if (use_selfrep)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: selfrep_df\n")
 		selfrep_illness <- ukbrapR:::get_selfrep_illness_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$selfrep_illness, verbose=verbose)
 	}
