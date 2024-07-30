@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_diagnoses.R
 \name{get_diagnoses}
 \alias{get_diagnoses}
-\title{Get UK Biobank participant Electronic Medical Records (EMR) data}
+\title{Get UK Biobank participant diagnosis data}
 \usage{
 get_diagnoses(codes_df, file_paths = ukbrapR:::ukbrapr_paths, verbose = FALSE)
 }
@@ -20,15 +20,19 @@ ukbrapR::export_tables()
 Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, `hesin_oper`, `gp_clinical`, `cancer_registry` and `selfrep_illness`. Also includes the original codes list)
 }
 \description{
-Get UK Biobank medical records for specific diagnostic codes list
-
-This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables. Recommend to run `export_tables()` once in your project to export the tables to the default paths for the package.
+For a list of diagnostic codes get the HES, GP, cancer registry, operations, and self-reported illness data, matching the provided codes.
 
 Valid code vocabularies are:
+
  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
+
  - Read2 / CTV3 (for `gp_clinical`)
+
  - OPCS3 / OPCS4 (for `hesin_oper`)
+
  - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched)
+
+This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables. Recommend to run `export_tables()` once in your project to export the tables to the default paths for the package.
 }
 \examples{
 # example diagnostic codes for CKD from GEMINI multimorbidity project
