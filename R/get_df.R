@@ -254,6 +254,7 @@ get_df <- function(
 					diagnosis_list_sub$selfrep_illness = diagnosis_list_sub$selfrep_illness |> dplyr::filter(noncancer_code %in% codes_noncancer)
 				}
 			}
+			if (!any(codes_sub$vocab_id %in% c("ukb_cancer","ukb_noncancer")))  include_selfrep_illness <- FALSE
 			
 			
 			#
@@ -338,7 +339,7 @@ get_df1 <- function(
 	#
 	
 	# Convert self-reported illness to "wide" Date First 
-	if (use_selfrep)  {
+	if (include_selfrep_illness & use_selfrep)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: selfrep_df\n")
 		selfrep_illness <- ukbrapR:::get_selfrep_illness_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$selfrep_illness, verbose=verbose)
 	}
