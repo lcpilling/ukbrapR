@@ -62,7 +62,7 @@ get_diagnoses <- function(
 	if (! vocab_col %in% colnames(codes_df))  stop("Codelist data frame needs to include vocabulary column `vocab_id`")
 	if (! codes_col %in% colnames(codes_df))  stop("Codelist data frame needs to include codes column `code`")
 	
-	if (! any(c("ICD10","Read2","CTV3") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include ICD10, Read2 or CTV3")
+	if (! any(c("ICD10","Read2","CTV3","OPCS3","OPCS4","ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include at least one of ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, or ukb_noncancer")
 	
 	# Is this one of my systems? If so, get the internal file_paths 
 	nodename <- as.character(Sys.info()['nodename'])

@@ -19,7 +19,7 @@ In the DNAnexus Tools menu launch an RStudio environment on a normal priority in
 
 ```r
 remotes::install_github("lcpilling/ukbrapR")        # development version
-remotes::install_github("lcpilling/ukbrapR@v0.1.0") # specific release (see tags)
+remotes::install_github("lcpilling/ukbrapR@v0.1.7") # specific release (see tags)
 ```
 
 ## Export tables of raw data
@@ -169,6 +169,11 @@ summary(ukb$p21003_i0)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #>  37.00   50.00   58.00   56.53   63.00   73.00 
 ```
+
+### Previous Spark functionality
+
+If you need to see the previous release documentation follow the tags to the version required: https://github.com/lcpilling/ukbrapR/tree/v0.1.7
+
 
 ## Questions and comments
 

@@ -340,7 +340,7 @@ get_df1 <- function(
 	# Convert self-reported illness to "wide" Date First 
 	if (use_selfrep)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: selfrep_df\n")
-		selfrep_illness <- get_selfrep_illness_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$selfrep_illness, verbose=verbose)
+		selfrep_illness <- ukbrapR:::get_selfrep_illness_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$selfrep_illness, verbose=verbose)
 	}
 	
 	# Convert gp_clinical to "wide" Date First
@@ -380,7 +380,7 @@ get_df1 <- function(
 	# Convert cancer registry to "wide" Date First 
 	if (use_cancer_registry)  {
 		if (verbose) cli::cli_alert("Get date first diagnosis: canreg_df\n")
-		cancer_registry <- get_cancer_registry_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$cancer_registry, verbose=verbose)
+		cancer_registry <- ukbrapR:::get_cancer_registry_df(codes_df=diagnosis_list$codes_df, ukb_dat=diagnosis_list$cancer_registry, verbose=verbose)
 	}
 	
 	# Convert hesin_oper to "wide" Date First
@@ -696,6 +696,14 @@ get_selfrep_illness_df <- function(
 	codes_cancer <- codes_noncancer <- NULL
 	if (any(codes_df$vocab_id == "ukb_cancer"))     codes_cancer = codes_df$code[ codes_df$vocab_id == "ukb_cancer" ]
 	if (any(codes_df$vocab_id == "ukb_noncancer"))  codes_noncancer = codes_df$code[ codes_df$vocab_id == "ukb_noncancer" ]
+	
+	# split instance and array
+	ukb_dat <- ukb_dat |> 
+		tidyr::separate_wider_delim(instance, delim = "_", names = c("instance", "array")) |>
+		dplyr::mutate(
+			instance = stringr::str_replace_all(instance, "i", ""),
+			array = stringr::str_replace_all(array, "a", "")
+		)
 	
 	# create empty vars in ukb_dat to modify
 	ukb_dat$selfrep    <- 0
