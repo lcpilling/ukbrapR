@@ -1,3 +1,9 @@
+# ukbrapR v0.2.0.9000 (10 August 2024)
+
+### Bug fix 
+ - Fix for issue #5 where the file paths for exported tables is not correctly specified in later calls of `get_diagnoses()`. Thanks to @LauricF for highlighting.
+
+
 # ukbrapR v0.2.0 (30 July 2024)
 
 This is a major update as I move away from using Spark as the default environment, mostly due to the cost implications; it is significantly cheaper (and quicker!) to store and search exported raw text files in the RAP persistant storage than do everything in a Spark environment (plus the added benefit that the RStudio interface is available in "normal" instances). 
