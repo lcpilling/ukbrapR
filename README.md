@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.0-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.2.1-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -177,4 +177,4 @@ If you need to see the previous release documentation follow the tags to the ver
 
 ## Questions and comments
 
-I am very open to suggestions and comments, either as [issues](https://github.com/lcpilling/ukbrapR/issues) or [pull requests](https://github.com/lcpilling/ukbrapR/pulls), or via e-mail L.Pilling@exeter.ac.uk
+Please report any bugs or [issues](https://github.com/lcpilling/ukbrapR/issues), and feel free to suggest changes as [pull requests](https://github.com/lcpilling/ukbrapR/pulls). Alternatively, feel free to contact me via e-mail L.Pilling@exeter.ac.uk

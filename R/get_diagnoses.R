@@ -220,11 +220,12 @@ get_diagnoses <- function(
 			cli::cli_progress_done()
 			options(cli.progress_show_after = 2)
 			
-			# add home directory prefix to file paths
-			file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
 			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 			
 		}
+		
+		# add home directory prefix to file paths
+		file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
 		
 	}
 	
