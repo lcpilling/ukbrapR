@@ -177,4 +177,4 @@ If you need to see the previous release documentation follow the tags to the ver
 
 ## Questions and comments
 
-I am very open to suggestions and comments, either as [issues](https://github.com/lcpilling/ukbrapR/issues) or [pull requests](https://github.com/lcpilling/ukbrapR/pulls), or via e-mail L.Pilling@exeter.ac.uk
+Please report any bugs or [issues](https://github.com/lcpilling/ukbrapR/issues), and feel free to suggest changes as [pull requests](https://github.com/lcpilling/ukbrapR/pulls). Alternatively, feel free to contact me via e-mail L.Pilling@exeter.ac.uk

@@ -1,7 +1,7 @@
-# ukbrapR v0.2.0.9000 (10 August 2024)
+# ukbrapR v0.2.1 (10 August 2024)
 
 ### Bug fix 
- - Fix for issue #5 where the file paths for exported tables is not correctly specified in later calls of `get_diagnoses()`. Thanks to @LauricF for highlighting.
+ - Fix for issue #5. The file paths for exported tables were not correctly specified in later calls of `get_diagnoses()` when the working directory is not the home directory. Thanks to @LauricF for highlighting.
 
 
 # ukbrapR v0.2.0 (30 July 2024)
