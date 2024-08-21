@@ -79,6 +79,9 @@ get_df <- function(
 	verbose = FALSE
 )  {
 	
+	v <- packageVersion("ukbrapR")
+	cli::cli_alert_info("ukbrapR v{v}")
+	
 	start_time <- Sys.time()
 	
 	# use baseline dates?
