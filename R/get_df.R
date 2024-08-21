@@ -199,7 +199,7 @@ get_df <- function(
 					}
 					ICD9_search = stringr::str_flatten(ICD9s, collapse = "|")
 					colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
-					hesin_diag_sub = rbind(hesin_diag_sub, diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_starts(diag_icd9, !! ICD9_search))
+					hesin_diag_sub = rbind(hesin_diag_sub, diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_starts(diag_icd9, !! ICD9_search)))
 				}
 				
 				diagnosis_list_sub$hesin_diag = hesin_diag_sub
