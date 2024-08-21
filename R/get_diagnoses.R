@@ -317,10 +317,31 @@ get_diagnoses <- function(
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 		
 		#
-		# HES diagnosis data ###########################################
+		# cancer registry ####################################
 		#
 		
-		cli::cli_alert("Ascertaining HES diagnosis data.")
+		# do any ICD10s start with a C? Skip if not.
+		if (get_canreg)  {
+			
+			cli::cli_alert("Ascertaining cancer registry data.")
+			
+			# load data 
+			cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
+			
+			# get cancer registry data for these ICD10s
+			cancer_registry_tbl <- ukbrapR:::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
+			cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
+			
+			rm(cancer_registry_dat)
+			
+			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+			
+		
+		#
+		# HES diagnosis data (ICD10s) ###########################################
+		#
+		
+		cli::cli_alert("Ascertaining HES diagnosis data (ICD10s).")
 		
 		hesin_diag_path = file_paths$path[ file_paths$object=="hesin_diag" ]
 		
@@ -363,27 +384,6 @@ get_diagnoses <- function(
 		cli::cli_alert_success("Loaded {.var hesin_diag} with {nrow(hesin_diag_tbl)} matched rows.")
 		
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-		
-		#
-		# cancer registry ####################################
-		#
-		
-		# do any ICD10s start with a C? Skip if not.
-		if (get_canreg)  {
-			
-			cli::cli_alert("Ascertaining cancer registry data.")
-			
-			# load data 
-			cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
-			
-			# get cancer registry data for these ICD10s
-			cancer_registry_tbl <- ukbrapR:::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
-			cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
-			
-			rm(cancer_registry_dat)
-			
-			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-			
 		}
 	}
 	

@@ -234,7 +234,7 @@ get_df <- function(
 						stringr::str_sub(1, 5)
 				}
 				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
-				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))  
+				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd10, !! ICD10_search))  
 			}
 			
 			## hesin_oper
