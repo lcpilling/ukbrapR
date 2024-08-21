@@ -529,9 +529,10 @@ get_df1 <- function(
 			df = dplyr::case_when(
 				!is.na(canreg_df) & is.na(df)  ~ canreg_df,
 				!is.na(canreg_df) & !is.na(df) & canreg_df<df ~ canreg_df,
-				TRUE ~ df) |>
+				TRUE ~ df)
+			) |>
 			dplyr::select(-canreg)
-		)
+		
 	}
 	
 	if (include_hesin_oper & use_hesin_oper)  {

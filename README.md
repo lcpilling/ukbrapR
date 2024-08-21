@@ -34,6 +34,7 @@ For a given set of diagnostic codes get the participant Electronic Medical Recor
 
 Codes need to be provided as a data frame with two fields: `vocab_id` and `code`. Valid code vocabularies are:
  - `ICD10` (for searching HES diagnoses, cause of death, and cancer registry)
+ - `ICD9` (for searching older HES diagnosis data)
  - `Read2` and `CTV3` (for GP clinical events)
  - `OPCS3` and `OPCS4` (for HES operations)
  - `ukb_cancer` and `ukb_noncancer` (for self-reported illness at UK Biobank assessments - all instances will be searched)
