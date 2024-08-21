@@ -1,3 +1,9 @@
+# ukbrapR v0.2.2 (21 August 2024)
+
+### Update
+ - The HESIN diagnosis search can now also include ICD9 codes in the provided codes data frame. These use fuzzy matching (similar to the ICD10s) so that searching for "280" also returns "2809" etc
+
+
 # ukbrapR v0.2.1 (10 August 2024)
 
 ### Bug fix 

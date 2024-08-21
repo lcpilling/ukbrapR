@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.1-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.2.2-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -34,6 +34,7 @@ For a given set of diagnostic codes get the participant Electronic Medical Recor
 
 Codes need to be provided as a data frame with two fields: `vocab_id` and `code`. Valid code vocabularies are:
  - `ICD10` (for searching HES diagnoses, cause of death, and cancer registry)
+ - `ICD9` (for searching older HES diagnosis data)
  - `Read2` and `CTV3` (for GP clinical events)
  - `OPCS3` and `OPCS4` (for HES operations)
  - `ukb_cancer` and `ukb_noncancer` (for self-reported illness at UK Biobank assessments - all instances will be searched)
