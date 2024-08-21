@@ -412,9 +412,10 @@ get_diagnoses <- function(
 			# exclude missing ICD9s (EIDs may have been matched)
 		if (nrow(hesin_diag_tbl_icd9)>0)  
 			hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::filter(!is.na(diag_icd9))
-			# check codes are matched 
+			# check codes match START of code string
+		ICD9_search = stringr::str_flatten(ICD9s, collapse = "|")
 		if (nrow(hesin_diag_tbl_icd9)>0)  
-			hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::filter(diag_icd9 %in% ICD9s)
+			hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::filter(stringr::str_starts(diag_icd9, !! ICD9_search))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		if (nrow(hesin_diag_tbl_icd9)>0)  {
