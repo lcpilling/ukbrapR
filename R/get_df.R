@@ -167,20 +167,41 @@ get_df <- function(
 			}
 			
 			## hesin_diag
-			if (!is.null(diagnosis_list_sub$hesin_diag) & any(codes_sub$vocab_id == "ICD10"))  {  
-				ICD10s = ""
+			if (!is.null(diagnosis_list_sub$hesin_diag) & any(codes_sub$vocab_id %in% c("ICD10","ICD9")))  {  
+				hesin_diag_sub = NULL
+				
 				if (any(codes_sub$vocab_id == "ICD10"))  {
-					ICD10s <- codes_sub |>
-						dplyr::filter(vocab_id == "ICD10") |>
-						dplyr::select(code) |>
-						dplyr::pull() |>
-						unique() |>
-						stringr::str_remove(stringr::fixed(".")) |> 
-						stringr::str_sub(1, 5)
+					ICD10s = ""
+					if (any(codes_sub$vocab_id == "ICD10"))  {
+						ICD10s <- codes_sub |>
+							dplyr::filter(vocab_id == "ICD10") |>
+							dplyr::select(code) |>
+							dplyr::pull() |>
+							unique() |>
+							stringr::str_remove(stringr::fixed(".")) |> 
+							stringr::str_sub(1, 5)
+					}
+					ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+					colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
+					hesin_diag_sub = diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_detect(diag_icd10, !! ICD10_search))
 				}
-				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
-				colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
-				diagnosis_list_sub$hesin_diag = diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_detect(diag_icd10, !! ICD10_search))
+				
+				if (any(codes_sub$vocab_id == "ICD9"))  {
+					ICD9s = ""
+					if (any(codes_sub$vocab_id == "ICD9"))  {
+						ICD9s <- codes_sub |>
+							dplyr::filter(vocab_id == "ICD9") |>
+							dplyr::select(code) |>
+							dplyr::pull() |>
+							unique() |>
+							stringr::str_remove(stringr::fixed(".")) |> 
+							stringr::str_sub(1, 5)
+					}
+					colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
+					hesin_diag_sub = rbind(hesin_diag_sub, diagnosis_list_sub$hesin_diag |> dplyr::filter(diag_icd9 %in% ICD9s))
+				}
+				
+				diagnosis_list_sub$hesin_diag = hesin_diag_sub
 			}
 			
 			## death_cause

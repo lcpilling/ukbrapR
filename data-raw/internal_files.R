@@ -82,16 +82,18 @@ codes_df_ckd = codes_df_ckd[,c("condition","vocab_id","code")]
 # Haemochromatosis (include self-reported)
 selfrep <- c("1507")
 ICD10   <- c("E83.1")
+ICD9    <- c("275.01")
 Read2   <- c("126A.","4L41.","677C0","C350.","C3500")
 CTV3    <- c("C3500","X40QQ","XaIyI","XaIyx","XaXHI","XE13K","X307o","X307p")
 codes_df_hh <- data.frame(
   vocab_id = c(
     rep("ukb_noncancer", length(selfrep)),
     rep("ICD10", length(ICD10)),
+    rep("ICD9", length(ICD9)),
     rep("Read2", length(Read2)),
     rep("CTV3", length(CTV3))
   ),
-  code = c(selfrep, ICD10, Read2, CTV3)
+  code = c(selfrep, ICD10, ICD9, Read2, CTV3)
 )
 codes_df_hh$condition = "hh"
 codes_df_hh = codes_df_hh[,c("condition","vocab_id","code")]
@@ -100,6 +102,7 @@ codes_df_hh = codes_df_hh[,c("condition","vocab_id","code")]
 cancers = c("C22")
 OPCS3 = c("502","509")
 OPCS4 = c("J01")
+ICD9 = c("280","28243","440.2")
 codes_df_test = rbind(
 	codes_df_hh,
 	data.frame(
@@ -107,9 +110,10 @@ codes_df_test = rbind(
 		vocab_id = c(
 			rep("ICD10", length(cancers)),
 			rep("OPCS3", length(OPCS3)),
-			rep("OPCS4", length(OPCS4))
+			rep("OPCS4", length(OPCS4)),
+			rep("ICD9", length(ICD9))
 		),
-		code = c(cancers, OPCS3, OPCS4)
+		code = c(cancers, OPCS3, OPCS4, ICD9)
 	)
 )
 codes_df_test$condition = "test"

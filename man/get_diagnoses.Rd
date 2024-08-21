@@ -26,6 +26,8 @@ Valid code vocabularies are:
 
  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
 
+ - ICD9 (for `hesin` searches)
+
  - Read2 / CTV3 (for `gp_clinical`)
 
  - OPCS3 / OPCS4 (for `hesin_oper`)

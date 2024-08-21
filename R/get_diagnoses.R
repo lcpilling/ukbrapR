@@ -6,6 +6,8 @@
 #'
 #'  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
 #'
+#'  - ICD9 (for `hesin` searches)
+#'
 #'  - Read2 / CTV3 (for `gp_clinical`)
 #'
 #'  - OPCS3 / OPCS4 (for `hesin_oper`)
@@ -66,7 +68,7 @@ get_diagnoses <- function(
 	if (! vocab_col %in% colnames(codes_df))  stop("Codelist data frame needs to include vocabulary column `vocab_id`")
 	if (! codes_col %in% colnames(codes_df))  stop("Codelist data frame needs to include codes column `code`")
 	
-	if (! any(c("ICD10","Read2","CTV3","OPCS3","OPCS4","ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include at least one of ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, or ukb_noncancer")
+	if (! any(c("ICD10","ICD9","Read2","CTV3","OPCS3","OPCS4","ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include at least one of ICD10, ICD9, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, or ukb_noncancer")
 	
 	# Is this one of my systems? If so, get the internal file_paths 
 	nodename <- as.character(Sys.info()['nodename'])
@@ -87,11 +89,13 @@ get_diagnoses <- function(
 	# Check code lists - only first 5 digits are used by UK Biobank
 	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
 	get_icd10   <- FALSE
+	get_icd9    <- FALSE
 	get_canreg  <- FALSE
 	get_gp      <- FALSE
 	get_oper    <- FALSE
 	get_selfrep <- FALSE
 	ICD10s      <- ""
+	ICD9s       <- ""
 	Read2s      <- ""
 	CTV3s       <- ""
 	OPCS3s      <- ""
@@ -110,6 +114,19 @@ get_diagnoses <- function(
 		cat(" - N unique ICD10 codes:", length(ICD10s), "\n")
 		
 		if (any(stringr::str_starts(ICD10s, "C")))  get_canreg <- TRUE
+	}
+	
+	# get ICD9s. Remove "." dot characters. First 5 characters only.
+	if (any(codes_df[,vocab_col] == "ICD9"))  {
+		get_icd9 <- TRUE
+		ICD9s    <- codes_df |>
+			dplyr::filter(!!rlang::sym(vocab_col) == "ICD9") |>
+			dplyr::select(!!rlang::sym(codes_col)) |>
+			dplyr::pull() |>
+			unique() |>
+			stringr::str_remove(stringr::fixed(".")) |> 
+			stringr::str_sub(1, 5)
+		cat(" - N unique ICD9 codes:", length(ICD9s), "\n")
 	}
 	
 	# get Read2 and CTV3s. First 5 characters only. 
@@ -179,10 +196,12 @@ get_diagnoses <- function(
 	# check all the required files are included
 	must_include = "baseline_dates"
 	if (get_icd10)    must_include <- c(must_include, c("death","death_cause","hesin","hesin_diag"))
+	if (get_icd9)     must_include <- c(must_include, c("hesin","hesin_diag"))
 	if (get_canreg)   must_include <- c(must_include, c("cancer_registry"))
 	if (get_gp)       must_include <- c(must_include, c("gp_clinical"))
 	if (get_oper)     must_include <- c(must_include, c("hesin_oper"))
 	if (get_selfrep)  must_include <- c(must_include, c("selfrep_illness"))
+	must_include = unique(must_include)
 	
 	for (file in must_include)  if (! file %in% file_paths$object) cli::cli_abort("{.var file_paths} must contain {.path {file}}")
 	
@@ -247,7 +266,7 @@ get_diagnoses <- function(
 	# Get data for each code vocabulary
 	if (verbose) cli::cli_alert("Ascertaining codes from long EMR files")
 	death_cause_tbl     <- NULL  # ICD10
-	hesin_diag_tbl      <- NULL  # ICD10
+	hesin_diag_tbl      <- NULL  # ICD10, ICD9
 	cancer_registry_tbl <- NULL  # ICD10
 	gp_clinical_tbl     <- NULL  # Read2 / CTV3
 	hesin_oper_tbl      <- NULL  # OPCS3 / OPCS4
@@ -366,6 +385,68 @@ get_diagnoses <- function(
 			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 			
 		}
+	}
+	
+	#
+	# ICD9 HES diagnosis data ###########################################
+	#
+	if (get_icd9)  {
+		
+		cli::cli_alert("Ascertaining HES diagnosis data (ICD9s).")
+		
+		hesin_diag_path = file_paths$path[ file_paths$object=="hesin_diag" ]
+		
+		# create search string
+		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(ICD9s, collapse = "|")), " ", sprintf('%s', hesin_diag_path))
+		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(ICD9s, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_diag_path))
+		if (verbose)  cat(" -- search string: ", search_string, "\n")
+		
+		# get file headers
+		headers <- colnames(readr::read_tsv(hesin_diag_path, n_max=1, show_col_types=FALSE, progress=FALSE))
+		if (! "eid" %in% headers)  headers[1] <- "eid"
+		
+		# use search string to only read lines that matched a code
+		hesin_diag_tbl_icd9 <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		
+		# check we have actually matched any ICD9s
+			# exclude missing ICD9s (EIDs may have been matched)
+		if (nrow(hesin_diag_tbl_icd9)>0)  
+			hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::filter(!is.na(diag_icd9))
+			# check codes are matched 
+		if (nrow(hesin_diag_tbl_icd9)>0)  
+			hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::filter(diag_icd9 %in% ICD9s)
+		
+		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
+		if (nrow(hesin_diag_tbl_icd9)>0)  {
+			if (!unix)  {
+				hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> 
+					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_diag_path))) |>
+					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
+					dplyr::mutate(eid = as.numeric(eid))
+			}
+			
+			# match with HES episode data
+			hesin_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE)
+			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
+			hesin_diag_tbl_icd9 = dplyr::inner_join(hesin_tbl, hesin_diag_tbl_icd9, by=c("eid"="eid", "ins_index"="ins_index"))
+			
+			# format date cols if not "Date"
+			date_cols = c("epistart", "epiend", "elecdate", "admidate", "disdate")
+			for (dc in date_cols)  {
+				dc = rlang::sym(dc)
+				if (!lubridate::is.Date(hesin_diag_tbl_icd9 |> dplyr::select(!!dc) |> dplyr::pull()))  
+					hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> dplyr::mutate(!!dc := lubridate::dmy(!!dc))
+			}
+		}
+		
+		cli::cli_alert_success("Loaded {.var hesin_diag} with {nrow(hesin_diag_tbl_icd9)} matched rows.")
+		
+		# combine with other hesin table?
+		if (!is.null(hesin_diag_tbl))  hesin_diag_tbl = rbind(hesin_diag_tbl, hesin_diag_tbl_icd9)
+		if (is.null(hesin_diag_tbl))   hesin_diag_tbl = hesin_diag_tbl_icd9
+		
+		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+		
 	}
 	
 	#
