@@ -1,3 +1,9 @@
+# ukbrapR v0.2.3 (22 August 2024)
+
+### Bug fix 
+ - Fix for issue #8. In moving the HES ICD10 code block below the cancer registry code I acctidently put it within the `if (get_canreg)  { }` condition. Thanks to @LauricF for highlighting.
+
+
 # ukbrapR v0.2.2 (21 August 2024)
 
 ### Update
