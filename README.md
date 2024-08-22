@@ -33,6 +33,7 @@ Once the files are exported (~15mins) these can then be used by the below functi
 For a given set of diagnostic codes get the participant Electronic Medical Records (EMR) and self-reported illess data. Returns a list containing up to 6 data frames: the subset of the clinical files with matched codes. 
 
 Codes need to be provided as a data frame with two fields: `vocab_id` and `code`. Valid code vocabularies are:
+
  - `ICD10` (for searching HES diagnoses, cause of death, and cancer registry)
  - `ICD9` (for searching older HES diagnosis data)
  - `Read2` and `CTV3` (for GP clinical events)
@@ -67,6 +68,7 @@ nrow(diagnosis_list$death_cause)  #   1,962
 Identify the date first diagnosed for each participant from any of datasets searched with `get_diagnoses()` (cause of death, HES diagnoses, GP clinical, cancer registry, HES operations, and self-reported illness fields). 
 
 Also included are:
+
  - a `src` field indicating the source of the date of first diagnosis.
  - a `bin` field indicating the cases [1] and controls [0]. This relies on a small number of baseline fields also exported. The `df` field for the controls is the date of censoring (currently 30 October 2022).
  - a `bin_prev` field indicating whether the case was before the UK Biobank baseline assessment
