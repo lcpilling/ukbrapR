@@ -4,7 +4,7 @@
 \alias{get_diagnoses}
 \title{Get UK Biobank participant diagnosis data}
 \usage{
-get_diagnoses(codes_df, file_paths = ukbrapR:::ukbrapr_paths, verbose = FALSE)
+get_diagnoses(codes_df, file_paths = NULL, verbose = FALSE)
 }
 \arguments{
 \item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary (ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, and ukb_noncancer are recognised). Other columns are ignored.}
