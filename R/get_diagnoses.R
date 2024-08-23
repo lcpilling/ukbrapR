@@ -339,6 +339,7 @@ get_diagnoses <- function(
 			
 			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 			
+		}
 		
 		#
 		# HES diagnosis data (ICD10s) ###########################################
@@ -387,7 +388,7 @@ get_diagnoses <- function(
 		cli::cli_alert_success("Loaded {.var hesin_diag} with {nrow(hesin_diag_tbl)} matched rows.")
 		
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-		}
+		
 	}
 	
 	#
