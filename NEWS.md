@@ -1,6 +1,13 @@
+# ukbrapR v0.2.3.9000 (22 August 2024)
+
+### Changes
+ - Updated internal paths for my servers `indy` and `snow` (for ongoing projects whilst we can still use local files...)
+ - Updated how `get_diagnoses()` and `get_df()` handle a user-provided `file_paths` object
+ 
+
 # ukbrapR v0.2.3 (22 August 2024)
 
-### Bug fix 
+### Bug fixes 
  - Fix for issue #8. In moving the HES ICD10 code block below the cancer registry code I acctidently put it within the `if (get_canreg)  { }` condition. Thanks to @LauricF for highlighting.
  - Fix bullet points in pkgdown version of docs
 

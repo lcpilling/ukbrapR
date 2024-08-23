@@ -86,6 +86,18 @@ get_df <- function(
 	
 	# use baseline dates?
 	if (use_baseline_dates)  {
+		
+		# Is this one of my systems? If so, get the internal file_paths 
+		nodename <- as.character(Sys.info()['nodename'])
+		if ( is.null(file_paths)  &  nodename %in% c("SNOW","SHAPTER") )  {
+			file_paths = ukbrapR:::snow_paths
+			if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
+		}
+		if ( is.null(file_paths)  &  nodename == "indy.ex.ac.uk" )  {
+			file_paths = ukbrapR:::indy_paths
+			if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
+		}
+		
 		# if file_paths not provided assume default paths
 		if (is.null(file_paths))  file_paths = ukbrapR:::ukbrapr_paths
 		
