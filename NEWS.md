@@ -1,4 +1,4 @@
-# ukbrapR v0.2.3.9000 (22 August 2024)
+# ukbrapR v0.2.4 (05 September 2024)
 
 ### Changes
  - Updated internal paths for my servers `indy` and `snow` (for ongoing projects whilst we can still use local files...)
