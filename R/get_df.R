@@ -678,6 +678,13 @@ get_cancer_registry_df <- function(
 			)
 	}
 	
+	# keep date first for each participant
+	ukb_dat <- ukb_dat |>
+		dplyr::filter(!is.na(canreg_df)) |>
+		dplyr::group_by(eid) |>
+		dplyr::summarize(canreg_df=min(canreg_df, na.rm=TRUE)) |>
+		dplyr::mutate(canreg_df = dplyr::if_else(is.finite(canreg_df), canreg_df, NA))
+	
 	# finish
 	if (verbose)  cli::cli_alert_info(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	

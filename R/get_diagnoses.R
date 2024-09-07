@@ -93,7 +93,7 @@ get_diagnoses <- function(
 	# check codes provided, determine what datasets we are going to search
 	
 	# Check code lists - only first 5 digits are used by UK Biobank
-	cli::cli_alert("Checking provided codes (remember only the first 5 digits are used by UK Biobank)")
+	cli::cli_alert("Checking provided codes (remember only the first 5 characters are used)")
 	get_icd10   <- FALSE
 	get_icd9    <- FALSE
 	get_canreg  <- FALSE
