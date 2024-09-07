@@ -1,3 +1,9 @@
+# ukbrapR v0.2.5 (07 September 2024)
+
+### Bug fix
+ - When getting the date first cancer registry diagnosis, some rows were duplicated. This is now fixed so only one row per participant (the date first for any matched cancer ICD10) is returned.
+ 
+
 # ukbrapR v0.2.4 (05 September 2024)
 
 ### Changes
