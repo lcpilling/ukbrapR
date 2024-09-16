@@ -136,19 +136,25 @@ get_diagnoses <- function(
 	}
 	
 	# get Read2 and CTV3s. First 5 characters only. 
+	gp_codes = NULL
 	if (any(codes_df[,vocab_col] == "Read2"))  {
 		get_gp    <- TRUE
 		Read2s    <- codes_df[ codes_df[,vocab_col] == "Read2" , codes_col ]
 		Read2s    <- stringr::str_sub(Read2s, 1, 5) |> unique()
+		gp_codes  <- Read2s
 		cat(" - N unique Read2 codes:", length(Read2s), "\n")
 	}
 	if (any(codes_df[,vocab_col] == "CTV3"))  {
 		get_gp   <- TRUE
 		CTV3s    <- codes_df[ codes_df[,vocab_col] == "CTV3" , codes_col ]
 		CTV3s    <- stringr::str_sub(CTV3s, 1, 5) |> unique()
+		if (is.null(gp_codes))  {
+			gp_codes <- CTV3s
+		} else {
+			gp_codes <- c(gp_codes, CTV3s)
+		}
 		cat(" - N unique CTV3 codes:", length(CTV3s), "\n")
 	}
-	gp_codes = c(Read2s, CTV3s)
 	
 	# get OPCS codes? Remove "." dot characters. First 5 characters only.
 	oper_codes = NULL
