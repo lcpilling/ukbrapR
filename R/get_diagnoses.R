@@ -145,12 +145,11 @@ get_diagnoses <- function(
 		cat(" - N unique Read2 codes:", length(Read2s), "\n")
 		# any <5 characters?
 		nchar_Read2s = nchar(Read2s)
-		nchar_Read2s_n5 = nchar_Read2s[ nchar_Read2s < 5 ]
-		if (length(nchar_Read2s_n5) > 0)  {
+		nchar_Read2s_n5 = length(nchar_Read2s[ nchar_Read2s < 5 ])
+		if (nchar_Read2s_n5 > 0)  {
 			cli::cli_abort(c(
-				"Read2 codes must be at least 5 characters in length",
-				"i" = "There {?is/are} {nchar_Read2s_n5} Read2 code{?s} < 5 characters.",
-				"x" = "Check your inputted Read2 codes"
+				"i" = "Read2 codes must be at least 5 characters in length",
+				"x" = "There {?is/are} {nchar_Read2s_n5} Read2 code{?s} < 5 characters."
 			))
 		}
 	}
@@ -166,12 +165,11 @@ get_diagnoses <- function(
 		cat(" - N unique CTV3 codes:", length(CTV3s), "\n")
 		# any <5 characters?
 		nchar_CTV3s = nchar(CTV3s)
-		nchar_CTV3s_n5 = nchar_CTV3s[ nchar_CTV3s < 5 ]
-		if (length(nchar_CTV3s_n5) > 0)  {
+		nchar_CTV3s_n5 = length(nchar_CTV3s[ nchar_CTV3s < 5 ])
+		if (nchar_CTV3s_n5 > 0)  {
 			cli::cli_abort(c(
-				"CTV3 codes must be at least 5 characters in length",
-				"i" = "There {?is/are} {nchar_CTV3s_n5} CTV3 code{?s} < 5 characters.",
-				"x" = "Check your inputted CTV3 codes"
+				"i" = "CTV3 codes must be at least 5 characters in length",
+				"x" = "There {?is/are} {nchar_CTV3s_n5} CTV3 code{?s} < 5 characters.",
 			))
 		}
 	}
