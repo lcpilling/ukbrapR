@@ -1,3 +1,10 @@
+# ukbrapR v0.2.5.9000 (16 September 2024)
+
+### Bug fix
+ - Fix for issue #11. When getting self-reported illness codes there was a problem joining the tables if user only provided cancer codes. Thanks to @LauricF for highlighting.
+ - Fix for when both types self-reported illness codes were provided. (Incorrect subsetting to just those codes provided after pivoting the long object.)
+
+
 # ukbrapR v0.2.5 (07 September 2024)
 
 ### Bug fix
