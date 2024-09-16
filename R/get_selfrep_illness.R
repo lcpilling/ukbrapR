@@ -78,18 +78,23 @@ get_selfrep_illness <- function(
 		ukb_dat_noncancer_long <- dplyr::full_join(ukb_dat_code, ukb_dat_year, by = c("eid"="eid", "instance"="instance"))
 	}
 	
-	# join tables
-	if (!is.null(ukb_dat_cancer_long))  ukb_dat_sr <- ukb_dat_cancer_long
-	if (is.null(ukb_dat_sr))  {
-		ukb_dat_sr <- ukb_dat_noncancer_long
-	} else {
-		ukb_dat_sr <- dplyr::full_join(ukb_dat_sr, ukb_dat_noncancer_long, by = c("eid"="eid", "instance"="instance"))
-	}
-	
 	# subset to ukb-codes in provided list
 	if (verbose) cli::cli_alert("Identify matching codes")
-	if (get_cancer)     ukb_dat_sr = ukb_dat_sr |> dplyr::filter(cancer_code %in% codes_cancer)
-	if (get_noncancer)  ukb_dat_sr = ukb_dat_sr |> dplyr::filter(noncancer_code %in% codes_noncancer)
+	if (get_cancer)     ukb_dat_cancer_long    = ukb_dat_cancer_long    |> dplyr::filter(cancer_code %in% codes_cancer)
+	if (get_noncancer)  ukb_dat_noncancer_long = ukb_dat_noncancer_long |> dplyr::filter(noncancer_code %in% codes_noncancer)
+	
+	# join tables if both types of codes provided, otherwise just use one
+	if (verbose) cli::cli_alert("Joining tables")
+	if (!is.null(ukb_dat_cancer_long) & !is.null(ukb_dat_noncancer_long))  {
+		# both code types provided
+		ukb_dat_sr <- dplyr::full_join(ukb_dat_cancer_long, ukb_dat_noncancer_long, by = c("eid"="eid", "instance"="instance"))
+	} else if (!is.null(ukb_dat_noncancer_long))  {
+		# just non-cancer
+		ukb_dat_sr <- ukb_dat_noncancer_long
+	} else {
+		# just cancer
+		ukb_dat_sr <- ukb_dat_cancer_long
+	}
 	
 	# finish
 	#if (verbose)  cli::cli_alert_success(c("Finished cancer registry: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
