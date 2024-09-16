@@ -35,8 +35,6 @@ NA
 In the UK Biobank RAP export tables for HES, GP, death, and cancer registry data, plus self-reported illness fields, using the table-exporter. This is essentially a wrapper function to submit jobs to the table exporter.
 
 Suggest executing in an RStudio session. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
-
-Once the jobs are completed it is important to move the files to `ukbrapr_data` directory in your project to keep the files tidy
 }
 \examples{
 

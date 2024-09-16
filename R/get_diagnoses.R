@@ -4,15 +4,15 @@
 #'
 #' Valid code vocabularies are:
 #'
-#'  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
+#'  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches) - fuzzy matching
 #'
-#'  - ICD9 (for `hesin` searches)
+#'  - ICD9 (for `hesin` searches) - fuzzy matching
 #'
-#'  - Read2 / CTV3 (for `gp_clinical`)
+#'  - Read2 / CTV3 (for `gp_clinical`) - exact matches on first 5 characters
 #'
-#'  - OPCS3 / OPCS4 (for `hesin_oper`)
+#'  - OPCS3 / OPCS4 (for `hesin_oper`) - fuzzy matching
 #'
-#'  - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched)
+#'  - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched) - exact matches
 #'
 #' This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables. Recommend to run `export_tables()` once in your project to export the tables to the default paths for the package.
 #'
@@ -107,6 +107,18 @@ get_diagnoses <- function(
 	OPCS3s      <- ""
 	OPCS4s      <- ""
 	
+	# function to check for hyphens and abort if any provided 
+	# (suggests they want a range of codes. Safer to abort at ask the user to explicitly provide the codes to search for)
+	hyphen_check <- function(codes, vocab)  {
+		if (any(stringr::str_detect(codes, "-")))  {
+			codes = codes[ stringr::str_detect(codes, "-") ]
+			cli::cli_abort(c(
+				"{vocab} codes cannot contain hyphens, as this suggests you want a range of codes.",
+				"x" = "Remove hyphens and provide the specific {vocab} codes you wish to ascertain (safer)."
+			))
+		}
+	}
+	
 	# get ICD10s. Remove "." dot characters. First 5 characters only.
 	if (any(codes_df[,vocab_col] == "ICD10"))  {
 		get_icd10 <- TRUE
@@ -118,7 +130,7 @@ get_diagnoses <- function(
 			stringr::str_remove(stringr::fixed(".")) |> 
 			stringr::str_sub(1, 5)
 		cat(" - N unique ICD10 codes:", length(ICD10s), "\n")
-		
+		hyphen_check(ICD10s, "ICD10")
 		if (any(stringr::str_starts(ICD10s, "C")))  get_canreg <- TRUE
 	}
 	
@@ -132,23 +144,50 @@ get_diagnoses <- function(
 			unique() |>
 			stringr::str_remove(stringr::fixed(".")) |> 
 			stringr::str_sub(1, 5)
+		hyphen_check(ICD9s, "ICD9")
 		cat(" - N unique ICD9 codes:", length(ICD9s), "\n")
 	}
 	
 	# get Read2 and CTV3s. First 5 characters only. 
+	gp_codes = NULL
 	if (any(codes_df[,vocab_col] == "Read2"))  {
 		get_gp    <- TRUE
 		Read2s    <- codes_df[ codes_df[,vocab_col] == "Read2" , codes_col ]
 		Read2s    <- stringr::str_sub(Read2s, 1, 5) |> unique()
+		gp_codes  <- Read2s
 		cat(" - N unique Read2 codes:", length(Read2s), "\n")
+		hyphen_check(Read2s, "Read2")
+		# any <5 characters?
+		nchar_Read2s = nchar(Read2s)
+		nchar_Read2s_n5 = length(nchar_Read2s[ nchar_Read2s < 5 ])
+		if (nchar_Read2s_n5 > 0)  {
+			cli::cli_abort(c(
+				"i" = "Read2 codes must be at least 5 characters in length",
+				"x" = "There {?is/are} {nchar_Read2s_n5} Read2 code{?s} < 5 characters."
+			))
+		}
 	}
 	if (any(codes_df[,vocab_col] == "CTV3"))  {
 		get_gp   <- TRUE
 		CTV3s    <- codes_df[ codes_df[,vocab_col] == "CTV3" , codes_col ]
 		CTV3s    <- stringr::str_sub(CTV3s, 1, 5) |> unique()
+		if (is.null(gp_codes))  {
+			gp_codes <- CTV3s
+		} else {
+			gp_codes <- c(gp_codes, CTV3s)
+		}
 		cat(" - N unique CTV3 codes:", length(CTV3s), "\n")
+		hyphen_check(CTV3s, "CTV3")
+		# any <5 characters?
+		nchar_CTV3s = nchar(CTV3s)
+		nchar_CTV3s_n5 = length(nchar_CTV3s[ nchar_CTV3s < 5 ])
+		if (nchar_CTV3s_n5 > 0)  {
+			cli::cli_abort(c(
+				"i" = "CTV3 codes must be at least 5 characters in length",
+				"x" = "There {?is/are} {nchar_CTV3s_n5} CTV3 code{?s} < 5 characters.",
+			))
+		}
 	}
-	gp_codes = c(Read2s, CTV3s)
 	
 	# get OPCS codes? Remove "." dot characters. First 5 characters only.
 	oper_codes = NULL
@@ -162,6 +201,7 @@ get_diagnoses <- function(
 			stringr::str_remove(stringr::fixed(".")) |> 
 			stringr::str_sub(1, 5)
 		cat(" - N unique OPCS3 codes:", length(OPCS3s), "\n")
+		hyphen_check(OPCS3s, "OPCS3")
 		oper_codes = OPCS3s
 	}
 	if (any(codes_df[,vocab_col] == "OPCS4"))  {
@@ -174,6 +214,7 @@ get_diagnoses <- function(
 			stringr::str_remove(stringr::fixed(".")) |> 
 			stringr::str_sub(1, 5)
 		cat(" - N unique OPCS4 codes:", length(OPCS4s), "\n")
+		hyphen_check(OPCS4s, "OPCS4")
 		oper_codes = c(oper_codes, OPCS4s)
 	}
 	

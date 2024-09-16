@@ -24,15 +24,15 @@ For a list of diagnostic codes get the HES, GP, cancer registry, operations, and
 
 Valid code vocabularies are:
 
- - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches)
+ - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches) - fuzzy matching
 
- - ICD9 (for `hesin` searches)
+ - ICD9 (for `hesin` searches) - fuzzy matching
 
- - Read2 / CTV3 (for `gp_clinical`)
+ - Read2 / CTV3 (for `gp_clinical`) - exact matches on first 5 characters
 
- - OPCS3 / OPCS4 (for `hesin_oper`)
+ - OPCS3 / OPCS4 (for `hesin_oper`) - fuzzy matching
 
- - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched)
+ - ukb_cancer / ukb_noncancer (for self-reported illness at UK Biobank assessments - all available will be searched) - exact matches
 
 This function relies on exported raw data files and thus does not need to be run in a Spark cluster. If the files are not in the default locations for the package you will need to specify the  `file_paths` to exported tables. Recommend to run `export_tables()` once in your project to export the tables to the default paths for the package.
 }
