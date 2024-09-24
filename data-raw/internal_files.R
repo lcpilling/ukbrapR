@@ -144,11 +144,27 @@ codes_df_test$condition = "test"
 
 
 #
+# UK Biobank field label schema #################################
+#
+
+# from https://biobank.ctsu.ox.ac.uk/crystal/download.cgi
+ukb_schema <- NULL
+ukb_schema[["field"]]  <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=1", progress=FALSE, show_col_types=FALSE)
+ukb_schema[["time"]]   <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=20", progress=FALSE, show_col_types=FALSE)
+ukb_schema[["real"]]   <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=7", progress=FALSE, show_col_types=FALSE)
+ukb_schema[["date"]]   <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=8", progress=FALSE, show_col_types=FALSE)
+ukb_schema[["int"]]    <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=5", progress=FALSE, show_col_types=FALSE)
+ukb_schema[["string"]] <- readr::read_tsv("http://biobank.ctsu.ox.ac.uk/ukb/scdown.cgi?fmt=txt&id=6", progress=FALSE, show_col_types=FALSE)
+
+
+
+#
 # save as internal ###########################################
 #
 usethis::use_data(
 	ukbrapr_paths, indy_paths, snow_paths,
 	codes_df_ckd, codes_df_hh, codes_df_test, 
+	ukb_schema,
 	internal = TRUE, overwrite = TRUE, compress = 'xz')
 
 
