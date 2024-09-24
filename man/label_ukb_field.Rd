@@ -30,11 +30,11 @@ This function updates a field in a data frame of UK Biobank with information fro
 \examples{
 
 # update the Assessment Centre variable
-ukb <- label_ukb_field(d=ukb, field="p54_i0")
+ukb <- ukbrapR::label_ukb_field(d=ukb, field="p54_i0")
 
 table(ukb$p54_i0)                   # tabulates the values
 table(haven::as_factor(ukb$p54_i0)) # tabulates the labels
-haven::print_labels(ukb_t$p54_i0)   # show the value:label mapping for this variable
+haven::print_labels(ukb$p54_i0)   # show the value:label mapping for this variable
 
 # get labels for all field names in the dataset
 fields <- colnames(ukb)[2:ncol(ukb)]  # all columns except the first (usually `eid`)
