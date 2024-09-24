@@ -13,16 +13,20 @@
 #' @name label_ukb_field
 #'
 #' @param d A data frame. The data frame containing the `field` to update.
-#' @param field A string. The field (e.g., `p21000_i0`) in the provided data frame to update.
-#' @param field_id A string. If the field has been renamed (to e.g.,"ethnicity") provide the field id here (e.g., "21000").
+#' @param field A string. The field (e.g., `p54_i0`) in the provided data frame to update.
+#' @param field_id A string. If the field has been renamed (to e.g.,"assessment_centre") provide the field id here (e.g., "54").
 #'        \code{default=NULL}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
 #' @examples
 #'
-#' # update the Ethnic Background variable
-#' ukb <- label_ukb_field(d=ukb, field="p21000_i0")
+#' # update the Assessment Centre variable
+#' ukb <- label_ukb_field(d=ukb, field="p54_i0")
+#'
+#' table(ukb$p54_i0)                   # tabulates the values
+#' table(haven::as_factor(ukb$p54_i0)) # tabulates the labels
+#' haven::print_labels(ukb_t$p54_i0)   # show the value:label mapping for this variable
 #'
 #' # get labels for all field names in the dataset
 #' fields <- colnames(ukb)[2:ncol(ukb)]  # all columns except the first (usually `eid`)
