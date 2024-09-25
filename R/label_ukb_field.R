@@ -134,9 +134,7 @@ label_ukb_field <- function(
 #' @export
 #'
 label_ukb_fields <- function(
-	d,              # the data frame
-	field,          # the variable name in the data
-	field_id=NULL,  # if not in UKB format, provide the field ID
+	d,
 	verbose=FALSE
 )  {
 	

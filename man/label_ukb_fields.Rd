@@ -4,7 +4,7 @@
 \alias{label_ukb_fields}
 \title{Update a data frame containing UK Biobank fields with `title` and `label` from the schema}
 \usage{
-label_ukb_fields(d, field, field_id = NULL, verbose = FALSE)
+label_ukb_fields(d, verbose = FALSE)
 }
 \arguments{
 \item{d}{A data frame. The data frame containing UK Biobank fields to update.}
