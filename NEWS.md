@@ -2,6 +2,7 @@
 
 ### Updates
  - New function `label_ukb_field()` allows user to add titles and labels to UK Biobank fields provided as integers but are categorical. 
+ - New function `label_ukb_fields()` is a wrapper for the above. User just provides a data frame containing UK Biobank fields, and they all get formatted with titles (and labels if categorical).
  - Data from the UK Biobank schema (https://biobank.ctsu.ox.ac.uk/crystal/schema.cgi) are stored internally in `ukbrapR:::ukb_schema`
  - {haven} dependency added for labelling
 
