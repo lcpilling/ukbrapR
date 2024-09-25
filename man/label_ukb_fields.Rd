@@ -33,7 +33,7 @@ names(ukb)
 
 # update the variables that looks like UK Biobank fields with titles and, where cateogrical, labels 
 # i.e., `p54_i0` and `p50_i0` only -- `eid` and `age_at_assessment` are ignored
-ukb <- ukbrapR::label_ukb_fields(d=ukb)
+ukb <- ukbrapR::label_ukb_fields(ukb)
 
 table(ukb$p54_i0)                   # tabulates the values
 table(haven::as_factor(ukb$p54_i0)) # tabulates the labels
