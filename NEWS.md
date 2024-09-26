@@ -5,6 +5,7 @@
  - New function `label_ukb_fields()` is a wrapper for the above. User just provides a data frame containing UK Biobank fields, and they all get formatted with titles (and labels if categorical).
  - Data from the UK Biobank schema (https://biobank.ctsu.ox.ac.uk/crystal/schema.cgi) are stored internally in `ukbrapR:::ukb_schema`
  - {haven} dependency added for labelling
+ - Exported `baseline_dates.tsv` now also includes the assessment centres for completeness (but keeps the same filename to avoid any issues for current projects relying on already-exported files)
 
 
 # ukbrapR v0.2.6 (16 September 2024)
