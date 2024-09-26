@@ -145,7 +145,7 @@ label_ukb_fields <- function(
 	
 	# identify variables matching UK Biobank field format: start with "p", then have an integer before any "_"
 	fields <- colnames(d)
-	fields <- fields |>
+	fields_int <- fields |>
 		stringr::str_subset("^p") |>
 		stringr::str_replace("p", "") |>
 		stringr::str_split_i("_", 1)
@@ -154,7 +154,8 @@ label_ukb_fields <- function(
 		vect_int <- purrr::map(vect, \(x) all(unlist(stringr::str_split(x, "")) %in% 0:9)) |> purrr::list_c()
 		return(vect[vect_int])
 	}
-	fields <- int_check(fields)
+	fields_int <- int_check(fields_int)
+	fields <- fields[ stringr::str_detect( fields, stringr::str_c( stringr::str_c("p", fields_int), collapse="|") ) ]
 	
 	# any matched?
 	n_fields <- length(fields)
