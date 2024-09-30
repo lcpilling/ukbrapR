@@ -16,12 +16,16 @@ reference:
 - title: Determine date first diagnosed from any source
 - contents:
   - get_df
+- title: Label UK Biobank data fields
+- contents:
+  - label_ukb_field
+  - label_ukb_fields
 - title: Upload/download from RAP/worker storage
 - contents:
   - upload_to_rap
   - download_from_rap
 - title: Spark
-  des:   These functions do not require intermediate files but must be executed in a DNAnexus Spark environment.
+  des:   These functions do not require intermediate files but must be executed in a JupyterLab Spark environment.
 - contents:
   - get_rap_phenos
   - get_emr_spark
