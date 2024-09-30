@@ -1,4 +1,4 @@
-# ukbrapR v0.2.6.9000 (24 September 2024)
+# ukbrapR v0.2.7 (30 September 2024)
 
 ### Updates
  - New function `label_ukb_field()` allows user to add titles and labels to UK Biobank fields provided as integers but are categorical. 
