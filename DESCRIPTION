@@ -1,6 +1,6 @@
 Package: ukbrapR
 Title: R functions to use in the UK Biobank Research Analysis Platform (RAP)
-Version: 0.2.6
+Version: 0.2.7
 Authors@R: c(person("Luke", "Pilling", 
                     email = "L.Pilling@exeter.ac.uk", 
                     role = c("aut", "cre"),
@@ -22,7 +22,8 @@ Imports:
   sparklyr (>= 1.8.4),
   cli (>= 3.6.1),
   prettyunits (>= 1.0.0),
-  lifecycle (>= 1.0.0)
+  lifecycle (>= 1.0.0),
+  haven (>= 2.5.0)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3

@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.6-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.2.7-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -157,6 +157,57 @@ table(diagnosis_df$ckd_bin)
 ```
 
 In the above example we also included a UK Biobank self-reported illness code for haemochromatosis, that was also ascertained (the Date First is run on each condition separately, they do not all need to have the same data sources).
+
+## Label UK Biobank data fields 
+
+Categorical fields are exported as integers but are encoded with labels. For example [20116 "Smoking status"](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20116):
+
+| Coding | Meaning              |
+|--------|----------------------|
+| -3     | Prefer not to answer |
+|  0     | Never                |
+|  1     | Previous             |
+|  2     | Current              |
+
+This package includes two functions to label a single UK Biobank field or a data frame of them using the [UK Biobank encoding schema](https://biobank.ctsu.ox.ac.uk/crystal/schema.cgi). Examples:
+
+```r
+# update the Smoking status field
+ukb <- label_ukb_field(ukb, field="p20116_i0")
+
+table(ukb$p20116_i0)                   # tabulates the values
+#>    -3      0      1      2 
+#>  2057 273405 172966  52949 
+
+table(haven::as_factor(ukb$p20116_i0)) # tabulates the labels
+#> Prefer not to answer                Never             Previous              Current 
+#>                 2057               273405               172966                52949
+
+haven::print_labels(ukb$p20116_i0)     # show the value:label mapping for this variable
+#> Labels:
+#>  value                label
+#>     -3 Prefer not to answer
+#>      0                Never
+#>      1             Previous
+#>      2              Current
+
+#
+# if you have a whole data frame of exported fields, you can use the wrapper function label_ukb_fields()
+
+# say the `ukb` data frame contains 4 variables: `eid`, `p54_i0`, `p31` and `age_at_assessment` 
+
+# update the variables that looks like UK Biobank fields with titles and, where cateogrical, labels 
+# i.e., `p54_i0` and `p31` only -- `eid` and `age_at_assessment` are ignored
+ukb <- label_ukb_fields(ukb)
+
+table(ukb$p31)                   # tabulates the values
+#>      0      1 
+#> 273238 229031 
+
+table(haven::as_factor(ukb$p31)) # tabulates the labels
+#> Female   Male 
+#> 273238 229031 
+```
 
 
 ## Pull phenotype data from Spark environment
