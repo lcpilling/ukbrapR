@@ -58,13 +58,6 @@ Codes need to be provided as a data frame with two fields: `vocab_id` and `code`
 # example diagnostic codes for Chronic Kidney Disease 
 codes_df_ckd <- ukbrapR:::codes_df_ckd
 head(codes_df_ckd)
-#>   condition vocab_id  code
-#> 1       ckd    ICD10 N18.3
-#> 2       ckd    ICD10 N18.4
-#> 3       ckd    ICD10 N18.5
-#> 4       ckd    ICD10 N18.6
-#> 5       ckd    ICD10 N18.9
-#> 6       ckd    ICD10   N19
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_diagnoses(codes_df_ckd) 

@@ -33,7 +33,9 @@ reference:
   - get_selfrep_illness_spark
 
 articles:
-- contents:
+- title: Get started
+  navbar: ~
+  contents:
   - ascertain_diagnoses
   - extract_fields
   - label_fields
