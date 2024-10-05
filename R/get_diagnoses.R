@@ -339,7 +339,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		death_cause_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		death_cause_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name) and the dates are dates
 		if (nrow(death_cause_tbl)>0)  {
@@ -351,7 +351,7 @@ get_diagnoses <- function(
 			}
 			
 			# match with date of death data
-			death_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="death" ], show_col_types=FALSE, progress=FALSE)
+			death_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="death" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(death_tbl))  colnames(death_tbl)[1] <- "eid"
 			death_cause_tbl = dplyr::inner_join(death_tbl, death_cause_tbl, by=c("eid"="eid", "ins_index"="ins_index"))
 			
@@ -373,7 +373,7 @@ get_diagnoses <- function(
 			cli::cli_alert("Ascertaining cancer registry data.")
 			
 			# load data 
-			cancer_registry_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE)
+			cancer_registry_dat <- suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE))
 			
 			# get cancer registry data for these ICD10s
 			cancer_registry_tbl <- ukbrapR:::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
@@ -403,7 +403,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_diag_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_diag_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		if (nrow(hesin_diag_tbl)>0)  {
@@ -415,7 +415,7 @@ get_diagnoses <- function(
 			}
 			
 			# match with HES episode data
-			hesin_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE)
+			hesin_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
 			hesin_diag_tbl = dplyr::inner_join(hesin_tbl, hesin_diag_tbl, by=c("eid"="eid", "ins_index"="ins_index"))
 			
@@ -454,7 +454,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_diag_tbl_icd9 <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_diag_tbl_icd9 <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# check we have actually matched any ICD9s
 			# exclude missing ICD9s (EIDs may have been matched)
@@ -475,7 +475,7 @@ get_diagnoses <- function(
 			}
 			
 			# match with HES episode data
-			hesin_tbl = readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE)
+			hesin_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
 			hesin_diag_tbl_icd9 = dplyr::inner_join(hesin_tbl, hesin_diag_tbl_icd9, by=c("eid"="eid", "ins_index"="ins_index"))
 			
@@ -517,7 +517,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_oper_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_oper_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		# make sure OPCS3 are exact
@@ -556,7 +556,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		gp_clinical_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		gp_clinical_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), the codes are definite matches, and the dates are dates
 		if (nrow(gp_clinical_tbl)>0)  {
@@ -585,7 +585,7 @@ get_diagnoses <- function(
 		cli::cli_alert("Ascertaining self-reported illness data.")
 		
 		# load data 
-		selfrep_illness_dat <- readr::read_tsv(file_paths$path[ file_paths$object=="selfrep_illness" ], show_col_types = FALSE, progress = FALSE)
+		selfrep_illness_dat <- suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="selfrep_illness" ], show_col_types = FALSE, progress = FALSE))
 		
 		# get self-reported illness data - convert to long
 		selfrep_illness_tbl <- ukbrapR:::get_selfrep_illness(codes_df = codes_df, ukb_dat = selfrep_illness_dat, verbose = verbose)
@@ -601,7 +601,6 @@ get_diagnoses <- function(
 	#
 	
 	cli::cli_alert_success(c("Finished. Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-	cli::cli_alert_info("{.emph (Normally safe to disregard warnings regarding parsing issues)}.")
 	
 	# Return data as list
 	output_list <- list(

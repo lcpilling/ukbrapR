@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.7-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.2.7.9000-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
