@@ -1,6 +1,7 @@
 url: https://lcpilling.github.io/ukbrapR/
 template:
   bootstrap: 5
+  light-switch: true
 
 authors:
   Luke Pilling:
@@ -30,3 +31,10 @@ reference:
   - get_rap_phenos
   - get_emr_spark
   - get_selfrep_illness_spark
+
+articles:
+- contents:
+  - ascertain_diagnoses
+  - extract_fields
+  - label_fields
+  - extract_variants
