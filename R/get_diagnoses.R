@@ -601,7 +601,6 @@ get_diagnoses <- function(
 	#
 	
 	cli::cli_alert_success(c("Finished. Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-	cli::cli_alert_info("{.emph (Normally safe to disregard warnings regarding parsing issues)}.")
 	
 	# Return data as list
 	output_list <- list(
