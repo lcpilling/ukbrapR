@@ -102,7 +102,8 @@ get_df <- function(
 		if (is.null(file_paths))  file_paths = ukbrapR:::ukbrapr_paths
 		
 		# does baseline_dates file exist?
-		bl_file_path = file_paths$path[ file_paths$object=="baseline_dates" ]
+		#   -- this is downloaded to users home directory so need to add this to the path
+		bl_file_path = stringr::str_c(as.character(Sys.getenv()["HOME"]), "/", file_paths$path[ file_paths$object=="baseline_dates" ])
 		if (file.exists(bl_file_path))  {
 			
 			# read baseline dates
