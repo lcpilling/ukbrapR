@@ -339,7 +339,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		death_cause_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		death_cause_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name) and the dates are dates
 		if (nrow(death_cause_tbl)>0)  {
@@ -403,7 +403,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_diag_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_diag_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		if (nrow(hesin_diag_tbl)>0)  {
@@ -454,7 +454,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_diag_tbl_icd9 <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_diag_tbl_icd9 <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# check we have actually matched any ICD9s
 			# exclude missing ICD9s (EIDs may have been matched)
@@ -517,7 +517,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		hesin_oper_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		hesin_oper_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		# make sure OPCS3 are exact
@@ -556,7 +556,7 @@ get_diagnoses <- function(
 		if (! "eid" %in% headers)  headers[1] <- "eid"
 		
 		# use search string to only read lines that matched a code
-		gp_clinical_tbl <- readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE)
+		gp_clinical_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=headers, show_col_types=FALSE, progress=FALSE))
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), the codes are definite matches, and the dates are dates
 		if (nrow(gp_clinical_tbl)>0)  {
