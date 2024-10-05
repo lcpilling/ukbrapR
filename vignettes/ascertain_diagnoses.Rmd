@@ -16,10 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(ukbrapR)
-```
-
 Diagnosis of condition in UK Biobank participants come from multiple data sources:
 
 * Self-report during assessment
