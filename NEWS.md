@@ -2,6 +2,7 @@
 
 ### Bug fixes
  - Baseline dates TSV is now correctly located even if user changes working directory 
+ - HES operations dates were sometimes parsed as character - this is now fixed to parse as dates
 
 ### Updates
  - Warnings relating to parsing issues during grepping that are safe to ignore are now suppressed

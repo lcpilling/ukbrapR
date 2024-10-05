@@ -529,6 +529,8 @@ get_diagnoses <- function(
 					dplyr::mutate(eid = as.numeric(eid))
 			}
 			hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(oper3 %in% !!OPCS3s | stringr::str_detect(oper4, stringr::str_flatten(oper_codes, collapse = "|"))) 
+			
+			if (is.character(hesin_oper_tbl$opdate))  hesin_oper_tbl$opdate <- lubridate::dmy(hesin_oper_tbl$opdate)
 		}
 		
 		cli::cli_alert_success("Loaded {.var hesin_oper} with {nrow(hesin_oper_tbl)} matched rows.")
