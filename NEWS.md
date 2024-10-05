@@ -1,3 +1,12 @@
+# ukbrapR v0.2.7.9000 (05 October 2024)
+
+### Bug fixes
+ - Baseline dates TSV is now correctly located even if user changes working directory 
+
+### Updates
+ - Warnings relating to parsing issues during grepping that are safe to ignore are now suppressed
+
+
 # ukbrapR v0.2.7 (30 September 2024)
 
 ### Updates
