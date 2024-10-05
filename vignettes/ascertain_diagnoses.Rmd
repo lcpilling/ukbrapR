@@ -30,6 +30,16 @@ Diagnosis of condition in UK Biobank participants come from multiple data source
 
 The {ukbrapR} package makes it fast and easy to ascertain diagnoses from multiple UK Biobank data sources in the DNAnexus Research Analysis Platform (RAP).
 
+
+## Required exported files
+
+This only needs to happen once per project. Running `export_tables()` will submit the necessary `table-exporter` jobs to save the raw medical records files to the RAP persistent storage for the project. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
+
+Once the files are exported (~15mins) these can then be used by the below functions to extract diagnoses based on codes lists. 
+
+
+## Input
+
 Depending on the data source different coding vocabularies are required:
 
 * `ICD10` (for searching HES diagnoses, cause of death, and cancer registry)
@@ -50,7 +60,7 @@ For a given set of diagnostic codes get the participant medical events and self-
 
 Codes need to be provided as a data frame with two fields: `vocab_id` and `code`. Valid code vocabularies are listed above. Other cols (such as condition and description) are ignored.
 
-```r
+```{r}
 # example diagnostic codes for Chronic Kidney Disease 
 codes_df_ckd <- ukbrapR:::codes_df_ckd
 head(codes_df_ckd)
@@ -74,7 +84,7 @@ In addition to the "date first" `df` field are:
  - a `bin` field indicating the cases [1] and controls [0]. This relies on a small number of baseline fields also exported. The `df` field for the controls is the date of censoring (currently 30 October 2022).
  - a `bin_prev` field indicating whether the case was before the UK Biobank baseline assessment
 
-```r
+```{r}
 # for each participant, get Date First diagnosed with the condition
 diagnosis_df <- get_df(diagnosis_list)
 
@@ -84,7 +94,7 @@ summary(diagnosis_df)
 
 You can add a prefix to all the variable names by specifying the "prefix" option:
 
-```r
+```{r}
 diagnosis_df <- get_df(diagnosis_list, prefix="ckd")
 
 # how many cases ascertained?
@@ -101,7 +111,7 @@ summary(diagnosis_df$ckd_df[ diagnosis_df$ckd_bin_prev == 1 ])
 
 The default `get_df()` behaviour is to use all available codes. However, the most time-efficient way to get multiple conditions is to run `get_diagnoses()` once for all codes for the conditions you wish to ascertain, then get the "date first diagnosed" for each condition separately. In the codes data frame you just need a field indicating the condition name, that will become the variable prefixes.
 
-```r
+```{r}
 # combine haemochromatosis and CKD codes together
 #   each contain there columns: condition, vocab_id, and code
 #   where `condition` is either "hh" or "ckd" and will become the variable prefix
