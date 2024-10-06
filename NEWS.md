@@ -6,6 +6,8 @@
 
 ### Updates
  - Warnings relating to parsing issues during grepping that are safe to ignore are now suppressed
+ - Updates to documentation / examples / pkgdown site
+ - New website articles to `ascertain_diagnoses`, `label_fields` and for `spark_functions`
 
 
 # ukbrapR v0.2.7 (30 September 2024)

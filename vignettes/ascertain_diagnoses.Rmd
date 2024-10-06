@@ -1,7 +1,7 @@
 ---
 title: "Ascertain diagnoses"
 description: >
-  Learn how to ascertain diagnoses from all UK Biobank sources.
+  Ascertain UK Biobank participant diagnoses from all sources (medical records and self-report data).
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Ascertain diagnoses}
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 library(ukbrapR)
 ```
 
-Diagnosis of condition in UK Biobank participants come from multiple data sources:
+Diagnosis of conditions in UK Biobank participants come from multiple data sources:
 
 * Self-report during assessment
 
@@ -76,6 +76,9 @@ nrow(diagnosis_list$hesin_diag)
 nrow(diagnosis_list$death_cause)
 ```
 
+If providing primary care codes for measures (BMI etc) these are also returned (the `gp_clinical` object in the returned list contains all cols for matched codes).
+
+
 ## 2. Get date first diagnosed
 
 Usually the user is interested in combining the separate data sources into a combined phenotype: the date first diagnosed for each participant from the data/codes in step 1 (cause of death, HES diagnoses, GP clinical, cancer registry, HES operations, and self-reported illness fields). 
@@ -109,7 +112,7 @@ table(diagnosis_df$ckd_src)
 summary(diagnosis_df$ckd_df[ diagnosis_df$ckd_bin_prev == 1 ])
 ```
 
-## 3. Ascertaining multiple conditions at once 
+## Ascertaining multiple conditions at once 
 
 The default `get_df()` behaviour is to use all available codes. However, the most time-efficient way to get multiple conditions is to run `get_diagnoses()` once for all codes for the conditions you wish to ascertain, then get the "date first diagnosed" for each condition separately. In the codes data frame you just need a field indicating the condition name, that will become the variable prefixes.
 

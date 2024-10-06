@@ -1,5 +1,7 @@
 ---
 title: "Extract fields"
+description: >
+  Get participant data for specific list of fields from the cohort database.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Extract fields}

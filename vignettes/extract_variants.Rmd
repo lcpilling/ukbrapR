@@ -1,5 +1,7 @@
 ---
 title: "Extract variants"
+description: >
+  Pull specific variants from whole genome sequence DRAGEN variant call files (pVCFs) into R.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Extract variants}

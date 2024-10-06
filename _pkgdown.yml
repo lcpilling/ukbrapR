@@ -38,6 +38,7 @@ articles:
   contents:
   - ascertain_diagnoses
   - label_fields
+  - spark_functions
 
 - title: Upcoming functions
   desc: Ideas for functions or those in development
