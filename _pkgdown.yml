@@ -37,6 +37,10 @@ articles:
   navbar: ~
   contents:
   - ascertain_diagnoses
-  - extract_fields
   - label_fields
+
+- title: Upcoming functions
+  desc: Ideas for functions or those in development
+  contents:
+  - extract_fields
   - extract_variants

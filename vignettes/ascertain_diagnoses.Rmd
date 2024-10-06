@@ -32,7 +32,7 @@ Diagnosis of condition in UK Biobank participants come from multiple data source
 The {ukbrapR} package makes it fast and easy to ascertain diagnoses from multiple UK Biobank data sources in the DNAnexus Research Analysis Platform (RAP).
 
 
-## Required exported files
+## Requires exported files
 
 This only needs to happen once per project. Running `export_tables()` will submit the necessary `table-exporter` jobs to save the raw medical records files to the RAP persistent storage for the project. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
 
@@ -54,6 +54,7 @@ Depending on the data source different coding vocabularies are required:
 * `ukb_cancer` and `ukb_noncancer` (for self-reported illness at UK Biobank assessments - all instances will be searched)
 
 Ascertaining diagnoses typically takes two steps:
+
 
 ## 1. Get medical records and self-reported illness data for provided codes
 
@@ -116,13 +117,13 @@ The default `get_df()` behaviour is to use all available codes. However, the mos
 # combine haemochromatosis and CKD codes together
 #   each contain there columns: condition, vocab_id, and code
 #   where `condition` is either "hh" or "ckd" and will become the variable prefix
-codes_df_combined = rbind(ukbrapR:::codes_df_hh, ukbrapR:::codes_df_ckd)
+codes_df_combined <- rbind(ukbrapR:::codes_df_hh, ukbrapR:::codes_df_ckd)
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_diagnoses(codes_df_combined)
 
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df = get_df(diagnosis_list, group_by="condition")
+diagnosis_df <- get_df(diagnosis_list, group_by="condition")
 
 # each condition has full set of output
 table(diagnosis_df$hh_bin)
