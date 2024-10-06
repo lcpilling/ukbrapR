@@ -1,6 +1,10 @@
 #' Get UK Biobank participant Electronic Medical Records (EMR) data in a RAP Spark environment
 #'
-#' @description Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
+#' @description 
+#' 
+#' This function is not maintained. Better to use `get_diagnoses()`.
+#' 
+#' Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
 #'
 #' @return Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 #'
@@ -36,6 +40,8 @@ get_emr_spark <- function(
 	verbose=FALSE
 )  {
 	
+  lifecycle::deprecate_warn("0.2.0", "get_emr_spark()", "get_diagnoses()", details="Spark functions are no longer maintained any may contain bugs compared to newer functions.")
+  
 	start_time <- Sys.time()
 
 	vocab_col = "vocab_id"
