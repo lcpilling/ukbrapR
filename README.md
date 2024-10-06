@@ -1,21 +1,21 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.7.9000-informational.svg)](https://github.com/lcpilling/ukbrapR)
-[![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/master)
+[![](https://img.shields.io/badge/version-0.2.8-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
 <!-- badges: end -->
 
 ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
-> Since version `0.2.0` the package works best in a "normal" cluster using RStudio and raw UK Biobank data from the table-exporter. Prior versions were designed with Spark clusters in mind. These functions are still available but are not updated.
+> Since `v0.2.0` ukbrapR works best on a "normal" cluster using RStudio and raw data from the table-exporter. Old Spark functions are still available but are not updated.
 
 <sub>Wrapped server icon by DALL-E</sub>
 
 ## Installation
 
-In the DNAnexus Tools menu launch an RStudio environment on a normal priority instance. Install {ukbrapR} as below:
+In the DNAnexus Tools menu launch an RStudio environment on a normal priority instance.
 
 ```r
 # install latest release (recommended)
@@ -23,18 +23,18 @@ remotes::install_github("lcpilling/ukbrapR@*release")
 
 # development version
 # remotes::install_github("lcpilling/ukbrapR")
-
-# previous release (see tags)
-# remotes::install_github("lcpilling/ukbrapR@v0.1.7")
 ```
 
-## Export tables of raw data
+## Ascertain diagnoses
 
-This only needs to happen once per project. Running `ukbrapR::export_tables()` will submit the necessary `table-exporter` jobs to save the raw medical records files to the RAP persistent storage for the project. ~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.
+Diagnosis of conditions in UK Biobank participants come from multiple data sources. {ukbrapR} makes it fast and easy to ascertain diagnoses from multiple UK Biobank data sources in the DNAnexus Research Analysis Platform (RAP). Follow the below steps. See the website article for more details.
 
-Once the files are exported (~15mins) these can then be used by the below functions to extract diagnoses based on codes lists. 
 
-## Get GP, HES, cancer registry, and self-reported illness data
+### 1. Export tables of raw data
+
+This only needs to happen once per project. Run `export_tables()` to submit the `table-exporter` jobs to save the required files to the RAP persistent storage. ~10Gb of text files are created, costing ~£0.15 per month to store.
+
+### 2. Get diagnoses from all data sources
 
 For a given set of diagnostic codes get the participant Electronic Medical Records (EMR) and self-reported illess data. Returns a list containing up to 6 data frames: the subset of the clinical files with matched codes. 
 
@@ -54,14 +54,12 @@ head(codes_df_ckd)
 #> 1       ckd    ICD10 N18.3
 #> 2       ckd    ICD10 N18.4
 #> 3       ckd    ICD10 N18.5
-#> 4       ckd    ICD10 N18.6
-#> 5       ckd    ICD10 N18.9
-#> 6       ckd    ICD10   N19
+#> ...
 
 # get diagnosis data - returns list of data frames (one per source)
 diagnosis_list <- get_diagnoses(codes_df_ckd) 
 #> 7 ICD10 codes, 40 Read2 codes, 37 CTV3 codes 
-#> ~3 minutes
+#> ~2 minutes
 
 # N records for each source
 nrow(diagnosis_list$gp_clinical)  #  29,083
@@ -69,7 +67,7 @@ nrow(diagnosis_list$hesin_diag)   # 206,390
 nrow(diagnosis_list$death_cause)  #   1,962
 ```
 
-## Get date first diagnosed
+### 3. Get date first diagnosed
 
 Identify the date first diagnosed for each participant from any of datasets searched with `get_diagnoses()` (cause of death, HES diagnoses, GP clinical, cancer registry, HES operations, and self-reported illness fields). 
 
@@ -81,43 +79,14 @@ Also included are:
 
 ```r
 # for each participant, get Date First diagnosed with the condition
-diagnosis_df <- get_df(diagnosis_list)
-#> ~2 seconds
-
-# skim data 
-skimr::skim(diagnosis_df)
-#> ── Data Summary ────────────────────────
-#>                            Values      
-#> Name                       diagnosis_df
-#> Number of rows             502269      
-#> Number of columns          8           
-#> 
-#> ── Variable type: character ─────────────────────────────────────────────────────
-#>   skim_variable n_missing complete_rate min max empty n_unique whitespace
-#> 1 src              470334        0.0636   2   5     0        3          0
-#> 
-#> ── Variable type: Date ──────────────────────────────────────────────────────────
-#>   skim_variable n_missing complete_rate min        max        median     n_unique
-#> 1 gp_df            489522       0.0254  1958-01-01 2017-09-06 2009-09-15     3263
-#> 2 hes_df           477568       0.0492  1995-08-29 2022-10-31 2018-05-15     5562
-#> 3 death_df         500342       0.00384 2008-02-20 2022-12-15 2020-03-03     1429
-#> 4 df                    0       1       1958-01-01 2022-12-01 2022-10-30     6367
-#> 
-#> ── Variable type: numeric ───────────────────────────────────────────────────────
-#>   skim_variable n_missing complete_rate         mean          sd
-#> 1 bin                   0             1       0.0636       0.244
-#> 2 bin_prev              0             1       0.0131       0.114
-```
-
-You can add a prefix to all the variable names by specifying the "prefix" option:
-
-```r
+#   {optional} add a prefix to the variable names with "prefix"
 diagnosis_df <- get_df(diagnosis_list, prefix="ckd")
+#> ~2 seconds
 
 # how many cases ascertained?
 table(diagnosis_df$ckd_bin)
-#>     0      1 
-#>470334  31935 
+#>      0      1 
+#> 470334  31935 
 
 # source of earliest diagnosis date
 table(diagnosis_df$ckd_src)
@@ -130,7 +99,7 @@ summary(diagnosis_df$ckd_df[ diagnosis_df$ckd_bin_prev == 1 ])
 #> "1958-01-01" "2006-06-21" "2007-01-12" "2006-06-24" "2007-11-19" "2010-06-16" 
 ```
 
-## Ascertaining multiple conditions at once 
+### Ascertaining multiple conditions at once 
 
 The default `get_df()` behaviour is to use all available codes. However the most time-efficient way to get multiple conditions is to run `get_diagnoses()` once for all codes for the conditions you wish to ascertain, then get the "date first diagnosed" for each condition separately. In the codes data frame you just need a field indicating the condition name, that will become the variable prefixes.
 
@@ -152,88 +121,17 @@ table(diagnosis_df$hh_bin)
 #> 500254   2015 
 
 table(diagnosis_df$ckd_bin)
-#>     0      1 
-#>470334  31935 
+#>      0      1 
+#> 470334  31935 
 ```
 
 In the above example we also included a UK Biobank self-reported illness code for haemochromatosis, that was also ascertained (the Date First is run on each condition separately, they do not all need to have the same data sources).
 
-## Label UK Biobank data fields 
+## Other functions
 
-Categorical fields are exported as integers but are encoded with labels. For example [20116 "Smoking status"](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=20116):
-
-| Coding | Meaning              |
-|--------|----------------------|
-| -3     | Prefer not to answer |
-|  0     | Never                |
-|  1     | Previous             |
-|  2     | Current              |
-
-This package includes two functions to label a single UK Biobank field or a data frame of them using the [UK Biobank encoding schema](https://biobank.ctsu.ox.ac.uk/crystal/schema.cgi). Examples:
-
-```r
-# update the Smoking status field
-ukb <- label_ukb_field(ukb, field="p20116_i0")
-
-table(ukb$p20116_i0)                   # tabulates the values
-#>    -3      0      1      2 
-#>  2057 273405 172966  52949 
-
-table(haven::as_factor(ukb$p20116_i0)) # tabulates the labels
-#> Prefer not to answer                Never             Previous              Current 
-#>                 2057               273405               172966                52949
-
-haven::print_labels(ukb$p20116_i0)     # show the value:label mapping for this variable
-#> Labels:
-#>  value                label
-#>     -3 Prefer not to answer
-#>      0                Never
-#>      1             Previous
-#>      2              Current
-
-#
-# if you have a whole data frame of exported fields, you can use the wrapper function label_ukb_fields()
-
-# say the `ukb` data frame contains 4 variables: `eid`, `p54_i0`, `p31` and `age_at_assessment` 
-
-# update the variables that looks like UK Biobank fields with titles and, where cateogrical, labels 
-# i.e., `p54_i0` and `p31` only -- `eid` and `age_at_assessment` are ignored
-ukb <- label_ukb_fields(ukb)
-
-table(ukb$p31)                   # tabulates the values
-#>      0      1 
-#> 273238 229031 
-
-table(haven::as_factor(ukb$p31)) # tabulates the labels
-#> Female   Male 
-#> 273238 229031 
-```
-
-
-## Pull phenotype data from Spark environment
-
-**Pull phenotypes from Apache Spark on DNAnexus to an R data frame.** Recommend launching a Spark cluster with at least `mem1_hdd1_v2_x16` and **2 nodes** otherwise this can fail with error "...ensure that workers...have sufficient resources"
-
-The underlying code is mostly from the [UK Biobank GitHub](https://github.com/UK-Biobank/UKB-RAP-Notebooks/blob/main/NBs_Prelim/105_export_participant_data_to_r.ipynb). 
-
-```r
-# get phenotype data (participant ID, sex, baseline age, and baseline assessment date)
-ukb <- get_rap_phenos(c("eid", "p31", "p21003_i0", "p53_i0"))
-#> 48.02 sec elapsed
-
-# summary of data
-table(ukb$p31)
-#> Female   Male 
-#> 273297 229067
-summary(ukb$p21003_i0)
-#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>  37.00   50.00   58.00   56.53   63.00   73.00 
-```
-
-### Previous Spark functionality
-
-If you need to see the previous release documentation follow the tags to the version required: https://github.com/lcpilling/ukbrapR/tree/v0.1.7
-
+* Label UK Biobank data fields with `label_ukb_fields()`
+* Upload/download files between worker and RAP with `upload_to_rap()` and `download_from_rap()`
+* Pull phenotypes from Spark instance with `get_rap_phenos()`
 
 ## Questions and comments
 

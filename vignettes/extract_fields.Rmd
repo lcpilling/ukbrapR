@@ -1,0 +1,18 @@
+---
+title: "Extract fields"
+description: >
+  Get participant data for specific list of fields from the cohort database.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Extract fields}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(ukbrapR)
+```

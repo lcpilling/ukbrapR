@@ -19,6 +19,8 @@ get_emr_spark(codes_df, spark_master = "spark://master:41000", verbose = FALSE)
 Returns a list of data frames (the participant data for the requested diagnosis codes: `death_cause`, `hesin_diag`, and `gp_clinical`. Also includes the original codes list)
 }
 \description{
+This function is not maintained. Better to use `get_diagnoses()`.
+
 Using a Spark node/cluster on the UK Biobank Research Analysis Platform (DNAnexus), use R to get medical records for specific diagnostic codes list
 }
 \examples{

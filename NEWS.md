@@ -1,4 +1,4 @@
-# ukbrapR v0.2.7.9000 (05 October 2024)
+# ukbrapR v0.2.8 (05 October 2024)
 
 ### Bug fixes
  - Baseline dates TSV is now correctly located even if user changes working directory 
@@ -6,6 +6,8 @@
 
 ### Updates
  - Warnings relating to parsing issues during grepping that are safe to ignore are now suppressed
+ - Updates to documentation / examples / pkgdown site
+ - New website articles to `ascertain_diagnoses`, `label_fields` and for `spark_functions`
 
 
 # ukbrapR v0.2.7 (30 September 2024)
