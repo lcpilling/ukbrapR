@@ -1,0 +1,19 @@
+###PGS CATALOG SCORING FILE - see https://www.pgscatalog.org/downloads/#dl_ftp_scoring for additional information
+#format_version=2.0
+##POLYGENIC SCORE (PGS) INFORMATION
+#pgs_id=PGS000776
+#pgs_name=GRS9_Cirr
+#trait_reported=Cirrhosis
+#trait_mapped=cirrhosis of liver
+#trait_efo=EFO_0001422
+#genome_build=NR
+#variants_number=9
+#weight_type=beta
+##SOURCE INFORMATION
+#pgp_id=PGP000180
+#citation=Innes H et al. Gastroenterology (2020). doi:10.1053/j.gastro.2020.06.014
+##HARMONIZATION DETAILS
+#HmPOS_build=GRCh38
+#HmPOS_date=2022-07-29
+#HmPOS_match_chr={"True": null, "False": null}
+#HmPOS_match_pos={"True": null, "False": null}
