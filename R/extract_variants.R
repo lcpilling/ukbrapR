@@ -1,6 +1,6 @@
 #' Extract variants from DRAGEN pVCF file(s) into single BED file 
 #'
-#' @description For a list of diagnostic codes get the HES, GP, cancer registry, operations, and self-reported illness data, matching the provided codes.
+#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (spread across many pVCFs) into a single BED file.
 #'
 #' @return A single merged BED file (and BIM and FAM files)
 #'
@@ -236,17 +236,73 @@ make_dragen_bed <- function(
 
 
 
-#
-#
-#
-#
-#
-# load BED file and return as data frame
+#' Load BED file into memory
+#'
+#' @description Use Plink to convert BED to RAW then easily load it
+#'
+#' @return A data frame
+#'
+#' @author Luke Pilling
+#'
+#' @name load_bed
+#'
+#' @param in_bed A string. BED prefix
+#' @param verbose Logical. Be verbose (show individual steps),
+#'        \code{default=FALSE}
+#' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
+#'        \code{default=FALSE}
+#'
+#' @examples
+#'
+#' make_dragen_bed(in_file=readr::read_tsv(system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), n_max=3, progress=FALSE, show_col_types=FALSE), out_bed="test_pgs_liver_cirrhosis")
+#'
+#' @export
+#'
+load_bed <- function(
+    in_bed,
+    verbose=FALSE,
+    very_verbose=FALSE
+)  {
+
+  # if it's a character string, assume user has provided a file path
+  if (class(in_bed)[1] == "character")  {
+    
+    if (length(in_bed)>1)  cli::cli_abort("Input file path needs to be length 1")
+	
+    # does input file exist?
+    if (! file.exists(stringr::str_c(in_bed, ".bed")))  cli::cli_abort("Input file not found")
+    
+  }
+
+  # use Plink to convert
+  if (verbose) cli::cli_alert("Use Plink to convert BED to RAW text file")
+  c1 <- paste0("./plink --bfile ", in_bed, " --recode A --out tmp")
+  if (very_verbose)  {
+    system(c1)
+  } else {
+    system(stringr::str_c(c1, " >/dev/null"))
+  }
+  
+  # load data to format / merge
+  if (verbose) cli::cli_alert("Read into memory and format")
+  bed <- readr::read_delim("tmp.raw", delim=" ", progress=FALSE, show_col_types=FALSE)
+  bed <- bed |>
+    dplyr::rename(eid=FID) |>
+    dplyr::select(-IID, -PAT, -MAT, -SEX, -PHENOTYPE)
+
+  # remove tmp files
+  system("rm tmp*")
+
+  # return
+  return(bed)
+  
+}
 
 
-
-
-
+#
+#
+# extract_variants
+# wrapper function for make bed and load bed
 
 
 
