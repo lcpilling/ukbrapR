@@ -264,6 +264,9 @@ load_bed <- function(
     very_verbose=FALSE
 )  {
 
+  # required files
+  file_plink  <- system.file("files", "plink_linux_x86_64_20240818.zip", package="ukbrapR")
+
   # if it's a character string, assume user has provided a file path
   if (class(in_bed)[1] == "character")  {
     
@@ -272,6 +275,25 @@ load_bed <- function(
     # does input file exist?
     if (! file.exists(stringr::str_c(in_bed, ".bed")))  cli::cli_abort("Input file not found")
     
+  }
+
+  # get Plink 1.9 (if not already available)
+  if (verbose) cli::cli_alert("Checking plink available")
+  if (! file.exists("plink"))  {
+    if (verbose) cli::cli_alert("Unpacking plink")
+    
+    #system("wget https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20240818.zip")
+    #system("unzip plink_linux_x86_64_20240818.zip")
+    
+    c1 <- paste0("cp ", file_plink, " .")
+    c2 <- paste0("unzip ", file_plink)
+    if (very_verbose)  {
+      system(c1)
+      system(c2)
+    } else {
+      system(stringr::str_c(c1, " >/dev/null"))
+      system(stringr::str_c(c2, " >/dev/null"))
+    }
   }
 
   # use Plink to convert
