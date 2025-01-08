@@ -236,6 +236,8 @@ get_df <- function(
 			
 			## hesin_oper
 			if (!is.null(diagnosis_list_sub$hesin_oper) & any(codes_sub$vocab_id %in% c("OPCS3","OPCS4")))  {  
+				
+				# get OPCS4 codes to search for
 				OPCS4s = ""
 				if (any(codes_sub$vocab_id == "OPCS4"))  {
 					OPCS4s <- codes_sub |>
@@ -246,9 +248,9 @@ get_df <- function(
 						stringr::str_remove(stringr::fixed(".")) |> 
 						stringr::str_sub(1, 5)
 				}
-				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
-				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
 				
+				# get OPCS3 codes to search for
+				OPCS3s = ""
 				if (any(codes_sub$vocab_id == "OPCS3"))  {
 					OPCS3s <- codes_sub |>
 						dplyr::filter(vocab_id == "OPCS3") |>
@@ -258,8 +260,11 @@ get_df <- function(
 						stringr::str_remove(stringr::fixed(".")) |> 
 						stringr::str_sub(1, 5)
 				}
+				
+				# subset hesin_oper to those matching either
+				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
 				OPCS3_search = stringr::str_flatten(OPCS3s, collapse = "|")
-				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
+				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search) | stringr::str_detect(oper3, !! OPCS3_search))
 			}
 			
 			## self-reported illness 
