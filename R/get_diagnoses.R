@@ -108,12 +108,12 @@ get_diagnoses <- function(
 	OPCS4s      <- ""
 	
 	# throw error if any provided code has length 0
-	if (any(codes_df[,codes_col] == 0))  {
+	if (any(stringr::str_length(codes_df[,codes_col]) == 0))  {
 		cli::cli_abort("Blank code provided. Check your input codes lists to avoid unexpected matches.")
 	}
 	
 	# warn if any provided code has length 1
-	if (any(codes_df[,codes_col] == 1))  {
+	if (any(stringr::str_length(codes_df[,codes_col]) == 1))  {
 		cli::cli_warn("Some provided code(s) have length 1. Check your input codes lists and matched outputs to avoid unexpected matches.")
 	}
 	
