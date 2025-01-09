@@ -107,6 +107,16 @@ get_diagnoses <- function(
 	OPCS3s      <- ""
 	OPCS4s      <- ""
 	
+	# throw error if any provided code has length 0
+	if (any(codes_df[,codes_col] == 0))  {
+		cli::cli_abort("Blank code provided. Check your input codes lists to avoid unexpected matches.")
+	}
+	
+	# warn if any provided code has length 1
+	if (any(codes_df[,codes_col] == 1))  {
+		cli::cli_warn("Some provided code(s) have length 1. Check your input codes lists and matched outputs to avoid unexpected matches.")
+	}
+	
 	# function to check for hyphens and abort if any provided 
 	# (suggests they want a range of codes. Safer to abort at ask the user to explicitly provide the codes to search for)
 	hyphen_check <- function(codes, vocab)  {
