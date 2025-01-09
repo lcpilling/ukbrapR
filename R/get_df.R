@@ -265,9 +265,9 @@ get_df <- function(
 				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
 				OPCS3_search = stringr::str_flatten(OPCS3s, collapse = "|")
 				
-				if (OPCS4s != "" & OPCS3s == "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
-				if (OPCS4s == "" & OPCS3s != "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
-				if (OPCS4s != "" & OPCS3s != "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search) | stringr::str_detect(oper3, !! OPCS3_search))
+				if (OPCS4s[1] != "" & OPCS3s[1] == "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
+				if (OPCS4s[1] == "" & OPCS3s[1] != "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
+				if (OPCS4s[1] != "" & OPCS3s[1] != "")  diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search) | stringr::str_detect(oper3, !! OPCS3_search))
 			}
 			
 			## self-reported illness 
