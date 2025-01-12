@@ -1,4 +1,4 @@
-# ukbrapR v0.2.8.9000 (9th January 2025)
+# ukbrapR v0.2.9 (12th January 2025)
 
 ### Bug fixes
  - Fixes for issue #19 (thanks to @nsandau for the help):
