@@ -7,6 +7,7 @@
 
 ### Updates
  - Additional checking of `get_diagnoses()` input to abort if "blank" codes are provided to the grep.
+ - When getting date first from self-reported illness data exclude "year" if < 1936 (earliest birth year for any participant)
 
 
 # ukbrapR v0.2.8 (05 October 2024)

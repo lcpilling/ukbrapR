@@ -784,8 +784,9 @@ get_selfrep_illness_df <- function(
 	}
 	
 	# determine earliest date
+	# remove if year is < 1900
 	ukb_dat <- ukb_dat |>
-		dplyr::filter(!is.na(selfrep_df)) |>
+		dplyr::filter(!is.na(selfrep_df) & selfrep_df >= 1936) |>
 		dplyr::group_by(eid) |>
 		dplyr::slice(which.min(selfrep_df)) |>
 		dplyr::ungroup()
