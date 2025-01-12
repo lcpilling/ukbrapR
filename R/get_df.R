@@ -172,6 +172,7 @@ get_df <- function(
 			diagnosis_list_sub = diagnosis_list
 			
 			## gp clinical
+			gp_clinical_sub <- NULL
 			if (!is.null(diagnosis_list_sub$gp_clinical) & any(codes_sub$vocab_id %in% c("Read2","CTV3")))  {  
 				Read2s = ""
 				CTV3s  = ""
@@ -183,8 +184,9 @@ get_df <- function(
 					CTV3s  = codes_sub$code[codes_sub$vocab_id == "CTV3"]
 					CTV3s <- stringr::str_sub(CTV3s, 1, 5) |> unique()
 				}
-				diagnosis_list_sub$gp_clinical = diagnosis_list_sub$gp_clinical |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
+				gp_clinical_sub <- diagnosis_list_sub$gp_clinical |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
 			}
+			diagnosis_list_sub$gp_clinical <- gp_clinical_sub
 			
 			# create ICD10 search string
 			if (any(codes_sub$vocab_id == "ICD10"))  {
@@ -199,8 +201,8 @@ get_df <- function(
 			}
 			
 			## hesin_diag
+			hesin_diag_sub = NULL
 			if (!is.null(diagnosis_list_sub$hesin_diag) & any(codes_sub$vocab_id %in% c("ICD10","ICD9")))  {  
-				hesin_diag_sub = NULL
 				
 				if (any(codes_sub$vocab_id == "ICD10"))  {
 					colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
@@ -223,19 +225,28 @@ get_df <- function(
 					hesin_diag_sub = rbind(hesin_diag_sub, diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_starts(diag_icd9, !! ICD9_search)))
 				}
 				
-				diagnosis_list_sub$hesin_diag = hesin_diag_sub
 			}
+			diagnosis_list_sub$hesin_diag <- hesin_diag_sub
 			
 			## death_cause
-			if (!is.null(diagnosis_list_sub$death_cause) & any(codes_sub$vocab_id == "ICD10"))  
-				diagnosis_list_sub$death_cause = diagnosis_list_sub$death_cause |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))
+			death_cause_sub <- NULL
+			if (!is.null(diagnosis_list_sub$death_cause) & any(codes_sub$vocab_id == "ICD10"))  {
+				death_cause_sub <- diagnosis_list_sub$death_cause |> dplyr::filter(stringr::str_detect( cause_icd10, !! ICD10_search))
+			}
+			diagnosis_list_sub$death_cause <- death_cause_sub
 			
 			## cancer_registry
-			if (!is.null(diagnosis_list_sub$cancer_registry) & any(codes_sub$vocab_id == "ICD10"))  
-				diagnosis_list_sub$cancer_registry = diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd10, !! ICD10_search))  
+			cancer_registry_sub <- NULL
+			if (!is.null(diagnosis_list_sub$cancer_registry) & any(codes_sub$vocab_id == "ICD10"))  {
+				cancer_registry_sub <- diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd10, !! ICD10_search))  
+			}
+			diagnosis_list_sub$cancer_registry <- cancer_registry_sub
 			
 			## hesin_oper
+			hesin_oper_sub <- NULL
 			if (!is.null(diagnosis_list_sub$hesin_oper) & any(codes_sub$vocab_id %in% c("OPCS3","OPCS4")))  {  
+				
+				# get OPCS4 codes to search for
 				OPCS4s = ""
 				if (any(codes_sub$vocab_id == "OPCS4"))  {
 					OPCS4s <- codes_sub |>
@@ -246,9 +257,9 @@ get_df <- function(
 						stringr::str_remove(stringr::fixed(".")) |> 
 						stringr::str_sub(1, 5)
 				}
-				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
-				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
 				
+				# get OPCS3 codes to search for
+				OPCS3s = ""
 				if (any(codes_sub$vocab_id == "OPCS3"))  {
 					OPCS3s <- codes_sub |>
 						dplyr::filter(vocab_id == "OPCS3") |>
@@ -258,21 +269,30 @@ get_df <- function(
 						stringr::str_remove(stringr::fixed(".")) |> 
 						stringr::str_sub(1, 5)
 				}
+				
+				# subset hesin_oper to those matching either
+				OPCS4_search = stringr::str_flatten(OPCS4s, collapse = "|")
 				OPCS3_search = stringr::str_flatten(OPCS3s, collapse = "|")
-				diagnosis_list_sub$hesin_oper = diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
+				
+				if (OPCS4s[1] != "" & OPCS3s[1] == "")  hesin_oper_sub <- diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search))
+				if (OPCS4s[1] == "" & OPCS3s[1] != "")  hesin_oper_sub <- diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper3, !! OPCS3_search))
+				if (OPCS4s[1] != "" & OPCS3s[1] != "")  hesin_oper_sub <- diagnosis_list_sub$hesin_oper |> dplyr::filter(stringr::str_detect(oper4, !! OPCS4_search) | stringr::str_detect(oper3, !! OPCS3_search))
 			}
+			diagnosis_list_sub$hesin_oper <- hesin_oper_sub
 			
 			## self-reported illness 
+			selfrep_illness_sub <- NULL
 			if (!is.null(diagnosis_list_sub$selfrep_illness) & any(codes_sub$vocab_id %in% c("ukb_cancer","ukb_noncancer")))  {
 				if (any(codes_sub$vocab_id == "ukb_cancer"))  {
 					codes_cancer = codes_sub$code[ codes_sub$vocab_id == "ukb_cancer" ]
-					diagnosis_list_sub$selfrep_illness = diagnosis_list_sub$selfrep_illness |> dplyr::filter(cancer_code %in% codes_cancer)
+					selfrep_illness_sub <- diagnosis_list_sub$selfrep_illness |> dplyr::filter(cancer_code %in% codes_cancer)
 				}
 				if (any(codes_sub$vocab_id == "ukb_noncancer"))  {
 					codes_noncancer = codes_sub$code[ codes_sub$vocab_id == "ukb_noncancer" ]
-					diagnosis_list_sub$selfrep_illness = diagnosis_list_sub$selfrep_illness |> dplyr::filter(noncancer_code %in% codes_noncancer)
+					selfrep_illness_sub <- diagnosis_list_sub$selfrep_illness |> dplyr::filter(noncancer_code %in% codes_noncancer)
 				}
 			}
+			diagnosis_list_sub$selfrep_illness <- selfrep_illness_sub
 			if (!any(codes_sub$vocab_id %in% c("ukb_cancer","ukb_noncancer")))  include_selfrep_illness <- FALSE
 			
 			
@@ -764,8 +784,9 @@ get_selfrep_illness_df <- function(
 	}
 	
 	# determine earliest date
+	# remove if year is < 1900
 	ukb_dat <- ukb_dat |>
-		dplyr::filter(!is.na(selfrep_df)) |>
+		dplyr::filter(!is.na(selfrep_df) & selfrep_df >= 1936) |>
 		dplyr::group_by(eid) |>
 		dplyr::slice(which.min(selfrep_df)) |>
 		dplyr::ungroup()

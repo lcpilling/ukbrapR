@@ -107,6 +107,16 @@ get_diagnoses <- function(
 	OPCS3s      <- ""
 	OPCS4s      <- ""
 	
+	# throw error if any provided code has length 0
+	if (any(stringr::str_length(codes_df[,codes_col]) == 0))  {
+		cli::cli_abort("Blank code provided. Check your input codes lists to avoid unexpected matches.")
+	}
+	
+	# warn if any provided code has length 1
+	if (any(stringr::str_length(codes_df[,codes_col]) == 1))  {
+		cli::cli_warn("Some provided code(s) have length 1. Check your input codes lists and matched outputs to avoid unexpected matches.")
+	}
+	
 	# function to check for hyphens and abort if any provided 
 	# (suggests they want a range of codes. Safer to abort at ask the user to explicitly provide the codes to search for)
 	hyphen_check <- function(codes, vocab)  {
@@ -528,7 +538,9 @@ get_diagnoses <- function(
 					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
 					dplyr::mutate(eid = as.numeric(eid))
 			}
-			hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(oper3 %in% !!OPCS3s | stringr::str_detect(oper4, stringr::str_flatten(oper_codes, collapse = "|"))) 
+			if (OPCS4s[1] != "" & OPCS3s[1] == "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_detect(oper4, stringr::str_flatten(!! OPCS4s, collapse = "|"))) 
+			if (OPCS4s[1] == "" & OPCS3s[1] != "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_starts(oper3, stringr::str_flatten(!! OPCS3s, collapse = "|"))) 
+			if (OPCS4s[1] != "" & OPCS3s[1] != "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_starts(oper3, stringr::str_flatten(!! OPCS3s, collapse = "|")) | stringr::str_detect(oper4, stringr::str_flatten(!!OPCS4s, collapse = "|"))) 
 			
 			if (is.character(hesin_oper_tbl$opdate))  hesin_oper_tbl$opdate <- lubridate::dmy(hesin_oper_tbl$opdate)
 		}

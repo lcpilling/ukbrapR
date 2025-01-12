@@ -1,3 +1,15 @@
+# ukbrapR v0.2.9 (12th January 2025)
+
+### Bug fixes
+ - Fixes for issue #19 (thanks to @nsandau for the help):
+   1. Where OPCS searches were not always performed correctly if only OPCS3/4 codes were provided.
+   2. When using "group_by" in `get_df()` some diagnoses were incorrectly carried over between groups when different vocabs were provided for each group (condition). 
+
+### Updates
+ - Additional checking of `get_diagnoses()` input to abort if "blank" codes are provided to the grep.
+ - When getting date first from self-reported illness data exclude "year" if < 1936 (earliest birth year for any participant)
+
+
 # ukbrapR v0.2.8 (05 October 2024)
 
 ### Bug fixes
