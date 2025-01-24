@@ -29,7 +29,7 @@ make_dragen_bed <- function(
 )  {
   
   # required files
-  file_plink  <- system.file("files", "plink_linux_x86_64_20240818.zip", package="ukbrapR")
+  file_plink  <- system.file("files", "plink.zip", package="ukbrapR")
   file_dragen <- system.file("files", "dragen_pvcf_coordinates.csv.gz", package="ukbrapR")
   
   # start
@@ -265,7 +265,7 @@ load_bed <- function(
 )  {
 
   # required files
-  file_plink  <- system.file("files", "plink_linux_x86_64_20240818.zip", package="ukbrapR")
+  file_plink  <- system.file("files", "plink.zip", package="ukbrapR")
 
   # if it's a character string, assume user has provided a file path
   if (class(in_bed)[1] == "character")  {
