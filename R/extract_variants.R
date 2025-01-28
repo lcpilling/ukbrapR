@@ -119,10 +119,6 @@ make_dragen_bed <- function(
   if (verbose) cli::cli_alert("Checking plink available")
   if (! file.exists("plink"))  {
     if (verbose) cli::cli_alert("Unpacking plink")
-    
-    #system("wget https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20240818.zip")
-    #system("unzip plink_linux_x86_64_20240818.zip")
-    
     c1 <- paste0("cp ", file_plink, " .")
     c2 <- paste0("unzip ", file_plink)
     if (very_verbose)  {
@@ -232,6 +228,203 @@ make_dragen_bed <- function(
   if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
   
 }
+
+
+
+
+#' Extract variants from TOPmed file(s) into single BED file 
+#'
+#' @description For a given set of genomic coordinates extract from the UK Biobank imputed TOPMmed into a single BED file.
+#'
+#' @return A single merged BED file (and BIM and FAM files)
+#'
+#' @author Luke Pilling
+#'
+#' @name make_topmed_bed
+#'
+#' @param in_file A data frame or file path. Contains at least two columns: `rsID` and `CHR`. Other columns are ignored.
+#' @param out_bed A string. 
+#' @param verbose Logical. Be verbose (show individual steps),
+#'        \code{default=FALSE}
+#' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
+#'        \code{default=FALSE}
+#'
+#' @examples
+#'
+#' make_dragen_bed(in_file=readr::read_tsv(system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), n_max=3, progress=FALSE, show_col_types=FALSE), out_bed="test_pgs_liver_cirrhosis")
+#'
+#' @export
+#'
+make_topmed_bed <- function(
+    in_file,     # in_file <- readr::read_tsv(system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), n_max=2)  # example
+    out_bed,
+    verbose=FALSE,
+    very_verbose=FALSE
+)  {
+  
+  # required files
+  file_plink <- system.file("files", "plink.zip", package="ukbrapR")
+  file_bgen  <- system.file("files", "bgen.tgz", package="ukbrapR")
+  
+  # start
+  start_time <- Sys.time()
+  
+  #
+  #
+  # check inputs
+  if (very_verbose)  verbose <- TRUE
+  if (verbose) cli::cli_alert("Checking inputs")
+  
+  # load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
+  varlist <- NULL
+  
+  # if it's a character string, assume user has provided a file path
+  if (class(in_file)[1] == "character")  {
+    
+    if (length(in_file)>1)  cli::cli_abort("Input file path needs to be length 1")
+    # does input file exist?
+    if (! file.exists(in_file))  cli::cli_abort("Input file not found")
+    varlist <- readr::read_tsv(in_file, progress=FALSE, show_col_types=FALSE)
+    
+  } else if (! any(class(in_file) %in% c("data.frame","tbl","tbl_df")))  {
+    
+    cli::cli_abort(c(
+      "{.var in_file} must be a data.frame (or tibble), or a character string",
+      "x" = "You've supplied a {.cls {class(in_file)}} vector."
+    ))
+    
+  } else {
+    varlist <- in_file   # user has passed a data frame
+  }
+  
+  # data frame needs to include `CHR` and `POS`
+  if (any( ! c("CHR","rsID") %in% colnames(varlist) ) )  cli::cli_abort("Input file needs to contain cols CHR and rsID")
+  varlist <- varlist |> 
+    dplyr::arrange(CHR, rsID) |>
+    dplyr::distinct()
+  
+  # check output format 
+  if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
+  if (length(out_bed)>1)  cli::cli_abort("Output file prefix needs to be length 1")
+
+  #
+  #
+  # get bgenix (if not already available)
+  if (verbose) cli::cli_alert("Checking bgenix available")
+  if (! file.exists("bgenix"))  {
+    if (verbose) cli::cli_alert("Unpacking bgenix")
+    c1 <- paste0("cp ", file_bgen, " .")
+    c2 <- paste0("tar -xvzf ", file_bgen, " --strip-components=1")
+    if (very_verbose)  {
+      system(c1)
+      system(c2)
+    } else {
+      system(stringr::str_c(c1, " >/dev/null"))
+      system(stringr::str_c(c2, " >/dev/null"))
+    }
+  }
+  #
+  #
+  # get Plink 1.9 (if not already available)
+  if (verbose) cli::cli_alert("Checking plink available")
+  if (! file.exists("plink"))  {
+    if (verbose) cli::cli_alert("Unpacking plink")
+    c1 <- paste0("cp ", file_plink, " .")
+    c2 <- paste0("unzip ", file_plink)
+    if (very_verbose)  {
+      system(c1)
+      system(c2)
+    } else {
+      system(stringr::str_c(c1, " >/dev/null"))
+      system(stringr::str_c(c2, " >/dev/null"))
+    }
+  }
+  
+  #
+  #
+  # for each CHR 
+  chrs <- unique(varlist$CHR)
+  n_chrs <- length(chrs)
+  
+  # show progress
+  cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} TOPmed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*90)})")
+  if (length(chrs)>1)  {
+    options(cli.progress_show_after = 0)
+    cli::cli_progress_bar(format = "Doing file {cli::pb_current} of {cli::pb_total} {cli::pb_bar} {cli::pb_percent} | {cli::pb_eta_str}", total = length(fls))
+  }
+  
+  # loop over files...
+  for (ii in 1:length(chrs))  {
+    
+    if (length(chrs)>1)  cli::cli_progress_update()
+    
+    # this CHR
+    chr <- chrs[ii]
+    
+    # get variants list for this file
+    varlist_sub <- varlist |> 
+      dplyr::filter(CHR==chr)
+    readr::write_tsv(varlist_sub$rsID, "_ukbrapr_tmp_rsIDs.txt")
+    
+    # path to BGEN
+    bgen_path <- stringr::str_c("/mnt/project/Bulk/Imputation\\ from\\ genotype\\ \\(TOPmed\\)/ukb21007_c", chr, "_b0_v1.bgen")
+    #if (verbose) cli::cli_alert(stringr::str_c("Path to pVCF: ", bgen_path))
+    
+    # use bgenix to extract subset of BGEN
+    if (verbose) cli::cli_alert("Use bgenix to extract the positions")
+    c1 <- stringr::str_c("./bgenix -g ", bgen_path, " -incl-rsids _ukbrapr_tmp_rsIDs.txt > _ukbrapr_tmp.bgen")
+    if (very_verbose)  {
+      system(c1)
+    } else {
+      system(stringr::str_c(c1, " >/dev/null"))
+    }
+    
+    # use Plink to convert to BED
+    if (verbose) cli::cli_alert("Use plink to convert BGEN to BED")
+    c1 <- stringr::str_c("./plink --bgen _ukbrapr_tmp.bgen --sample /mnt/project/Bulk/Imputation\\ from\\ genotype\\ \\(TOPmed\\)/ukb21007_c", chr, "_b0_v1.bgen --make-bed --out _ukbrapr_tmp")
+    if (very_verbose)  {
+      system(c1)
+    } else {
+      system(stringr::str_c(c1, " >/dev/null"))
+    }
+    
+    # if this is the first one, simply rename
+    if (ii==1)  {
+      system(paste0("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
+      system(paste0("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
+      system(paste0("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
+    }
+    
+    # if not the first one, use plink to merge beds
+    if (ii>1)  {
+      if (verbose) cli::cli_alert("Merge BEDs")
+      c1 <- paste0("./plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+      if (very_verbose)  {
+        system(c1)
+      } else {
+        system(stringr::str_c(c1, " >/dev/null"))
+      }  
+      system(paste0("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
+      system(paste0("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
+      system(paste0("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+    }
+    
+    # remove tmp files
+    system("rm _ukbrapr_tmp*")
+
+  }
+  
+  # finished
+  if (length(fls)>1)  {
+    cli::cli_progress_done()
+    options(cli.progress_show_after = 2)
+  }
+  cli::cli_alert_success(c("TOPMED BED made!"))
+  if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+  
+}
+
+
 
 
 
