@@ -453,7 +453,7 @@ make_imputed_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*5)})")
 	if (length(chrs)>1)  {
 		options(cli.progress_show_after = 0)
 		cli::cli_progress_bar(format = "Doing file {cli::pb_current} of {cli::pb_total} {cli::pb_bar} {cli::pb_percent} | {cli::pb_eta_str}", total = length(chrs))
@@ -547,6 +547,8 @@ make_imputed_bed <- function(
 #' @param in_file A data frame or file path. Must contain rsid, chr, pos, effect_allele, other_allele, beta. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
 #' @param out_file A string. Prefix for output files (optional)
 #'        \code{default="tmp"}
+#' @param pgs_name A string. Variable name for created PGS (optional)
+#'        \code{default="pgs"}
 #' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
@@ -565,6 +567,7 @@ make_imputed_bed <- function(
 create_pgs <- function(
 	in_file,
 	out_file="tmp",
+	pgs_name="pgs",
 	source="imputed",
 	overwrite=FALSE,
 	verbose=FALSE,
@@ -620,16 +623,16 @@ create_pgs <- function(
 	}
 	
 	# check output format 
-	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
-	if (length(out_bed)>1)  cli::cli_abort("Output file prefix needs to be length 1")
-	if (out_bed=="tmp")  overwrite <- TRUE
-	if (file.exists(paste0(out_bed,".bed")) & !overwrite)  cli::cli_abort("Output bed already exists. To overwrite, set option `overwrite=TRUE`")
+	if (! class(out_file)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
+	if (length(out_file)>1)  cli::cli_abort("Output file prefix needs to be length 1")
+	if (out_file=="tmp")  overwrite <- TRUE
+	if (file.exists(paste0(out_file,".bed")) & !overwrite)  cli::cli_abort("Output bed already exists. To overwrite, set option `overwrite=TRUE`")
 	
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
 	
 	#
 	#
@@ -637,23 +640,24 @@ create_pgs <- function(
 	
 	# Plink
 	if (verbose) cli::cli_alert("Make PGS")
-	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --score ", out_file_varlist, " 7 4 6 header --out ", out_bed)
+	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_file, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
 	if (very_verbose)  {
 		system(c1)
 	} else {
 		system(stringr::str_c(c1, " >/dev/null"))
 	}  
 	
-	# rename to .tsv file
-	system(stringr::str_c("mv ", out_bed, ".profile ", out_bed, ".tsv"))
+	# just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
+	system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))
+	system(stringr::str_c("awk 'NR > 1 && $1 > 0 { print $1\"\t\"$6 }' ", out_file, ".profile >> ", out_file, ".tsv"))
 	
 	# load
-	pgs <- readr::read_tsv(stringr::str_c(out_bed, ".tsv"), progress=FALSE, show_col_types=FALSE)
+	pgs <- readr::read_tsv(stringr::str_c(out_file, ".tsv"), progress=FALSE, show_col_types=FALSE)
 	
 	#
 	#
 	# finished
-	cli::cli_alert_success(stringr::str_c("PGS created! See file {.file ", out_bed, ".tsv}"))
+	cli::cli_alert_success(stringr::str_c("PGS created! See file {.file ", out_file, ".tsv}"))
 	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	
 	return(pgs)
@@ -852,10 +856,19 @@ prep_varlist <- function(
 			}
 		}
 		
-		# create variant_id col for plink scoring
-		varlist <- varlist |> dplyr::mutate(variant_id=stringr::str_c(chr, "_", pos))
+		# if beta is negative, swap effect and other allele 
+		varlist <- varlist |> 
+			dplyr::rename(
+				effect_allele_tmp=effect_allele,
+				other_allele_tmp=other_allele
+			) |> 
+			dplyr::mutate(
+				effect_allele=dplyr::if_else(beta<0, other_allele_tmp, effect_allele_tmp),
+				other_allele=dplyr::if_else(beta<0, effect_allele_tmp, other_allele_tmp),
+				beta=abs(beta),
+			)
 		
-		varlist <- varlist |> dplyr::select(rsid, chr, pos, effect_allele, other_allele, beta, variant_id)
+		varlist <- varlist |> dplyr::select(rsid, chr, pos, effect_allele, other_allele, beta)
 		
 	}  else  {
 		

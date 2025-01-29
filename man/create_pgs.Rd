@@ -7,6 +7,7 @@
 create_pgs(
   in_file,
   out_file = "tmp",
+  pgs_name = "pgs",
   source = "imputed",
   overwrite = FALSE,
   verbose = FALSE,
@@ -18,6 +19,9 @@ create_pgs(
 
 \item{out_file}{A string. Prefix for output files (optional)
 \code{default="tmp"}}
+
+\item{pgs_name}{A string. Variable name for created PGS (optional)
+\code{default="pgs"}}
 
 \item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
 \code{default="imputed"}}
