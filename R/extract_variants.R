@@ -453,7 +453,7 @@ make_imputed_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} TOPmed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*90)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
 	if (length(chrs)>1)  {
 		options(cli.progress_show_after = 0)
 		cli::cli_progress_bar(format = "Doing file {cli::pb_current} of {cli::pb_total} {cli::pb_bar} {cli::pb_percent} | {cli::pb_eta_str}", total = length(chrs))
@@ -469,12 +469,11 @@ make_imputed_bed <- function(
 		
 		# get variants list for this file
 		varlist_sub <- varlist |> 
-			dplyr::filter(chr==chr)
+			dplyr::filter(chr==!!chr)
 		readr::write_tsv(dplyr::select(varlist_sub, rsid), "_ukbrapr_tmp_rsids.txt", col_names = FALSE)
 		
 		# path to BGEN
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.bgen")
-		#if (verbose) cli::cli_alert(stringr::str_c("Path to pVCF: ", bgen_path))
 		
 		# use bgenix to extract subset of BGEN
 		if (verbose) cli::cli_alert("Use bgenix to extract the positions")
@@ -482,7 +481,7 @@ make_imputed_bed <- function(
 		if (very_verbose)  {
 			system(c1)
 		} else {
-			system(stringr::str_c(c1, " >/dev/null"))
+			system(stringr::str_c(c1, " 2>/dev/null"))
 		}
 		
 		# use Plink to convert to BED
