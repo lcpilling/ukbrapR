@@ -8,8 +8,6 @@
 #'
 #' @name extract_variants
 #'
-#' @examples
-#'
 #' @param in_file A data frame or file path. Contains rsid, chr, and pos. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
 #' @param out_bed A string. Prefix for output files (optional)
 #'        \code{default="tmp"}
