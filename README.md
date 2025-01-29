@@ -72,15 +72,27 @@ The only required input is a data frame (or path to file) containing rsid, chr, 
 ```r
 # weights from GWAS of liver cirrhosis (Innes 2020 Gastroenterology doi:10.1053/j.gastro.2020.06.014)
 varlist_pgs <- readr::read_tsv(system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"))
-varlist_pgs 
+head(varlist_pgs)
+#>   rsID         CHR       POS effect_allele other_allele effect_weight locus_name
+#>   <chr>      <dbl>     <dbl> <chr>         <chr>                <dbl> <chr>     
+#> 1 rs2642438      1 220796686 A             G                   -0.177 MARC1     
+#> 2 rs11925835     3  56831417 T             C                   -0.235 ARHGEF3   
+#> 3 rs72613567     4  87310241 TA            T                   -0.166 HSD17B13  
+#> 4 rs2954038      8 125495147 C             A                    0.16  TRIB1     
+#> 5 rs11065384    12 120985482 T             C                    0.275 HNF1A     
+#> 6 rs28929474    14  94378610 T             C                    0.561 SERPINA1  
 
 liver_pgs <- create_pgs(
 	in_file=varlist_pgs,                     # can be a data frame or file path
 	out_file="liver_cirrhosis.imputed.pgs",  # {optional} prefix for created .bed and .tsv files
 	pgs_name="liver_cirrhosis_pgs")          # {optional} variable name
+#> → Extracting 9 variants from 8 imputed files
+#> ✔ PGS created! See file liver_cirrhosis.imputed.pgs.tsv
 #> ~1 minute
 
 summary(liver_pgs$liver_cirrhosis_pgs)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#> 0.00000 0.06006 0.08200 0.08589 0.10722 0.26639
 ```
 
 ## Ascertain diagnoses
