@@ -73,7 +73,7 @@ extract_variants <- function(
 	
 	# check varlist formatting
 	need_pos <- FALSE 
-	if (source=="dragen")  need_pos <- TRUE
+	if (source == "dragen")  need_pos <- TRUE
 	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=need_pos, verbose=verbose)
 	
 	# check output format 
@@ -583,9 +583,7 @@ make_imputed_bed <- function(
 	}
 	
 	# check varlist formatting
-	need_pos <- FALSE 
-	if (source=="dragen")  need_pos <- TRUE
-	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=need_pos, verbose=verbose)
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=FALSE, verbose=verbose)
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
