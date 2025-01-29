@@ -565,7 +565,7 @@ make_imputed_bed <- function(
 #'
 #' @export
 #'
-create_pgs <- fuction(
+create_pgs <- function(
 	in_file,
 	out_file="tmp",
 	source="imputed",
