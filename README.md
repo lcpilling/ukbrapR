@@ -18,11 +18,8 @@ ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Bi
 In the DNAnexus Tools menu launch Posit Workbench and start an RStudio environment.
 
 ```r
-# install latest release (recommended)
-remotes::install_github("lcpilling/ukbrapR@*release")
-
-# development version
-# remotes::install_github("lcpilling/ukbrapR")
+# install current version
+remotes::install_github("lcpilling/ukbrapR")
 ```
 
 ## Features
