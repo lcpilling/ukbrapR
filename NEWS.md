@@ -1,4 +1,4 @@
-# ukbrapR v0.2.9.9000 (29th January 2025)
+# ukbrapR v0.3.0 (29th January 2025)
 
 ### New features
  - Suite of functions to extract and load genetic variants. Main ones of interest will be:

@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.2.9-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.3.0-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -25,10 +25,66 @@ remotes::install_github("lcpilling/ukbrapR@*release")
 # remotes::install_github("lcpilling/ukbrapR")
 ```
 
+## Features
+
+There are three main groups of functions:
+ - :dna: [Genetics](#genetic-variants): extract genotypes from Bulk data, create polygenic score
+ - :clipboard: [Diagnoses](#ascertain-diagnoses): ascertain from health records and self-reported illness data, determine date first diagnosed
+ - :hammer_and_wrench: [Utilities](#other-functions): label UK Biobank data fields, upload/download files from RAP, and pull phenotypes from Spark
+
+## Genetic variants
+
+Bulk imputed genotypes and variant calls from Whole Genome Sequencing are available and can be easily accessed in an RStudio instance. 
+
+### Extract variants
+
+`extract_variants()` by default uses [bgenix](https://enkre.net/cgi-bin/code/bgen) and [plink](https://www.cog-genomics.org/plink/) to subset the [imputed BGEN files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=22828) and read it quickly and easily into R.
+
+The only required input is a data frame (or path to file) containing "rsid" and "chr" variables. See function documentation for further details/options (including the available `make_imputed_bed()` and `load_bed()` internal functions).
+
+```r
+varlist <- data.frame(rsid=c("rs1800562","rs429358"), chr=c(6,19))
+
+imputed_genotypes <- extract_variants(varlist)
+#> ~10 seconds
+
+dim(imputed_genotypes)
+#> [1] 487409      3
+```
+
+By setting option `source="dragen"` the function will instead use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38). It is much slower than the imputed version, so unless you actually need the WGS calls it is not necessary.
+
+```r
+varlist_b38 <- data.frame(rsid=c("rs1800562","rs429358"), chr=c(6,19), pos=c(26092913,44908684))
+
+dragen_genotypes <- extract_variants(varlist_b38, source="dragen")
+#> ~3 minutes (takes ~90 seconds per pVCF file)
+```
+
+The highlight of developing this feature was naming the internal function `make_dragen_bed()` :dragon: :bed:
+
+### Create polygenic score
+
+`create_pgs()` takes a data frame containing a list of variant associations with a trait and creates a weighted allele score using [plink](https://www.cog-genomics.org/plink/1.9/score). By default it uses the [imputed](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=22828) genotypes.
+
+The only required input is a data frame (or path to file) containing rsid, chr, pos, effect_allele, other_allele, beta. For DRAGEN pos is build 38.
+
+```r
+# weights from GWAS of liver cirrhosis (Innes 2020 Gastroenterology doi:10.1053/j.gastro.2020.06.014)
+varlist_pgs <- readr::read_tsv(system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"))
+varlist_pgs 
+
+liver_pgs <- create_pgs(
+	in_file=varlist_pgs,                     # can be a data frame or file path
+	out_file="liver_cirrhosis.imputed.pgs",  # {optional} prefix for created .bed and .tsv files
+	pgs_name="liver_cirrhosis_pgs")          # {optional} variable name
+
+summary(liver_pgs$liver_cirrhosis_pgs)
+```
+
 ## Ascertain diagnoses
 
 Diagnosis of conditions in UK Biobank participants come from multiple data sources. {ukbrapR} makes it fast and easy to ascertain diagnoses from multiple UK Biobank data sources in the DNAnexus Research Analysis Platform (RAP). Follow the below steps. See the website article for more details.
-
 
 ### 1. Export tables of raw data
 

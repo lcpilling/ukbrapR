@@ -72,7 +72,9 @@ extract_variants <- function(
 	}
 	
 	# check varlist formatting
-	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
+	need_pos <- FALSE 
+	if (source=="dragen")  need_pos <- TRUE
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=need_pos, verbose=verbose)
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
@@ -85,6 +87,9 @@ extract_variants <- function(
 	# make bed 
 	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
 	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
+	
+	# did it work?
+	if (! file.exists(stringr::str_c(out_bed, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
 	
 	# load bed
 	bed <- ukbrapR::load_bed(in_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
@@ -203,6 +208,9 @@ create_pgs <- function(
 	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
 	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
 	
+	# did it work?
+	if (! file.exists(stringr::str_c(out_file, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
+	
 	#
 	#
 	# create PGS
@@ -215,6 +223,9 @@ create_pgs <- function(
 	} else {
 		system(stringr::str_c(c1, " >/dev/null"))
 	}  
+	
+	# did it work?
+	if (! file.exists(stringr::str_c(out_file, ".profile")))  cli::cli_abort("Plink failed to make the allele score. Try with `very_verbose=TRUE` to see terminal output.")
 	
 	# just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
 	system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))
@@ -385,7 +396,7 @@ make_dragen_bed <- function(
 	dragen <- readr::read_csv(file_dragen, progress=FALSE, show_col_types=FALSE)
 	dragen <- dragen |> 
 		dplyr::mutate(chromosome = stringr::str_remove_all(chromosome, "chr")) |>
-		dplyr::filter(chromosome %in% unique(varlist$CHR)) |>
+		dplyr::filter(chromosome %in% unique(varlist$chr)) |>
 		dplyr::arrange(chromosome, starting_position)
 	
 	# for each variant get file name
@@ -461,12 +472,15 @@ make_dragen_bed <- function(
 		
 		# use Plink to convert
 		if (verbose) cli::cli_alert("Use plink to convert pVCF to BED")
-		c1 <-"./plink --vcf _ukbrapr_tmp.vcf --set-missing-var-ids @:#:\\$1:\\$2 --make-bed --out _ukbrapr_tmp"
+		c1 <-"~/_ukbrapr_tools/plink --vcf _ukbrapr_tmp.vcf --set-missing-var-ids @:#:\\$1:\\$2 --make-bed --out _ukbrapr_tmp"
 		if (very_verbose)  {
 			system(c1)
 		} else {
 			system(stringr::str_c(c1, " >/dev/null"))
-		}    
+		}
+		
+		# did it work?
+		if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
 		
 		# if this is the first one, simply rename
 		if (ii==1)  {
@@ -569,7 +583,9 @@ make_imputed_bed <- function(
 	}
 	
 	# check varlist formatting
-	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
+	need_pos <- FALSE 
+	if (source=="dragen")  need_pos <- TRUE
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=need_pos, verbose=verbose)
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
@@ -617,6 +633,9 @@ make_imputed_bed <- function(
 			system(stringr::str_c(c1, " 2>/dev/null"))
 		}
 		
+		# did it work?
+		if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB BGEN. Try with `very_verbose=TRUE` to see terminal output.")
+		
 		# use Plink to convert to BED
 		if (verbose) cli::cli_alert("Use plink to convert BGEN to BED")
 		c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --out _ukbrapr_tmp")
@@ -625,6 +644,9 @@ make_imputed_bed <- function(
 		} else {
 			system(stringr::str_c(c1, " >/dev/null"))
 		}
+		
+		# did it work?
+		if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
 		
 		# if this is the first one, simply rename
 		if (ii==1)  {
@@ -768,6 +790,7 @@ prep_tools <- function(
 prep_varlist <- function(
 	varlist,
 	doing_pgs=FALSE,
+	need_pos=TRUE,
 	verbose=FALSE
 )  {
 	
@@ -806,15 +829,18 @@ prep_varlist <- function(
 		}
 	}
 	
-	if (! "pos" %in% colnames(varlist))  {
-		if ("base_pair_location" %in% colnames(varlist))  { # GWAS CATALOG input
-			varlist <- varlist |> dplyr::mutate(pos=base_pair_location)
-		}  else if ("GENPOS" %in% colnames(varlist))  { # REGENIE input
-			varlist <- varlist |> dplyr::mutate(pos=GENPOS)
-		}  else if ("POS" %in% colnames(varlist))  { # SAIGE/BOLT-LMM input
-			varlist <- varlist |> dplyr::mutate(pos=POS)
-		}  else  {
-			cli::cli_abort("Input variants list file needs to contain `pos` column")
+	# don't need pos for imputed data so give an option
+	if (need_pos | doing_pgs)  {
+		if (! "pos" %in% colnames(varlist))  {
+			if ("base_pair_location" %in% colnames(varlist))  { # GWAS CATALOG input
+				varlist <- varlist |> dplyr::mutate(pos=base_pair_location)
+			}  else if ("GENPOS" %in% colnames(varlist))  { # REGENIE input
+				varlist <- varlist |> dplyr::mutate(pos=GENPOS)
+			}  else if ("POS" %in% colnames(varlist))  { # SAIGE/BOLT-LMM input
+				varlist <- varlist |> dplyr::mutate(pos=POS)
+			}  else  {
+				cli::cli_abort("Input variants list file needs to contain `pos` column")
+			}
 		}
 	}
 	

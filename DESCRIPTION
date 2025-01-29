@@ -1,11 +1,11 @@
 Package: ukbrapR
 Title: R functions to use in the UK Biobank Research Analysis Platform (RAP)
-Version: 0.2.9.9000
+Version: 0.3.0
 Authors@R: c(person("Luke", "Pilling", 
                     email = "L.Pilling@exeter.ac.uk", 
                     role = c("aut", "cre"),
                     comment = c(ORCID = "0000-0002-3332-8454")))
-Description: R functions to use in the UK Biobank Research Analysis Platform (RAP). The aim is to make working in the RAP quicker, easier, and more reproducible. Though some functions require a Spark cluster, the package is mostly aimed to work in a "normal" cluster using RStudio, and raw UK Biobank data from the table-exporter.
+Description: R functions to use in the UK Biobank Research Analysis Platform (RAP). The aim is to make working in the RAP quicker, easier, and more reproducible. The package is designed to work in a "normal" cluster using RStudio, and raw UK Biobank data from the table-exporter (rather than on a Spark cluster).
 License: GPL-3
 URL: https://lcpilling.github.io/ukbrapR, https://github.com/lcpilling/ukbrapR
 Depends: 
