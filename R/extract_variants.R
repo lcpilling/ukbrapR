@@ -28,7 +28,7 @@
 #'
 #' @export
 #'
-extract_variants <- fuction(
+extract_variants <- function(
 	in_file,
 	out_bed="tmp",
 	source="imputed",
