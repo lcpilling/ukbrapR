@@ -11,11 +11,18 @@ reference:
 - title: Export required data
 - contents:
   - export_tables
-- title: Ascertain diagnoses
+- title: Extract genetic variants
+- contents:
+  - extract_variants
+  - make_imputed_bed
+  - make_dragen_bed
+  - load_bed
+- title: Create polygenic score
+- contents:
+  - create_pgs
+- title: Ascertain diagnoses and determine date first diagnosed
 - contents:
   - get_diagnoses
-- title: Determine date first diagnosed from any source
-- contents:
   - get_df
 - title: Label UK Biobank data fields
 - contents:
@@ -29,8 +36,8 @@ reference:
   des:   These functions do not require intermediate files but must be executed in a JupyterLab Spark environment.
 - contents:
   - get_rap_phenos
-  - get_emr_spark
   - get_selfrep_illness_spark
+  - get_emr_spark
 
 articles:
 - title: Get started
@@ -44,4 +51,3 @@ articles:
   desc: Ideas for functions or those in development
   contents:
   - extract_fields
-  - extract_variants
