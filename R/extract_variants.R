@@ -856,7 +856,7 @@ prep_varlist <- function(
 		}
 		
 		# create variant_id col for plink scoring
-		varlist <- varlist |> dplyr::mutate(variant_id=stringr::str_c(chr, "_", pos)))
+		varlist <- varlist |> dplyr::mutate(variant_id=stringr::str_c(chr, "_", pos))
 		
 		varlist <- varlist |> dplyr::select(rsid, chr, pos, effect_allele, other_allele, beta, variant_id)
 		
