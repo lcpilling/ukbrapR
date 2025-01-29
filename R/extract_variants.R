@@ -10,7 +10,7 @@
 #'
 #' @examples
 #'
-#' @param in_file A data frame or file path. Contains at least two columns: `rsID` and `CHR`. If extracting from DRAGEN we also need `POS` (build 38). Other columns are ignored.
+#' @param in_file A data frame or file path. Contains rsid, chr, and pos. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
 #' @param out_bed A string. Prefix for output files (optional)
 #'        \code{default="tmp"}
 #' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
@@ -73,22 +73,8 @@ extract_variants <- fuction(
 		varlist <- in_file   # user has passed a data frame
 	}
 	
-	# check input is right for the source:
-	if (source == "imputed")  {
-		# data frame needs to include `rsID` and `CHR`
-		if (any( ! c("rsID","CHR") %in% colnames(varlist) ) )  cli::cli_abort("Input file needs to contain cols rsID and CHR")
-		varlist <- varlist |> 
-			dplyr::arrange(CHR) |>
-			dplyr::distinct()
-	}
-	if (source == "dragen")  {
-		# data frame needs to include `CHR` and `POS`
-		if (any( ! c("CHR","POS") %in% colnames(varlist) ) )  cli::cli_abort("Input file needs to contain cols CHR and POS")
-		varlist <- varlist |> 
-			dplyr::arrange(CHR, POS) |>
-			dplyr::distinct() |>
-			dplyr::mutate(filename="")
-	}
+	# check varlist formatting
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
@@ -196,7 +182,7 @@ load_bed <- function(
 #'
 #' @name make_dragen_bed
 #'
-#' @param in_file A data frame or file path. Contains at least two columns: `CHR` and `POS` (in build 38). Other columns are ignored.
+#' @param in_file A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.
 #' @param out_bed A string. 
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
@@ -250,11 +236,10 @@ make_dragen_bed <- function(
 		varlist <- in_file   # user has passed a data frame
 	}
 	
-	# data frame needs to include `CHR` and `POS`
-	if (any( ! c("CHR","POS") %in% colnames(varlist) ) )  cli::cli_abort("Input file needs to contain cols CHR and POS")
+	# check varlist formatting
+	varlist$rsid <- ""
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
 	varlist <- varlist |> 
-		dplyr::arrange(CHR, POS) |>
-		dplyr::distinct() |>
 		dplyr::mutate(filename="")
 	
 	# check output format 
@@ -276,7 +261,7 @@ make_dragen_bed <- function(
 	if (verbose) cli::cli_alert("For each variant identify the corresponding DRAGEN pVCF file")
 	for (ii in 1:nrow(varlist))  {
 		dragen_sub <- dragen |> 
-			dplyr::filter(chromosome == varlist$CHR[ii] & starting_position < varlist$POS[ii]) |>
+			dplyr::filter(chromosome == varlist$chr[ii] & starting_position < varlist$pos[ii]) |>
 			tail(n=1)
 		varlist$filename[ii] <- dragen_sub$filename[1]
 	}
@@ -315,7 +300,7 @@ make_dragen_bed <- function(
 			dplyr::filter(filename==fl)
 		
 		# get CHR
-		chr <- varlist_sub$CHR[1]
+		chr <- varlist_sub$chr[1]
 		
 		# path to VCF
 		vcf_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ pVCF\\ format\\ \\[500k\\ release\\]/chr", chr, "/", fl, " ")
@@ -330,7 +315,7 @@ make_dragen_bed <- function(
 		system(stringr::str_c(
 			"tabix ",
 			vcf_path,
-			stringr::str_c("chr", chr, ":", varlist_sub$POS-1, "-", varlist_sub$POS, collapse=" "),
+			stringr::str_c("chr", chr, ":", varlist_sub$pos-1, "-", varlist_sub$pos, collapse=" "),
 			" >> _ukbrapr_tmp.vcf"
 		))
 		
@@ -452,11 +437,8 @@ make_imputed_bed <- function(
 		varlist <- in_file   # user has passed a data frame
 	}
 	
-	# data frame needs to include `CHR` and `POS`
-	if (any( ! c("CHR","rsID") %in% colnames(varlist) ) )  cli::cli_abort("Input file needs to contain cols CHR and rsID")
-	varlist <- varlist |> 
-		dplyr::arrange(CHR, rsID) |>
-		dplyr::distinct()
+	# check varlist formatting
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
@@ -469,7 +451,7 @@ make_imputed_bed <- function(
 	#
 	#
 	# for each CHR 
-	chrs <- unique(varlist$CHR)
+	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
 	
 	# show progress
@@ -489,8 +471,8 @@ make_imputed_bed <- function(
 		
 		# get variants list for this file
 		varlist_sub <- varlist |> 
-			dplyr::filter(CHR==chr)
-		readr::write_tsv(dplyr::select(varlist_sub, rsID), "_ukbrapr_tmp_rsIDs.txt", col_names = FALSE)
+			dplyr::filter(chr==chr)
+		readr::write_tsv(dplyr::select(varlist_sub, rsid), "_ukbrapr_tmp_rsids.txt", col_names = FALSE)
 		
 		# path to BGEN
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.bgen")
@@ -498,7 +480,7 @@ make_imputed_bed <- function(
 		
 		# use bgenix to extract subset of BGEN
 		if (verbose) cli::cli_alert("Use bgenix to extract the positions")
-		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g ", bgen_path, " -incl-rsids _ukbrapr_tmp_rsIDs.txt > _ukbrapr_tmp.bgen")
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g ", bgen_path, " -incl-rsids _ukbrapr_tmp_rsids.txt > _ukbrapr_tmp.bgen")
 		if (very_verbose)  {
 			system(c1)
 		} else {
