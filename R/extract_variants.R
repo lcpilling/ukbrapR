@@ -842,6 +842,8 @@ prep_varlist <- function(
 				cli::cli_abort("Input variants list file needs to contain `pos` column")
 			}
 		}
+	}  else  {
+		varlist <- varlist |> dplyr::mutate(pos=1)
 	}
 	
 	# if doing a PGS also need alleles and beta

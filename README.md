@@ -78,6 +78,7 @@ liver_pgs <- create_pgs(
 	in_file=varlist_pgs,                     # can be a data frame or file path
 	out_file="liver_cirrhosis.imputed.pgs",  # {optional} prefix for created .bed and .tsv files
 	pgs_name="liver_cirrhosis_pgs")          # {optional} variable name
+#> ~1 minute
 
 summary(liver_pgs$liver_cirrhosis_pgs)
 ```
