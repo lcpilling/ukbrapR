@@ -102,6 +102,139 @@ extract_variants <- function(
 
 
 
+#' Create a polygenic score
+#'
+#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score
+#'
+#' @return A data frame
+#'
+#' @author Luke Pilling
+#'
+#' @name create_pgs
+#'
+#' @param in_file A data frame or file path. Must contain rsid, chr, pos, effect_allele, other_allele, beta. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
+#' @param out_file A string. Prefix for output files (optional)
+#'        \code{default="tmp"}
+#' @param pgs_name A string. Variable name for created PGS (optional)
+#'        \code{default="pgs"}
+#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
+#'        \code{default="imputed"}
+#' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
+#'        \code{default=FALSE}
+#' @param verbose Logical. Be verbose (show individual steps),
+#'        \code{default=FALSE}
+#' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
+#'        \code{default=FALSE}
+#'
+#' @examples
+#'
+#' liver_pgs <- create_pgs(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_file="liver_cirrhosis.imputed.pgs", pgs_name="liver_cirrhosis_pgs")
+#'
+#' @export
+#'
+create_pgs <- function(
+	in_file,
+	out_file="tmp",
+	pgs_name="pgs",
+	source="imputed",
+	overwrite=FALSE,
+	verbose=FALSE,
+	very_verbose=FALSE
+)  {
+	
+	v <- packageVersion("ukbrapR")
+	cli::cli_alert_info("ukbrapR v{v}")
+	
+	start_time <- Sys.time()
+	
+	#
+	#
+	# check inputs
+	if (very_verbose)  verbose <- TRUE
+	if (verbose) cli::cli_alert("Checking inputs")
+	
+	# imputed or dragen?
+	if (! source %in% c("imputed","dragen")) cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
+	
+	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
+	varlist <- NULL
+	
+	# if it's a character string, assume user has provided a file path
+	if (class(in_file)[1] == "character")  {
+		
+		if (length(in_file)>1)  cli::cli_abort("Input file path needs to be length 1")
+		
+		# does input file exist?
+		if (! file.exists(in_file))  cli::cli_abort("Input file not found")
+		varlist <- readr::read_tsv(in_file, progress=FALSE, show_col_types=FALSE)
+		
+	} else if (! any(class(in_file) %in% c("data.frame","tbl","tbl_df")))  {
+		
+		cli::cli_abort(c(
+			"{.var in_file} must be a data.frame (or tibble), or a character string",
+			"x" = "You've supplied a {.cls {class(in_file)}}."
+		))
+		
+	} else {  # user has passed a data frame
+		varlist <- in_file
+	}
+	
+	# check varlist formatting and save
+	readr::write_tsv(varlist, stringr::str_c(out_file, ".input.txt"))
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=TRUE, verbose=verbose)
+	out_file_varlist <- stringr::str_c(out_file, ".varlist.txt")
+	readr::write_tsv(varlist, out_file_varlist)
+	
+	# check input is right for the source:
+	if (source == "dragen")  {
+		varlist <- varlist |>
+			dplyr::mutate(filename="")
+	}
+	
+	# check output format 
+	if (! class(out_file)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
+	if (length(out_file)>1)  cli::cli_abort("Output file prefix needs to be length 1")
+	if (out_file=="tmp")  overwrite <- TRUE
+	if (file.exists(paste0(out_file,".bed")) & !overwrite)  cli::cli_abort("Output bed already exists. To overwrite, set option `overwrite=TRUE`")
+	
+	#
+	#
+	# make bed 
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
+	
+	#
+	#
+	# create PGS
+	
+	# Plink
+	if (verbose) cli::cli_alert("Make PGS")
+	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_file, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
+	if (very_verbose)  {
+		system(c1)
+	} else {
+		system(stringr::str_c(c1, " >/dev/null"))
+	}  
+	
+	# just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
+	system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))
+	system(stringr::str_c("awk 'NR > 1 && $1 > 0 { print $1\"\t\"$6 }' ", out_file, ".profile >> ", out_file, ".tsv"))
+	
+	# load
+	pgs <- readr::read_tsv(stringr::str_c(out_file, ".tsv"), progress=FALSE, show_col_types=FALSE)
+	
+	#
+	#
+	# finished
+	cli::cli_alert_success(stringr::str_c("PGS created! See file {.file ", out_file, ".tsv}"))
+	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	
+	return(pgs)
+	
+}
+
+
+
 
 #' Load BED file into memory
 #'
@@ -528,144 +661,6 @@ make_imputed_bed <- function(
 	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 	
 }
-
-
-
-
-
-
-#' Create a polygenic score
-#'
-#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score
-#'
-#' @return A data frame
-#'
-#' @author Luke Pilling
-#'
-#' @name create_pgs
-#'
-#' @param in_file A data frame or file path. Must contain rsid, chr, pos, effect_allele, other_allele, beta. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
-#' @param out_file A string. Prefix for output files (optional)
-#'        \code{default="tmp"}
-#' @param pgs_name A string. Variable name for created PGS (optional)
-#'        \code{default="pgs"}
-#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
-#'        \code{default="imputed"}
-#' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
-#'        \code{default=FALSE}
-#' @param verbose Logical. Be verbose (show individual steps),
-#'        \code{default=FALSE}
-#' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
-#'        \code{default=FALSE}
-#'
-#' @examples
-#'
-#' liver_pgs <- create_pgs(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_file="liver_cirrhosis.imputed.pgs")
-#'
-#' @export
-#'
-create_pgs <- function(
-	in_file,
-	out_file="tmp",
-	pgs_name="pgs",
-	source="imputed",
-	overwrite=FALSE,
-	verbose=FALSE,
-	very_verbose=FALSE
-)  {
-	
-	v <- packageVersion("ukbrapR")
-	cli::cli_alert_info("ukbrapR v{v}")
-	
-	start_time <- Sys.time()
-	
-	#
-	#
-	# check inputs
-	if (very_verbose)  verbose <- TRUE
-	if (verbose) cli::cli_alert("Checking inputs")
-	
-	# imputed or dragen?
-	if (! source %in% c("imputed","dragen")) cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
-	
-	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
-	varlist <- NULL
-	
-	# if it's a character string, assume user has provided a file path
-	if (class(in_file)[1] == "character")  {
-		
-		if (length(in_file)>1)  cli::cli_abort("Input file path needs to be length 1")
-		
-		# does input file exist?
-		if (! file.exists(in_file))  cli::cli_abort("Input file not found")
-		varlist <- readr::read_tsv(in_file, progress=FALSE, show_col_types=FALSE)
-		
-	} else if (! any(class(in_file) %in% c("data.frame","tbl","tbl_df")))  {
-		
-		cli::cli_abort(c(
-			"{.var in_file} must be a data.frame (or tibble), or a character string",
-			"x" = "You've supplied a {.cls {class(in_file)}}."
-		))
-		
-	} else {  # user has passed a data frame
-		varlist <- in_file
-	}
-	
-	# check varlist formatting and save
-	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=TRUE, verbose=verbose)
-	out_file_varlist <- stringr::str_c(out_file, ".varlist.txt")
-	readr::write_tsv(varlist, out_file_varlist)
-	
-	# check input is right for the source:
-	if (source == "dragen")  {
-		varlist <- varlist |>
-			dplyr::mutate(filename="")
-	}
-	
-	# check output format 
-	if (! class(out_file)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
-	if (length(out_file)>1)  cli::cli_abort("Output file prefix needs to be length 1")
-	if (out_file=="tmp")  overwrite <- TRUE
-	if (file.exists(paste0(out_file,".bed")) & !overwrite)  cli::cli_abort("Output bed already exists. To overwrite, set option `overwrite=TRUE`")
-	
-	#
-	#
-	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
-	
-	#
-	#
-	# create PGS
-	
-	# Plink
-	if (verbose) cli::cli_alert("Make PGS")
-	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_file, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
-	if (very_verbose)  {
-		system(c1)
-	} else {
-		system(stringr::str_c(c1, " >/dev/null"))
-	}  
-	
-	# just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
-	system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))
-	system(stringr::str_c("awk 'NR > 1 && $1 > 0 { print $1\"\t\"$6 }' ", out_file, ".profile >> ", out_file, ".tsv"))
-	
-	# load
-	pgs <- readr::read_tsv(stringr::str_c(out_file, ".tsv"), progress=FALSE, show_col_types=FALSE)
-	
-	#
-	#
-	# finished
-	cli::cli_alert_success(stringr::str_c("PGS created! See file {.file ", out_file, ".tsv}"))
-	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-	
-	return(pgs)
-	
-}
-
-
-
 
 
 

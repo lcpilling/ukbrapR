@@ -40,6 +40,9 @@ get_rap_phenos <- function(
 	
 	start_time <- Sys.time()
 	
+	# install packages if required 
+	install.packages(setdiff(c("reticulate", "arrow", "sparklyr"), rownames(installed.packages())), dependencies = TRUE, quiet = TRUE)
+	
 	# Check input & options
 	if (verbose) cat("Check input & options\n")
 	if (! is.character(names) ) stop("`names` needs to be a character vector of UK Biobank RAP phenotype names, e.g., c(\"eid\",\"p31\",\"p21003_i0\")")

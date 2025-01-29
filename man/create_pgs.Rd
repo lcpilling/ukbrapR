@@ -43,7 +43,7 @@ Use user-provided list of genetic variants with weights for a trait to create a 
 }
 \examples{
 
-liver_pgs <- create_pgs(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_file="liver_cirrhosis.imputed.pgs")
+liver_pgs <- create_pgs(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_file="liver_cirrhosis.imputed.pgs", pgs_name="liver_cirrhosis_pgs")
 
 }
 \author{

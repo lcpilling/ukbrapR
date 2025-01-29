@@ -1,3 +1,16 @@
+# ukbrapR v0.2.9.9000 (29th January 2025)
+
+### New features
+ - Suite of functions to extract and load genetic variants. Main ones of interest will be:
+   1. `extract_variants()` takes a list of variant rsIDs as input and extracts the imputed genotypes, loading to memory. This is really a wrapper around two other new functions: `make_imputed_bed()` and `load_bed()`. Also available in `make_dragen_bed()` to extract from whole genome sequence VCF files but this is pretty slow so usually user wants imputed variants.
+   2. `create_pgs()` creates a polygenic score (weighted allele score) using user-provided variants and weights. Loaded to memory but also saves a nicely formatted .tsv 
+
+### Breaking changes
+ - Removing dependencies: reticulate, arrow, sparklyr. These take a few previous seconds to install every time and are rarely needed. Instead will be installed if user tries to use `get_rap_phenos()`
+ - `get_emr_spark()` removed entirely. Much better to use `get_diagnoses()` which has had a *lot* of updates to functionality ad bud fixes.
+
+
+
 # ukbrapR v0.2.9 (12th January 2025)
 
 ### Bug fixes
