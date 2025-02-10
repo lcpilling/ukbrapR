@@ -492,7 +492,7 @@ make_dragen_bed <- function(
 		# if not the first one, use plink to merge beds
 		if (ii>1)  {
 			if (verbose) cli::cli_alert("Merge BEDs")
-			c1 <- paste0("./plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+			c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
 			if (very_verbose)  {
 				system(c1)
 			} else {
