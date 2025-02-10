@@ -3,6 +3,7 @@
 ### Bug fixes
  - Fix `make_dragen_bed()` position awk search, plink call
  - Fix `create_pgs()` when using WGS - needed to use chr:pos:a1:a2 not rsid
+ - Fix `make_imputed_bed()` so it doesn't crash if the BGEN subset is empty (i.e., a searched-for rsid was missing)
 
 
 # ukbrapR v0.3.0 (29th January 2025)

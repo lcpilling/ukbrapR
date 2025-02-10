@@ -671,37 +671,53 @@ make_imputed_bed <- function(
 		# did it work?
 		if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB BGEN. Try with `very_verbose=TRUE` to see terminal output.")
 		
-		# use Plink to convert to BED
-		if (verbose) cli::cli_alert("Use plink to convert BGEN to BED")
-		c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --out _ukbrapr_tmp")
-		if (very_verbose)  {
-			system(c1)
-		} else {
-			system(stringr::str_c(c1, " >/dev/null"))
-		}
+		# does the BGEN actually contain variants? -- create index and check file length 
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -index")
+		if ( very_verbose)  system(c1)
+		if (!very_verbose)  system(stringr::str_c(c1, " 2>/dev/null"))
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -list > _ukbrapr_tmp.bgen.list")
+		if ( very_verbose)  system(c1)
+		if (!very_verbose)  system(stringr::str_c(c1, " 2>/dev/null"))
+		n_rows <- as.integer(system("wc -l < _ukbrapr_tmp.bgen.list", intern = TRUE)) - 1
 		
-		# did it work?
-		if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
-		
-		# if this is the first one, simply rename
-		if (ii==1)  {
-			system(paste0("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
-			system(paste0("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
-			system(paste0("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
-		}
-		
-		# if not the first one, use plink to merge beds
-		if (ii>1)  {
-			if (verbose) cli::cli_alert("Merge BEDs")
-			c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+		# if no variants in the BGEN (nrow of list file <=2) then skip this CHR
+		if (n_rows > 2)  {
+			
+			# use Plink to convert to BED
+			if (verbose) cli::cli_alert("Use plink to convert BGEN to BED")
+			c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --out _ukbrapr_tmp")
 			if (very_verbose)  {
 				system(c1)
 			} else {
 				system(stringr::str_c(c1, " >/dev/null"))
-			}  
-			system(paste0("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
-			system(paste0("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
-			system(paste0("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+			}
+			
+			# did it work?
+			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
+			
+			# if this is the first one, simply rename
+			if (ii==1)  {
+				system(paste0("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
+				system(paste0("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
+				system(paste0("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
+			}
+			
+			# if not the first one, use plink to merge beds
+			if (ii>1)  {
+				if (verbose) cli::cli_alert("Merge BEDs")
+				c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+				if (very_verbose)  {
+					system(c1)
+				} else {
+					system(stringr::str_c(c1, " >/dev/null"))
+				}  
+				system(paste0("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
+				system(paste0("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
+				system(paste0("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+			}
+		
+		} else {
+			cli::cli_warn(stringr::str_c("Variants on CHR ", chr, " are in the input varlist but are missing from imputed BGEN"))
 		}
 		
 		# remove tmp files
