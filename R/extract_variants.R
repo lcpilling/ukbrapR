@@ -465,7 +465,7 @@ make_dragen_bed <- function(
 		system("head -n2 _ukbrapr_tmp.vcf > _ukbrapr_tmp2.vcf")
 		system(stringr::str_c(
 			"awk -v list=\"", 
-			stringr::str_c(varlist_sub$POS, collapse=","),
+			stringr::str_c(varlist_sub$pos, collapse=","),
 			"\" 'BEGIN { split(list, nums, \",\"); for (i in nums) integers[nums[i]] } $2 in integers' _ukbrapr_tmp.vcf >> _ukbrapr_tmp2.vcf"
 		))
 		system("mv _ukbrapr_tmp2.vcf _ukbrapr_tmp.vcf")
