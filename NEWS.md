@@ -1,7 +1,8 @@
 # ukbrapR v0.3.1 (10th February 2025)
 
 ### Bug fixes
- - Fix WGS position awk search
+ - Fix `make_dragen_bed()` position awk search, plink call
+ - Fix `create_pgs()` when using WGS - needed to use chr:pos:a1:a2 not rsid
 
 
 # ukbrapR v0.3.0 (29th January 2025)

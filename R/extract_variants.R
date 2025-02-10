@@ -188,7 +188,6 @@ create_pgs <- function(
 	readr::write_tsv(varlist, stringr::str_c(out_file, ".input.txt"))
 	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=TRUE, verbose=verbose)
 	out_file_varlist <- stringr::str_c(out_file, ".varlist.txt")
-	readr::write_tsv(varlist, out_file_varlist)
 	
 	# check input is right for the source:
 	if (source == "dragen")  {
@@ -214,6 +213,44 @@ create_pgs <- function(
 	#
 	#
 	# create PGS
+	
+	# if using DRAGEN we need to replace `rsid` with the `chr:pos:a1:a2` in the WGS bim file 
+	if (source == "dragen")  {
+		
+		# load the bim file
+		bim <- readr::read_tsv(stringr::str_c(out_file, ".bim"), col_names=c("chr","id","null","pos","a1","a2"))
+		
+		# create ID for each row of the varlist - make sure alleles match the bim file
+		varlist$rsid_old <- varlist$rsid
+		varlist$rsid <- ""
+		for (ii in 1:nrow(varlist))  {
+			
+			# keep bim rows where CHR and POS match
+			r <- bim[ bim$chr==varlist$chr[ii] & bim$pos==varlist$pos[ii] , ]
+			
+			# any matched?
+			if (nrow(r)>0)  {
+				
+				# keep rows where alleles both genotyped
+				r <- r[ r$a1 %in% c(varlist$effect_allele[ii],varlist$other_allele[ii]) & r$a2 %in% c(varlist$effect_allele[ii],varlist$other_allele[ii]) , ]
+				
+				# any matched?
+				if (nrow(r)>0)  {
+				
+					# add `id` to varlist
+					# if multiple (shouldn't be!) just use first
+					varlist$rsid[ii] <- r$id[1]
+				
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	# save the varlist for plink
+	readr::write_tsv(varlist, out_file_varlist)
 	
 	# Plink
 	if (verbose) cli::cli_alert("Make PGS")
