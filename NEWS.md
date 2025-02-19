@@ -1,3 +1,9 @@
+# ukbrapR v0.3.2 (19th February 2025)
+
+### Changes
+ - Remove bundled plink, plink2 and bgenix files. Instead, download only if needed.
+
+
 # ukbrapR v0.3.1 (10th February 2025)
 
 ### Bug fixes

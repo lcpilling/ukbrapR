@@ -755,11 +755,6 @@ prep_tools <- function(
 	very_verbose=FALSE
 )  {
 	
-	# required files
-	file_plink  <- system.file("files", "plink.zip", package="ukbrapR")
-	file_plink2 <- system.file("files", "plink2.zip", package="ukbrapR")
-	file_bgen   <- system.file("files", "bgen.tgz", package="ukbrapR")
-	
 	# check tools directory exists
 	if (! dir.exists("~/_ukbrapr_tools/"))  system("mkdir ~/_ukbrapr_tools/")
 	
@@ -769,11 +764,14 @@ prep_tools <- function(
 		if (very_verbose) cli::cli_alert("Checking plink available")
 		if (! file.exists("~/_ukbrapr_tools/plink"))  {
 			if (verbose) cli::cli_alert("Unpacking plink")
-			c1 <- paste0("unzip ", file_plink, " -d ~/_ukbrapr_tools/")
+			c1 <- "curl https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20241022.zip > ~/_ukbrapr_tools/plink.zip"
+			c2 <- "unzip ~/_ukbrapr_tools/plink.zip -d ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(c2)
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " >/dev/null"))
 			}
 		}
 	}
@@ -784,11 +782,14 @@ prep_tools <- function(
 		if (very_verbose) cli::cli_alert("Checking plink2 available")
 		if (! file.exists("~/_ukbrapr_tools/plink2"))  {
 			if (verbose) cli::cli_alert("Unpacking plink2")
-			c1 <- paste0("unzip ", file_plink2, " -d ~/_ukbrapr_tools/")
+			c1 <- "curl https://s3.amazonaws.com/plink2-assets/alpha6/plink2_linux_x86_64_20250122.zip > ~/_ukbrapr_tools/plink2.zip"
+			c2 <- "unzip ~/_ukbrapr_tools/plink2.zip -d ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(c2)
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " >/dev/null"))
 			}
 		}
 	}
@@ -799,11 +800,14 @@ prep_tools <- function(
 		if (very_verbose) cli::cli_alert("Checking bgenix available")
 		if (! file.exists("~/_ukbrapr_tools/bgenix"))  {
 			if (verbose) cli::cli_alert("Unpacking bgenix")
-			c1 <- paste0("tar -xvzf ", file_bgen, " --strip-components=1 -C ~/_ukbrapr_tools/")
+			c1 <- "curl https://www.chg.ox.ac.uk/~gav/resources/bgen_v1.1.4-Ubuntu16.04-x86_64.tgz > ~/_ukbrapr_tools/bgen.tgz"
+			c2 <- "tar -xzf ~/_ukbrapr_tools/bgen.tgz --strip-components=1 -C ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(stringr::str_replace(c2, "xzf", "xzvf"))
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " 2>/dev/null"))
 			}
 		}
 	}
