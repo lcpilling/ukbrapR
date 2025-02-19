@@ -4,12 +4,21 @@
 \alias{make_dragen_bed}
 \title{Extract variants from DRAGEN pVCF file(s) into single BED file}
 \usage{
-make_dragen_bed(in_file, out_bed, verbose = FALSE, very_verbose = FALSE)
+make_dragen_bed(
+  in_file,
+  out_bed,
+  progress = TRUE,
+  verbose = FALSE,
+  very_verbose = FALSE
+)
 }
 \arguments{
 \item{in_file}{A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.}
 
 \item{out_bed}{A string.}
+
+\item{progress}{Logical. Show progress through each individual file,
+\code{default=TRUE}}
 
 \item{verbose}{Logical. Be verbose (show individual steps),
 \code{default=FALSE}}
