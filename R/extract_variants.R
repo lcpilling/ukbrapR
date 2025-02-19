@@ -15,6 +15,8 @@
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=FALSE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -31,6 +33,7 @@ extract_variants <- function(
 	out_bed="tmp",
 	source="imputed",
 	overwrite=FALSE,
+	progress=FALSE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -85,8 +88,8 @@ extract_variants <- function(
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	
 	# did it work?
 	if (! file.exists(stringr::str_c(out_bed, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
@@ -126,6 +129,8 @@ extract_variants <- function(
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=FALSE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -143,6 +148,7 @@ create_pgs <- function(
 	pgs_name="pgs",
 	source="imputed",
 	overwrite=FALSE,
+	progress=FALSE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -204,8 +210,8 @@ create_pgs <- function(
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	
 	# did it work?
 	if (! file.exists(stringr::str_c(out_file, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
@@ -363,6 +369,8 @@ load_bed <- function(
 #'
 #' @param in_file A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.
 #' @param out_bed A string. 
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=TRUE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -377,6 +385,7 @@ load_bed <- function(
 make_dragen_bed <- function(
 	in_file,
 	out_bed,
+	progress=TRUE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -418,8 +427,7 @@ make_dragen_bed <- function(
 	# check varlist formatting
 	varlist$rsid <- ""
 	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
-	varlist <- varlist |> 
-		dplyr::mutate(filename="")
+	varlist <- varlist |> dplyr::mutate(filename="")
 	
 	# check output format 
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
@@ -445,10 +453,6 @@ make_dragen_bed <- function(
 		varlist$filename[ii] <- dragen_sub$filename[1]
 	}
 	
-	# How many variants/files we doing?
-	n_files <- length(unique(varlist$filename))
-	
-
 	#
 	# get tabix and plink 1.9
 	ukbrapR:::prep_tools(get_plink=TRUE, get_tabix=TRUE, verbose=verbose, very_verbose=very_verbose)
@@ -457,22 +461,17 @@ make_dragen_bed <- function(
 	#
 	# for each VCF file
 	fls <- unique(varlist$filename)
+	n_files <- length(fls)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_files} DRAGEN pVCF file{?s} (ETA {prettyunits::pretty_sec(n_files*90)})")
-	if (length(fls)>1)  {
-		options(cli.progress_show_after = 0)
-		cli::cli_progress_bar(format = "Doing file {cli::pb_current} of {cli::pb_total} {cli::pb_bar} {cli::pb_percent} | {cli::pb_eta_str}", total = length(fls))
-	}
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_files} DRAGEN pVCF file{?s} (ETA {prettyunits::pretty_sec(n_files*60)})")
 	
 	# loop over files...
-	for (ii in 1:length(fls))  {
-		
-		if (length(fls)>1)  cli::cli_progress_update()
-		#if (verbose) cli::cli_alert(stringr::str_c("Extracting file ", ii, " of ", length(fls)))
+	for (ii in 1:n_files)  {
 		
 		# this file name
 		fl <- fls[ii]
+		fl_time <- Sys.time()
 		
 		# get variants list for that file
 		varlist_sub <- varlist |> 
@@ -507,51 +506,59 @@ make_dragen_bed <- function(
 		))
 		system("mv _ukbrapr_tmp2.vcf _ukbrapr_tmp.vcf")
 		
-		# use Plink to convert
-		if (verbose) cli::cli_alert("Use plink to convert pVCF to BED")
-		c1 <-"~/_ukbrapr_tools/plink --vcf _ukbrapr_tmp.vcf --set-missing-var-ids @:#:\\$1:\\$2 --make-bed --out _ukbrapr_tmp"
-		if (very_verbose)  {
-			system(c1)
-		} else {
-			system(stringr::str_c(c1, " >/dev/null"))
-		}
+		# does the VCF actually contain variants? -- check file length 
+		n_rows <- as.integer(system("wc -l < _ukbrapr_tmp.vcf", intern = TRUE))
 		
-		# did it work?
-		if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
-		
-		# if this is the first one, simply rename
-		if (ii==1)  {
-			system(paste0("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
-			system(paste0("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
-			system(paste0("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
-		}
-		
-		# if not the first one, use plink to merge beds
-		if (ii>1)  {
-			if (verbose) cli::cli_alert("Merge BEDs")
-			c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+		# if no variants in the VCF (nrow of list file <=2) then skip this FILE
+		if (n_rows > 2)  {
+			
+			# use Plink to convert
+			if (verbose) cli::cli_alert("Use plink to convert pVCF to BED")
+			c1 <-"~/_ukbrapr_tools/plink --vcf _ukbrapr_tmp.vcf --set-missing-var-ids @:#:\\$1:\\$2 --make-bed --out _ukbrapr_tmp"
 			if (very_verbose)  {
 				system(c1)
 			} else {
 				system(stringr::str_c(c1, " >/dev/null"))
-			}  
-			system(paste0("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
-			system(paste0("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
-			system(paste0("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
-		}
+			}
+			
+			# did it work?
+			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
+			
+			# if this is the first one, simply rename
+			if (ii==1)  {
+				system(stringr::str_c("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
+			}
+			
+			# if not the first one, use plink to merge beds
+			if (ii>1)  {
+				if (verbose) cli::cli_alert("Merge BEDs")
+				c1 <- stringr::str_c("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+				if (very_verbose)  {
+					system(c1)
+				} else {
+					system(stringr::str_c(c1, " >/dev/null"))
+				}  
+				system(stringr::str_c("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+			}
 		
+		} else {
+			cli::cli_warn(stringr::str_c("Variants in chr", chr, "/", fl, " are in the input varlist but are missing from the pVCF"))
+		}
+
 		# remove tmp files
 		system("rm _ukbrapr_tmp*")
+		
+		# give update
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from pVCF ", ii, " of ", n_files, " [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), fl_time, units="secs"))), "]"))
 		
 	}
 	
 	# finished
-	if (length(fls)>1)  {
-		cli::cli_progress_done()
-		options(cli.progress_show_after = 2)
-	}
-	cli::cli_alert_success(c("DRAGEN BED made!"))
-	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	cli::cli_alert_success(stringr::str_c("DRAGEN BED made in ", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units="secs")))))
 	
 }
 
@@ -570,6 +577,8 @@ make_dragen_bed <- function(
 #'
 #' @param in_file A data frame or file path. Contains at least two columns: `rsID` and `CHR`. Other columns are ignored.
 #' @param out_bed A string. 
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=TRUE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -584,6 +593,7 @@ make_dragen_bed <- function(
 make_imputed_bed <- function(
 	in_file,
 	out_bed,
+	progress=TRUE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -637,24 +647,18 @@ make_imputed_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed file{?s} (ETA {prettyunits::pretty_sec(n_chrs*5)})")
-	if (length(chrs)>1)  {
-		options(cli.progress_show_after = 0)
-		cli::cli_progress_bar(format = "Doing file {cli::pb_current} of {cli::pb_total} {cli::pb_bar} {cli::pb_percent} | {cli::pb_eta_str}", total = length(chrs))
-	}
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed bgen file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
 	
 	# loop over files...
-	for (ii in 1:length(chrs))  {
-		
-		if (length(chrs)>1)  cli::cli_progress_update()
+	for (ii in 1:n_chrs)  {
 		
 		# this CHR
 		chr <- chrs[ii]
+		chr_time <- Sys.time()
 		
 		# get variants list for this file
-		varlist_sub <- varlist |> 
-			dplyr::filter(chr==!!chr)
-		readr::write_tsv(dplyr::select(varlist_sub, rsid), "_ukbrapr_tmp_rsids.txt", col_names = FALSE)
+		varlist_sub <- varlist |> dplyr::filter(chr==!!chr)
+		readr::write_tsv(dplyr::select(varlist_sub, rsid), "_ukbrapr_tmp_rsids.txt", col_names = FALSE, progress = FALSE)
 		
 		# path to BGEN
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.bgen")
@@ -678,13 +682,13 @@ make_imputed_bed <- function(
 		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -list > _ukbrapr_tmp.bgen.list")
 		if ( very_verbose)  system(c1)
 		if (!very_verbose)  system(stringr::str_c(c1, " 2>/dev/null"))
-		n_rows <- as.integer(system("wc -l < _ukbrapr_tmp.bgen.list", intern = TRUE)) - 1
+		n_rows <- as.integer(system("wc -l < _ukbrapr_tmp.bgen.list", intern = TRUE)) 
 		
-		# if no variants in the BGEN (nrow of list file <=2) then skip this CHR
-		if (n_rows > 2)  {
+		# if no variants in the BGEN (nrow of list file <=3) then skip this CHR
+		if (n_rows > 3)  {
 			
 			# use Plink to convert to BED
-			if (verbose) cli::cli_alert("Use plink to convert BGEN to BED")
+			if (verbose) cli::cli_alert("Use plink2 to convert BGEN to BED")
 			c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --out _ukbrapr_tmp")
 			if (very_verbose)  {
 				system(c1)
@@ -693,27 +697,27 @@ make_imputed_bed <- function(
 			}
 			
 			# did it work?
-			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("Plink failed to convert the VCF to BED. Try with `very_verbose=TRUE` to see terminal output.")
+			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("plink2 failed to convert the BGEN to BED. Try with `very_verbose=TRUE` to see terminal output.")
 			
 			# if this is the first one, simply rename
 			if (ii==1)  {
-				system(paste0("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
-				system(paste0("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
-				system(paste0("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
+				system(stringr::str_c("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
 			}
 			
 			# if not the first one, use plink to merge beds
 			if (ii>1)  {
 				if (verbose) cli::cli_alert("Merge BEDs")
-				c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+				c1 <- stringr::str_c("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
 				if (very_verbose)  {
 					system(c1)
 				} else {
 					system(stringr::str_c(c1, " >/dev/null"))
 				}  
-				system(paste0("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
-				system(paste0("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
-				system(paste0("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
 			}
 		
 		} else {
@@ -723,15 +727,17 @@ make_imputed_bed <- function(
 		# remove tmp files
 		system("rm _ukbrapr_tmp*")
 		
+		# give update
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from BGEN ", ii, " of ", n_chrs, " [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
+		
 	}
 	
 	# finished
-	if (length(chr)>1)  {
+	if (n_chrs>1)  {
 		cli::cli_progress_done()
 		options(cli.progress_show_after = 2)
 	}
-	cli::cli_alert_success(c("BED made!"))
-	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+	cli::cli_alert_success(stringr::str_c("Imputed BED made in ", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units="secs")))))
 	
 }
 
@@ -755,25 +761,23 @@ prep_tools <- function(
 	very_verbose=FALSE
 )  {
 	
-	# required files
-	file_plink  <- system.file("files", "plink.zip", package="ukbrapR")
-	file_plink2 <- system.file("files", "plink2.zip", package="ukbrapR")
-	file_bgen   <- system.file("files", "bgen.tgz", package="ukbrapR")
-	
 	# check tools directory exists
 	if (! dir.exists("~/_ukbrapr_tools/"))  system("mkdir ~/_ukbrapr_tools/")
 	
 	#
 	# get Plink 1.9 (if not already available)
 	if (get_plink)  {
-		if (very_verbose) cli::cli_alert("Checking plink available")
+		if (verbose) cli::cli_alert("Checking plink available")
 		if (! file.exists("~/_ukbrapr_tools/plink"))  {
 			if (verbose) cli::cli_alert("Unpacking plink")
-			c1 <- paste0("unzip ", file_plink, " -d ~/_ukbrapr_tools/")
+			c1 <- "curl https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20241022.zip > ~/_ukbrapr_tools/plink.zip"
+			c2 <- "unzip ~/_ukbrapr_tools/plink.zip -d ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(c2)
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " >/dev/null"))
 			}
 		}
 	}
@@ -781,14 +785,17 @@ prep_tools <- function(
 	#
 	# get Plink 2 (if not already available)
 	if (get_plink2)  {
-		if (very_verbose) cli::cli_alert("Checking plink2 available")
+		if (verbose) cli::cli_alert("Checking plink2 available")
 		if (! file.exists("~/_ukbrapr_tools/plink2"))  {
 			if (verbose) cli::cli_alert("Unpacking plink2")
-			c1 <- paste0("unzip ", file_plink2, " -d ~/_ukbrapr_tools/")
+			c1 <- "curl https://s3.amazonaws.com/plink2-assets/alpha6/plink2_linux_x86_64_20250122.zip > ~/_ukbrapr_tools/plink2.zip"
+			c2 <- "unzip ~/_ukbrapr_tools/plink2.zip -d ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(c2)
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " >/dev/null"))
 			}
 		}
 	}
@@ -796,14 +803,17 @@ prep_tools <- function(
 	#
 	# get bgen (if not already available)
 	if (get_bgen)  {
-		if (very_verbose) cli::cli_alert("Checking bgenix available")
+		if (verbose) cli::cli_alert("Checking bgenix available")
 		if (! file.exists("~/_ukbrapr_tools/bgenix"))  {
 			if (verbose) cli::cli_alert("Unpacking bgenix")
-			c1 <- paste0("tar -xvzf ", file_bgen, " --strip-components=1 -C ~/_ukbrapr_tools/")
+			c1 <- "curl https://www.chg.ox.ac.uk/~gav/resources/bgen_v1.1.4-Ubuntu16.04-x86_64.tgz > ~/_ukbrapr_tools/bgen.tgz"
+			c2 <- "tar -xzf ~/_ukbrapr_tools/bgen.tgz --strip-components=1 -C ~/_ukbrapr_tools/"
 			if (very_verbose)  {
 				system(c1)
+				system(stringr::str_replace(c2, "xzf", "xzvf"))
 			} else {
-				system(stringr::str_c(c1, " >/dev/null"))
+				system(stringr::str_c(c1, " 2>/dev/null"))
+				system(stringr::str_c(c2, " 2>/dev/null"))
 			}
 		}
 	}
@@ -811,7 +821,7 @@ prep_tools <- function(
 	#
 	# install tabix (if not already installed)
 	if (get_tabix)  {
-		if (very_verbose) cli::cli_alert("Checking tabix installed")
+		if (verbose) cli::cli_alert("Checking tabix installed")
 		if ( ! suppressWarnings(system2("command", args = c("-v", "tabix"), stdout = FALSE)) == 0 )  {
 			if (verbose) cli::cli_alert("Installing tabix")
 			c1 <- "sudo apt-get update"

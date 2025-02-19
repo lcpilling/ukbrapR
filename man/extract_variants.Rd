@@ -9,6 +9,7 @@ extract_variants(
   out_bed = "tmp",
   source = "imputed",
   overwrite = FALSE,
+  progress = FALSE,
   verbose = FALSE,
   very_verbose = FALSE
 )
@@ -23,6 +24,9 @@ extract_variants(
 \code{default="imputed"}}
 
 \item{overwrite}{Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
+\code{default=FALSE}}
+
+\item{progress}{Logical. Show progress through each individual file,
 \code{default=FALSE}}
 
 \item{verbose}{Logical. Be verbose (show individual steps),

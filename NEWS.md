@@ -1,3 +1,14 @@
+# ukbrapR v0.3.2 (19th February 2025)
+
+### Changes
+ - Remove bundled plink, plink2 and bgenix files. Instead, download only if needed.
+ - Add more consistent progress updates for `make_dragen_bed()` and `make_imputed_bed()`
+ - Add "progress" options to `extract_variants()` and `create_pgs()` (default is FALSE). Default is TRUE if you directly call `make_dragen_bed()` or `make_imputed_bed()`
+
+### Bug fixes
+ - Fix `make_dragen_bed()` so it doesn't crash if the pVCF subset is empty (i.e., a searched-for chr:pos was missing)
+
+
 # ukbrapR v0.3.1 (10th February 2025)
 
 ### Bug fixes
