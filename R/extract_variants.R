@@ -15,6 +15,8 @@
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=FALSE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -31,6 +33,7 @@ extract_variants <- function(
 	out_bed="tmp",
 	source="imputed",
 	overwrite=FALSE,
+	progress=FALSE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -85,8 +88,8 @@ extract_variants <- function(
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	
 	# did it work?
 	if (! file.exists(stringr::str_c(out_bed, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
@@ -126,6 +129,8 @@ extract_variants <- function(
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=FALSE}
 #' @param verbose Logical. Be verbose (show individual steps),
 #'        \code{default=FALSE}
 #' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
@@ -143,6 +148,7 @@ create_pgs <- function(
 	pgs_name="pgs",
 	source="imputed",
 	overwrite=FALSE,
+	progress=FALSE,
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
@@ -204,8 +210,8 @@ create_pgs <- function(
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, verbose=verbose, very_verbose=very_verbose)
+	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	
 	# did it work?
 	if (! file.exists(stringr::str_c(out_file, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
@@ -641,7 +647,7 @@ make_imputed_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed bgen file{?s} (ETA {prettyunits::pretty_sec(n_chrs*5)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed bgen file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
