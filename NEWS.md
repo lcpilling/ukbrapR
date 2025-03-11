@@ -1,3 +1,10 @@
+# ukbrapR v0.3.2.9000 (11th March 2025)
+
+### New features
+ - New function `fields_to_phenos()` takes a vector of field IDs, check they are valid, and returns all possible UK Biobank RAP phenotypes from the schema
+
+
+
 # ukbrapR v0.3.2 (19th February 2025)
 
 ### Changes
