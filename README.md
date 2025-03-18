@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.3.2-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.3.3-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -28,7 +28,7 @@ There are three main groups of functions:
 
 * :dna: [Genetics](#genetic-variants): extract genotypes from Bulk data, create polygenic score
 * :clipboard: [Diagnoses](#ascertain-diagnoses): ascertain from health records and self-reported illness data, determine date first diagnosed
-* :hammer_and_wrench: [Utilities](#other-functions): label UK Biobank data fields, upload/download files from RAP, and pull phenotypes from Spark
+* :hammer_and_wrench: [Utilities](#other-functions): Check field names, label data fields, upload/download files from RAP, and pull phenotypes from Spark
 
 ## Genetic variants
 
@@ -194,8 +194,9 @@ table(diagnosis_df$ckd_bin)
 
 In the above example we also included a UK Biobank self-reported illness code for haemochromatosis, that was also ascertained (the Date First is run on each condition separately, they do not all need to have the same data sources).
 
-## Other functions
+## Utility functions
 
+* Check if field IDs are valid and return phenotype names with `fields_to_phenos()`
 * Label UK Biobank data fields with `label_ukb_fields()`
 * Upload/download files between worker and RAP with `upload_to_rap()` and `download_from_rap()`
 * Pull phenotypes from Spark instance with `get_rap_phenos()`
