@@ -24,10 +24,11 @@ reference:
 - contents:
   - get_diagnoses
   - get_df
-- title: Label UK Biobank data fields
+- title: Working with UK Biobank data fields
 - contents:
-  - label_ukb_field
+  - fields_to_phenos
   - label_ukb_fields
+  - label_ukb_field
 - title: Upload/download from RAP/worker storage
 - contents:
   - upload_to_rap
@@ -47,7 +48,3 @@ articles:
   - label_fields
   - spark_functions
 
-- title: Upcoming functions
-  desc: Ideas for functions or those in development
-  contents:
-  - extract_fields
