@@ -28,7 +28,7 @@ There are three main groups of functions:
 
 * :dna: [Genetics](#genetic-variants): extract genotypes from Bulk data, create polygenic score
 * :clipboard: [Diagnoses](#ascertain-diagnoses): ascertain from health records and self-reported illness data, determine date first diagnosed
-* :hammer_and_wrench: [Utilities](#other-functions): Check field names, label data fields, upload/download files from RAP, and pull phenotypes from Spark
+* :hammer_and_wrench: [Utilities](#utility-functions): Check field names, label data fields, upload/download files from RAP, and pull phenotypes from Spark
 
 ## Genetic variants
 
