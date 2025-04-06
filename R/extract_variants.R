@@ -11,7 +11,7 @@
 #' @param in_file A data frame or file path. Contains rsid, chr, and pos. For imputed genos pos is build 37. For DRAGEN pos is build 38. Other columns are ignored.
 #' @param out_bed A string. Prefix for output files (optional)
 #'        \code{default="tmp"}
-#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
+#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
@@ -125,7 +125,7 @@ extract_variants <- function(
 #'        \code{default="tmp"}
 #' @param pgs_name A string. Variable name for created PGS (optional)
 #'        \code{default="pgs"}
-#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
+#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
 #'        \code{default="imputed"}
 #' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
@@ -359,7 +359,7 @@ load_bed <- function(
 
 #' Extract variants from DRAGEN PGEN file(s) into single BED file 
 #'
-#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files) into a single BED file.
+#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
 #'
 #' Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
 #'

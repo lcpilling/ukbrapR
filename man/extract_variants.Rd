@@ -20,7 +20,7 @@ extract_variants(
 \item{out_bed}{A string. Prefix for output files (optional)
 \code{default="tmp"}}
 
-\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
+\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
 \code{default="imputed"}}
 
 \item{overwrite}{Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),

@@ -34,7 +34,7 @@ make_dragen_bed(
 A single merged BED file (and BIM and FAM files)
 }
 \description{
-For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files) into a single BED file.
+For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
 
 Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
 }
