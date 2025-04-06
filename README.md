@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.3.3-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.4.0-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -50,7 +50,7 @@ dim(imputed_genotypes)
 #> [1] 487409      3
 ```
 
-By setting option `source="dragen"` the function will instead use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38). It is much slower than the imputed version, so unless you actually need the WGS calls it is not necessary.
+By setting option `source="dragen"` the function will instead use [plink2](https://www.cog-genomics.org/plink/2.0/) to subset the [DRAGEN WGS PGEN files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24308). This requires "pos" in the input data frame (build 38). 
 
 ```r
 varlist_b38 <- data.frame(rsid=c("rs1800562","rs429358"), chr=c(6,19), pos=c(26092913,44908684))
@@ -60,6 +60,9 @@ dragen_genotypes <- extract_variants(varlist_b38, source="dragen")
 ```
 
 The highlight of developing this feature was naming the internal function `make_dragen_bed()` :dragon: :bed:
+
+> This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+
 
 ### Create polygenic score
 
