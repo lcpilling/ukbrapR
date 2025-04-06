@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.4.0-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.3.4-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -56,7 +56,7 @@ By setting option `source="dragen"` the function will instead use [plink2](https
 varlist_b38 <- data.frame(rsid=c("rs1800562","rs429358"), chr=c(6,19), pos=c(26092913,44908684))
 
 dragen_genotypes <- extract_variants(varlist_b38, source="dragen")
-#> ~3 minutes (takes ~90 seconds per pVCF file)
+#> ~30 seconds (takes ~30 seconds per CHR file)
 ```
 
 The highlight of developing this feature was naming the internal function `make_dragen_bed()` :dragon: :bed:
