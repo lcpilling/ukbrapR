@@ -468,7 +468,7 @@ make_dragen_bed <- function(
 		if (very_verbose)  {
 			system(c1)
 		} else {
-			system(stringr::str_c(c1, " &> /dev/null"))
+			system(stringr::str_c(c1, " > /dev/null 2>&1"))
 		}
 		
 		# did it work?
@@ -502,7 +502,7 @@ make_dragen_bed <- function(
 				if (very_verbose)  {
 					system(c1)
 				} else {
-					system(stringr::str_c(c1, " &> /dev/null"))
+					system(stringr::str_c(c1, " > /dev/null 2>&1"))
 				}  
 				system(stringr::str_c("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
 				system(stringr::str_c("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
