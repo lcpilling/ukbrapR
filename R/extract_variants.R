@@ -468,7 +468,7 @@ make_dragen_bed <- function(
 		if (very_verbose)  {
 			system(c1)
 		} else {
-			system(stringr::str_c(c1, " > /dev/null 2>&1"))
+			system(stringr::str_c(c1, " >/dev/null 2>/dev/null"))
 		}
 		
 		# did it work?
@@ -502,7 +502,7 @@ make_dragen_bed <- function(
 				if (very_verbose)  {
 					system(c1)
 				} else {
-					system(stringr::str_c(c1, " > /dev/null 2>&1"))
+					system(stringr::str_c(c1, " >/dev/null 2>/dev/null"))
 				}  
 				system(stringr::str_c("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
 				system(stringr::str_c("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
@@ -531,8 +531,6 @@ make_dragen_bed <- function(
 	cli::cli_alert_success(stringr::str_c("DRAGEN BED made in ", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units="secs")))))
 	
 }
-
-
 
 
 #' Extract variants from imputed genotype file(s) into single BED file 
