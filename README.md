@@ -56,10 +56,12 @@ By setting option `source="dragen"` the function will instead use [plink2](https
 varlist_b38 <- data.frame(rsid=c("rs1800562","rs429358"), chr=c(6,19), pos=c(26092913,44908684))
 
 dragen_genotypes <- extract_variants(varlist_b38, source="dragen")
-#> ~30 seconds (takes ~30 seconds per CHR file)
+#> ~1 minute (takes ~30 seconds per CHR file)
 ```
 
 The highlight of developing this feature was naming the internal function `make_dragen_bed()` :dragon: :bed:
+
+> Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
 
 > This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
 

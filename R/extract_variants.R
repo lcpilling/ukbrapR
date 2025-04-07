@@ -1,6 +1,12 @@
 #' Extract variants from bulk data and load to memory
 #'
-#' @description Use user-provided list of genetic variants to extract from imputed or WGS (DRAGEN) data and load as data.frame
+#' @description Use user-provided list of genetic variants to extract from imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) data and load as data.frame
+#'
+#' If selecting the DRAGEN data as the source:
+#'
+#'   - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
+#'
+#'   - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
 #'
 #' @return A data frame
 #'
@@ -112,7 +118,13 @@ extract_variants <- function(
 
 #' Create a polygenic score
 #'
-#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score
+#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) source data.
+#'
+#' If selecting the DRAGEN data as the source:
+#'
+#'   - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
+#'
+#'   - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
 #'
 #' @return A data frame
 #'
@@ -361,6 +373,8 @@ load_bed <- function(
 #'
 #' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
 #'
+#' This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+#'
 #' Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
 #'
 #' @return A single merged BED file (and BIM and FAM files)
@@ -535,7 +549,7 @@ make_dragen_bed <- function(
 
 #' Extract variants from imputed genotype file(s) into single BED file 
 #'
-#' @description For a given set of genomic coordinates extract from the UK Biobank imputed genotypes (v3) into a single BED file.
+#' @description For a given set of genomic coordinates extract from the UK Biobank imputed genotypes (BGEN files, field 22828) into a single BED file.
 #'
 #' @return A single merged BED file (and BIM and FAM files)
 #'

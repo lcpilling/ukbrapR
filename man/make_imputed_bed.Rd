@@ -30,7 +30,7 @@ make_imputed_bed(
 A single merged BED file (and BIM and FAM files)
 }
 \description{
-For a given set of genomic coordinates extract from the UK Biobank imputed genotypes (v3) into a single BED file.
+For a given set of genomic coordinates extract from the UK Biobank imputed genotypes (BGEN files, field 22828) into a single BED file.
 }
 \examples{
 
