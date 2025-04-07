@@ -1,12 +1,8 @@
 #' Extract variants from bulk data and load to memory
 #'
-#' @description Use user-provided list of genetic variants to extract from imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) data and load as data.frame
+#' @description Use user-provided list of genetic variants to extract from imputed BGEN files (field 22828) or WGS DRAGEN BGEN files (field 24309) data and load as data.frame
 #'
-#' If selecting the DRAGEN data as the source:
-#'
-#'   - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
-#'
-#'   - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+#' If selecting the DRAGEN data as the source, this assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 #'
 #' @return A data frame
 #'
@@ -115,16 +111,11 @@ extract_variants <- function(
 
 
 
-
 #' Create a polygenic score
 #'
-#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) source data.
+#' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed BGEN files (field 22828) or WGS DRAGEN BGEN files (field 24309) data and load as data.frame
 #'
-#' If selecting the DRAGEN data as the source:
-#'
-#'   - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
-#'
-#'   - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+#' If selecting the DRAGEN data as the source, this assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 #'
 #' @return A data frame
 #'
@@ -369,13 +360,11 @@ load_bed <- function(
 }
 
 
-#' Extract variants from DRAGEN PGEN file(s) into single BED file 
+#' Extract variants from DRAGEN BGEN file(s) into single BED file 
 #'
-#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
+#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the BGEN format, field 24309) into a single BED file.
 #'
-#' This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
-#'
-#' Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
+#' This assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 #'
 #' @return A single merged BED file (and BIM and FAM files)
 #'
@@ -385,8 +374,6 @@ load_bed <- function(
 #'
 #' @param in_file A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.
 #' @param out_bed A string. 
-#' @param memory Integer. The memory for Plink2 to reserve (in MiB),
-#'        \code{default=10000}
 #' @param progress Logical. Show progress through each individual file,
 #'        \code{default=TRUE}
 #' @param verbose Logical. Be verbose (show individual steps),
@@ -403,7 +390,6 @@ load_bed <- function(
 make_dragen_bed <- function(
 	in_file,
 	out_bed,
-	memory=10000,
 	progress=TRUE,
 	verbose=FALSE,
 	very_verbose=FALSE
@@ -450,8 +436,8 @@ make_dragen_bed <- function(
 	
 	#
 	#
-	# get plink 2
-	ukbrapR:::prep_tools(get_plink=TRUE, get_plink2=TRUE, verbose=verbose, very_verbose=very_verbose)
+	# get bgen, plink 1.9 and plink 2
+	ukbrapR:::prep_tools(get_plink=TRUE, get_plink2=TRUE, get_bgen=TRUE, verbose=verbose, very_verbose=very_verbose)
 	
 	#
 	#
@@ -460,7 +446,7 @@ make_dragen_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} PGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*30)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -470,37 +456,47 @@ make_dragen_bed <- function(
 		chr_time <- Sys.time()
 		
 		# get variants list for this file
-		varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(pos2=pos)
-		readr::write_tsv(dplyr::select(varlist_sub, chr, pos, pos2), "_ukbrapr_tmp_range.txt", col_names = FALSE, progress = FALSE)
+		varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(bed_range=stringr::str_c(chr, ":", pos, "-", pos))
+		readr::write_tsv(dplyr::select(varlist_sub, bed_range), "_ukbrapr_tmp_range.txt", col_names = FALSE, progress = FALSE)
 		
-		# path to PGEN
-		pgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ PLINK\\ format\\ \\[500k\\ release\\]/ukb24308_c", chr, "_b0_v1")
+		# path to BGEN
+		bgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ BGEN\\ format\\ \\[500k\\ release\\]/ukb24309_c", chr, "_b0_v1.bgen")
 		
-		# use plink2 to extract subset of PGEN
-		if (verbose) cli::cli_alert(stringr::str_c("Using plink2 to extract the positions from chr", chr))
-		c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --pfile ", pgen_path, " --extract range _ukbrapr_tmp_range.txt --no-pheno --memory ", memory, " --make-bed --out _ukbrapr_tmp")
+		# use bgenix to extract subset of BGEN
+		if (verbose) cli::cli_alert(stringr::str_c("Using bgenix to extract the positions from chr", chr))
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g ", bgen_path, " -incl-range _ukbrapr_tmp_range.txt > _ukbrapr_tmp.bgen")
 		if (very_verbose)  {
 			system(c1)
 		} else {
-			system(stringr::str_c(c1, " >/dev/null 2>/dev/null"))
+			system(stringr::str_c(c1, " 2>/dev/null"))
 		}
 		
 		# did it work?
-		bed_available <- TRUE
-		if (! file.exists("_ukbrapr_tmp.bed"))  {
-			bed_available <- FALSE
-			
-			# did it "fail" or were there just no variants? Check the log 
-			if (file.exists("_ukbrapr_tmp.log"))  {
-				vars_not_found <- system("grep \"No variants remaining after main filters\" _ukbrapr_tmp.log >/dev/null")
-				if (vars_not_found == 1)  {
-					cli::cli_abort("Plink2 failed to extract from the UKB PGEN. Try with `very_verbose=TRUE` to see terminal output.")
-				}
-			}
-		}
+		if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB BGEN. Try with `very_verbose=TRUE` to see terminal output.")
+		
+		# does the BGEN actually contain variants? -- create index and check file length 
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -index")
+		if ( very_verbose)  system(c1)
+		if (!very_verbose)  system(stringr::str_c(c1, " 2>/dev/null"))
+		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -list > _ukbrapr_tmp.bgen.list")
+		if ( very_verbose)  system(c1)
+		if (!very_verbose)  system(stringr::str_c(c1, " 2>/dev/null"))
+		n_rows <- as.integer(system("wc -l < _ukbrapr_tmp.bgen.list", intern = TRUE)) 
 		
 		# if no variants in the BGEN (nrow of list file <=3) then skip this CHR
-		if (bed_available)  {
+		if (n_rows > 3)  {
+			
+			# use Plink to convert to BED
+			if (verbose) cli::cli_alert("Use plink2 to convert BGEN to BED")
+			c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ BGEN\\ format\\ \\[500k\\ release\\]/ukb24309_c", chr, "_b0_v1.sample --make-bed --out _ukbrapr_tmp")
+			if (very_verbose)  {
+				system(c1)
+			} else {
+				system(stringr::str_c(c1, " >/dev/null"))
+			}
+			
+			# did it work?
+			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("plink2 failed to convert the BGEN to BED. Try with `very_verbose=TRUE` to see terminal output.")
 			
 			# if this is the first one, simply rename
 			if (ii==1)  {
@@ -531,7 +527,7 @@ make_dragen_bed <- function(
 		system("rm _ukbrapr_tmp*")
 		
 		# give update
-		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from PGEN chr", chr, " (", ii, " of ", n_chrs, ") [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from BGEN chr", chr, " (", ii, " of ", n_chrs, ") [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
 		
 	}
 	
@@ -979,6 +975,7 @@ prep_varlist <- function(
 #'
 #' make_dragen_bed_from_pvcfs(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_bed="liver_cirrhosis.dragen.variants")
 #'
+#' @noRd
 make_dragen_bed_from_pvcfs <- function(
 	in_file,
 	out_bed,
@@ -1160,6 +1157,189 @@ make_dragen_bed_from_pvcfs <- function(
 }
 
 
+
+
+
+
+
+
+
+#' Extract variants from DRAGEN PGEN file(s) into single BED file 
+#'
+#' @description For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
+#'
+#' This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+#'
+#' Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
+#'
+#' @return A single merged BED file (and BIM and FAM files)
+#'
+#' @author Luke Pilling
+#'
+#' @name make_dragen_bed_from_pgen
+#'
+#' @param in_file A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.
+#' @param out_bed A string. 
+#' @param memory Integer. The memory for Plink2 to reserve (in MiB),
+#'        \code{default=10000}
+#' @param progress Logical. Show progress through each individual file,
+#'        \code{default=TRUE}
+#' @param verbose Logical. Be verbose (show individual steps),
+#'        \code{default=FALSE}
+#' @param very_verbose Logical. Be very verbose (show individual steps & show terminal output from Plink etc),
+#'        \code{default=FALSE}
+#'
+#' @examples
+#'
+#' make_dragen_bed_from_pgen(in_file=system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR"), out_bed="liver_cirrhosis.dragen.variants")
+#'
+#' @noRd
+#'
+make_dragen_bed_from_pgen <- function(
+	in_file,
+	out_bed,
+	memory=10000,
+	progress=TRUE,
+	verbose=FALSE,
+	very_verbose=FALSE
+)  {
+	
+	# start
+	start_time <- Sys.time()
+	
+	#
+	#
+	# check inputs
+	if (very_verbose)  verbose <- TRUE
+	if (verbose) cli::cli_alert("Checking inputs")
+	
+	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
+	varlist <- NULL
+	
+	# if it's a character string, assume user has provided a file path
+	if (class(in_file)[1] == "character")  {
+		
+		if (length(in_file)>1)  cli::cli_abort("Input file path needs to be length 1")
+		# does input file exist?
+		if (! file.exists(in_file))  cli::cli_abort("Input file not found")
+		varlist <- readr::read_tsv(in_file, progress=FALSE, show_col_types=FALSE)
+		
+	} else if (! any(class(in_file) %in% c("data.frame","tbl","tbl_df")))  {
+		
+		cli::cli_abort(c(
+			"{.var in_file} must be a data.frame (or tibble), or a character string",
+			"x" = "You've supplied a {.cls {class(in_file)}} vector."
+		))
+		
+	} else {
+		varlist <- in_file   # user has passed a data frame
+	}
+	
+	# check varlist formatting
+	varlist$rsid <- ""
+	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, verbose=verbose)
+	
+	# check output format 
+	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
+	if (length(out_bed)>1)  cli::cli_abort("Output file prefix needs to be length 1")
+	
+	#
+	#
+	# get plink 2
+	ukbrapR:::prep_tools(get_plink=TRUE, get_plink2=TRUE, verbose=verbose, very_verbose=very_verbose)
+	
+	#
+	#
+	# for each CHR 
+	chrs <- unique(varlist$chr)
+	n_chrs <- length(chrs)
+	
+	# show progress
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} PGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*30)})")
+	
+	# loop over files...
+	for (ii in 1:n_chrs)  {
+		
+		# this CHR
+		chr <- chrs[ii]
+		chr_time <- Sys.time()
+		
+		# get variants list for this file
+		varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(pos2=pos)
+		readr::write_tsv(dplyr::select(varlist_sub, chr, pos, pos2), "_ukbrapr_tmp_range.txt", col_names = FALSE, progress = FALSE)
+		
+		# path to PGEN
+		pgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ PLINK\\ format\\ \\[500k\\ release\\]/ukb24308_c", chr, "_b0_v1")
+		
+		# use plink2 to extract subset of PGEN
+		if (verbose) cli::cli_alert(stringr::str_c("Using plink2 to extract the positions from chr", chr))
+		c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --pfile ", pgen_path, " --extract range _ukbrapr_tmp_range.txt --no-pheno --memory ", memory, " --make-bed --out _ukbrapr_tmp")
+		if (very_verbose)  {
+			system(c1)
+		} else {
+			system(stringr::str_c(c1, " >/dev/null 2>/dev/null"))
+		}
+		
+		# did it work?
+		bed_available <- TRUE
+		if (! file.exists("_ukbrapr_tmp.bed"))  {
+			bed_available <- FALSE
+			
+			# did it "fail" or were there just no variants? Check the log 
+			if (file.exists("_ukbrapr_tmp.log"))  {
+				vars_not_found <- system("grep \"No variants remaining after main filters\" _ukbrapr_tmp.log >/dev/null")
+				if (vars_not_found == 1)  {
+					cli::cli_abort("Plink2 failed to extract from the UKB PGEN. Try with `very_verbose=TRUE` to see terminal output.")
+				}
+			}
+		}
+		
+		# if no variants in the BGEN (nrow of list file <=3) then skip this CHR
+		if (bed_available)  {
+			
+			# if this is the first one, simply rename
+			if (ii==1)  {
+				system(stringr::str_c("mv _ukbrapr_tmp.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp.fam ", out_bed, ".fam"))
+			}
+			
+			# if not the first one, use plink2 to merge beds
+			if (ii>1)  {
+				if (verbose) cli::cli_alert("Merge BEDs")
+				c1 <- stringr::str_c("~/_ukbrapr_tools/plink --bfile ", out_bed, " --bmerge _ukbrapr_tmp --make-bed --out _ukbrapr_tmp2")
+				if (very_verbose)  {
+					system(c1)
+				} else {
+					system(stringr::str_c(c1, " >/dev/null 2>/dev/null"))
+				}  
+				system(stringr::str_c("mv _ukbrapr_tmp2.bed ", out_bed, ".bed"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.bim ", out_bed, ".bim"))
+				system(stringr::str_c("mv _ukbrapr_tmp2.fam ", out_bed, ".fam"))
+			}
+		
+		} else {
+			cli::cli_warn(stringr::str_c("Variants on CHR ", chr, " are in the input varlist but are missing from imputed PGEN"))
+		}
+		
+		# remove tmp files
+		system("rm _ukbrapr_tmp*")
+		
+		# give update
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from PGEN chr", chr, " (", ii, " of ", n_chrs, ") [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
+		
+	}
+	
+	# finished
+	if (n_chrs>1)  {
+		cli::cli_progress_done()
+		options(cli.progress_show_after = 2)
+	}
+	
+	# finished
+	cli::cli_alert_success(stringr::str_c("DRAGEN BED made in ", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units="secs")))))
+	
+}
 
 
 

@@ -85,7 +85,7 @@ export_tables <- function(
 	
 	# get dataset id 
 	if (is.null(dataset))  {
-		dataset = system("dx describe *dataset | grep  app | awk -F ' ' '{print $2}' | sort | tail -n 1", intern = TRUE)
+		dataset = system("dx describe /*dataset | grep  app | awk -F ' ' '{print $2}' | sort | tail -n 1", intern = TRUE)
 	}
 	if (verbose) cli::cli_alert_info("Using dataset {.file {dataset}}")
 	

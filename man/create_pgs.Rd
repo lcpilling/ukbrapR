@@ -43,13 +43,9 @@ create_pgs(
 A data frame
 }
 \description{
-Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) source data.
+Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed BGEN files (field 22828) or WGS DRAGEN BGEN files (field 24309) data and load as data.frame
 
-If selecting the DRAGEN data as the source:
-
-  - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
-
-  - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+If selecting the DRAGEN data as the source, this assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 }
 \examples{
 
