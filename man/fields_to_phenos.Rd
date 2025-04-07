@@ -4,10 +4,13 @@
 \alias{fields_to_phenos}
 \title{Check UK Biobank field IDs}
 \usage{
-fields_to_phenos(fields, abort = TRUE, verbose = FALSE)
+fields_to_phenos(fields, filename = "", abort = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{fields}{A vector of character strings. The field IDs to check if valid.}
+
+\item{filename}{A string. If provided, will save as a fieldname file ready for the table-exporter (including "eid").
+\code{default=""}}
 
 \item{abort}{Logical. Abort if a field is missing?,
 \code{default=TRUE}}
@@ -41,6 +44,9 @@ fields_to_phenos(c("31","93"))
 # only warn if an invalid field is provided (default is to abort)
 fields_to_phenos(c("31","notafield","93"))
 fields_to_phenos(c("31","notafield","93"), abort=FALSE)
+
+# save as fieldname file for the table-exporter (don't forget to upload to the RAP)
+fields_to_phenos(c("31","93"), filename="fieldnames.txt")
 
 }
 \author{

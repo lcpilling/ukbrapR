@@ -9,6 +9,8 @@
 #' @name fields_to_phenos
 #'
 #' @param fields A vector of character strings. The field IDs to check if valid.
+#' @param filename A string. If provided, will save as a fieldname file ready for the table-exporter (including "eid").
+#'        \code{default=""}
 #' @param abort Logical. Abort if a field is missing?,
 #'        \code{default=TRUE}
 #' @param verbose Logical. Be verbose,
@@ -35,10 +37,14 @@
 #' fields_to_phenos(c("31","notafield","93"))
 #' fields_to_phenos(c("31","notafield","93"), abort=FALSE)
 #'
+#' # save as fieldname file for the table-exporter (don't forget to upload to the RAP)
+#' fields_to_phenos(c("31","93"), filename="fieldnames.txt")
+#'
 #' @export
 #'
 fields_to_phenos <- function(
   fields,
+  filename="",
   abort=TRUE,
   verbose=FALSE
 )  {
@@ -48,10 +54,24 @@ fields_to_phenos <- function(
     cli::cli_abort("Provided fields need to be a vector of character strings") # Abort if field is not a character string
   }
   
-  # Apply field_to_phenos() to each field
-  phenos <- purrr::map(fields, \(x) field_to_phenos(field=x, abort=abort, verbose=verbose)) |> purrr::list_c()
+  # If filename provided, check it is valid
+  save_file <- FALSE
+  if (filename != "")  {
+    if (! is.character(filename))  cli::cli_abort("Provided filename need to be a character string")
+    if (! length(filename) == 1)   cli::cli_abort("Provided filename need to be a character string of length 1")
+    save_file <- TRUE
+  }
   
-  return(phenos)
+  # Apply field_to_phenos() to each field
+  phenos <- purrr::map(fields, \(x) ukbrapR:::field_to_phenos(field=x, abort=abort, verbose=verbose)) |> purrr::list_c()
+  
+  # Save file, or return vector?
+  if (save_file)  {
+    data.frame(c("eid",phenos)) |> readr::write_tsv(filename, col_names=FALSE, progress=FALSE)
+    cli::cli_alert_success(stringr::str_c("Saved fields and phenos to {.file ", filename, "}"))
+  } else {
+    return(phenos)
+  }
   
 }
 
