@@ -2,11 +2,12 @@
 % Please edit documentation in R/extract_variants.R
 \name{make_dragen_bed}
 \alias{make_dragen_bed}
-\title{Extract variants from DRAGEN pVCF file(s) into single BED file}
+\title{Extract variants from DRAGEN PGEN file(s) into single BED file}
 \usage{
 make_dragen_bed(
   in_file,
   out_bed,
+  memory = 10000,
   progress = TRUE,
   verbose = FALSE,
   very_verbose = FALSE
@@ -16,6 +17,9 @@ make_dragen_bed(
 \item{in_file}{A data frame or file path. Contains at least two columns: `chr` and `pos` (in build 38). Other columns are ignored.}
 
 \item{out_bed}{A string.}
+
+\item{memory}{Integer. The memory for Plink2 to reserve (in MiB),
+\code{default=10000}}
 
 \item{progress}{Logical. Show progress through each individual file,
 \code{default=TRUE}}
@@ -30,7 +34,11 @@ make_dragen_bed(
 A single merged BED file (and BIM and FAM files)
 }
 \description{
-For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (spread across many pVCFs) into a single BED file.
+For a given set of genomic coordinates extract the UK Biobank WGS DRAGEN variant calls (from the PLINK format PGEN files, field 24308) into a single BED file.
+
+This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
+
+Plink2 requires up to 10Gb of reserved RAM (depending on CHR), and takes up to 40 seconds per CHR.
 }
 \examples{
 

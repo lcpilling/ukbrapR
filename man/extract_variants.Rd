@@ -20,7 +20,7 @@ extract_variants(
 \item{out_bed}{A string. Prefix for output files (optional)
 \code{default="tmp"}}
 
-\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, pVCF format [500k release]" (field 24310)
+\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
 \code{default="imputed"}}
 
 \item{overwrite}{Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
@@ -39,7 +39,13 @@ extract_variants(
 A data frame
 }
 \description{
-Use user-provided list of genetic variants to extract from imputed or WGS (DRAGEN) data and load as data.frame
+Use user-provided list of genetic variants to extract from imputed (BGEN files, field 22828) or WGS (DRAGEN PLINK files, field 24308) data and load as data.frame
+
+If selecting the DRAGEN data as the source:
+
+  - Requires up to 10Gb of available RAM to subset a PGEN file. You may need a larger instance.
+
+  - This assumes your project has access to the WGS PGEN files released April 2025. By running `ukbrapR:::make_dragen_bed_from_pvcfs()` this will use [tabix](https://www.htslib.org/doc/tabix.html) and [plink](https://www.cog-genomics.org/plink/) to subset the [DRAGEN WGS pVCF files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24310). This requires "pos" in the input data frame (build 38).
 }
 \examples{
 
