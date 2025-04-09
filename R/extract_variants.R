@@ -446,7 +446,7 @@ make_dragen_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -520,14 +520,14 @@ make_dragen_bed <- function(
 			}
 		
 		} else {
-			cli::cli_warn(stringr::str_c("Variants on CHR ", chr, " are in the input varlist but are missing from imputed PGEN"))
+			cli::cli_warn(stringr::str_c("Variants on CHR ", chr, " are in the input varlist but are missing from DRAGEN BGEN"))
 		}
 		
 		# remove tmp files
 		system("rm _ukbrapr_tmp*")
 		
 		# give update
-		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from BGEN chr", chr, " (", ii, " of ", n_chrs, ") [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from DRAGEN BGEN chr", chr, " (", ii, " of ", n_chrs, ") [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
 		
 	}
 	
@@ -625,7 +625,7 @@ make_imputed_bed <- function(
 	n_chrs <- length(chrs)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed bgen file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -651,7 +651,7 @@ make_imputed_bed <- function(
 		}
 		
 		# did it work?
-		if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB BGEN. Try with `very_verbose=TRUE` to see terminal output.")
+		if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB imputed BGEN. Try with `very_verbose=TRUE` to see terminal output.")
 		
 		# does the BGEN actually contain variants? -- create index and check file length 
 		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g _ukbrapr_tmp.bgen -index")
@@ -675,7 +675,7 @@ make_imputed_bed <- function(
 			}
 			
 			# did it work?
-			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("plink2 failed to convert the BGEN to BED. Try with `very_verbose=TRUE` to see terminal output.")
+			if (! file.exists("_ukbrapr_tmp.bed"))  cli::cli_abort("plink2 failed to convert the imputed BGEN to BED. Try with `very_verbose=TRUE` to see terminal output.")
 			
 			# if this is the first one, simply rename
 			if (ii==1)  {
@@ -706,7 +706,7 @@ make_imputed_bed <- function(
 		system("rm _ukbrapr_tmp*")
 		
 		# give update
-		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from BGEN ", ii, " of ", n_chrs, " [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
+		if (progress)  cli::cli_alert_info(stringr::str_c("Extracted from imputed BGEN ", ii, " of ", n_chrs, " [", prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), chr_time, units="secs"))), "]"))
 		
 	}
 	

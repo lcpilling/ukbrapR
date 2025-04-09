@@ -2,8 +2,12 @@
 
 ### New features
  - `make_dragen_bed()` now uses the Plink format BGEN files released in April 2025 (in prior versions used the pVCFs).
-   - Means when `extract_variants()` or `create_pgs()` are called with option `"source=dragen"` this is the default. 
-   - If your project does not have the new PGEN files available, the old `make_dragen_bed()` is available as an internal function. Access using `ukbrapR:::make_dragen_bed_from_pvcfs()`.
+   - Means when `extract_variants()` or `create_pgs()` are called with option `source="dragen"` this is the default. 
+   - If your project does not have the new BGEN files available you can use `ukbrapR:::make_dragen_bed_from_pvcfs()` to extract from the pVCFs (slow).
+
+### Changes
+ - Updated internal schema to include new/updated fields.
+ - Added "filename" option to `fields_to_phenos()` so that phenotype names can be written straight to a file ready for table-exporter.
 
 
 # ukbrapR v0.3.3 (18th March 2025)
