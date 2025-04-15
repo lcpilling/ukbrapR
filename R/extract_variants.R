@@ -168,7 +168,8 @@ create_pgs <- function(
 	if (verbose) cli::cli_alert("Checking inputs")
 	
 	# imputed or dragen?
-	if (! source %in% c("imputed","dragen")) cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
+	bed_path <- NULL
+	if (! source %in% c("imputed","dragen"))  cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
 	
 	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
 	varlist <- NULL
@@ -259,7 +260,7 @@ create_pgs <- function(
 	}
 	
 	# save the varlist for plink
-	readr::write_tsv(varlist, out_file_varlist)
+	readr::write_tsv(varlist, out_file_varlist, progress=FALSE, show_col_types=FALSE)
 	
 	# Plink
 	if (verbose) cli::cli_alert("Make PGS")
