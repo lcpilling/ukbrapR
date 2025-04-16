@@ -1,3 +1,9 @@
+# ukbrapR v0.3.5 (16th April 2025)
+
+### New features
+ - `create_pgs()` can now use a local BED file of already-extracted variants. Before, it assumed the user wanted to extract the variants prior to creating the PGS.
+
+
 # ukbrapR v0.3.4 (6th April 2025)
 
 ### New features
