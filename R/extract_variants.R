@@ -128,8 +128,10 @@ extract_variants <- function(
 #'        \code{default="tmp"}
 #' @param pgs_name A string. Variable name for created PGS (optional)
 #'        \code{default="pgs"}
-#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
+#' @param source A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308). Can instead be a path to a local BED file, if `is_bed=TRUE`.
 #'        \code{default="imputed"}
+#' @param is_bed Logical. If you already have a BED file containing the required variants set this to TRUE and provide a path to the BED file in the `source` option,
+#'        \code{default=FALSE}
 #' @param overwrite Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
 #'        \code{default=FALSE}
 #' @param progress Logical. Show progress through each individual file,
@@ -150,6 +152,7 @@ create_pgs <- function(
 	out_file="tmp",
 	pgs_name="pgs",
 	source="imputed",
+	is_bed=FALSE,
 	overwrite=FALSE,
 	progress=FALSE,
 	verbose=FALSE,
@@ -167,9 +170,31 @@ create_pgs <- function(
 	if (very_verbose)  verbose <- TRUE
 	if (verbose) cli::cli_alert("Checking inputs")
 	
-	# imputed or dragen?
+	# local BED?
 	bed_path <- NULL
-	if (! source %in% c("imputed","dragen"))  cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
+	if (is_bed)  {
+		
+		bed_path <- source
+		
+		# have .bed suffix? If so, remove
+		if (stringr::str_ends(bed_path, ".bed"))  bed_path <- stringr::str_sub(bed_path, end = -5)
+		
+		# check exists:
+		if (! file.exists(stringr::str_c(bed_path, ".bed")))  cli::cli_abort("Local BED file not found")
+		if (verbose) cli::cli_alert("Local BED file found")
+		
+		# is it DRAGEN format? see if .bim only contains "chr" IDs (no rsIDs)
+		source <- "imputed"
+		bim <- readr::read_tsv(stringr::str_c(bed_path, ".bim"), col_names=c("chr","id","null","pos","a1","a2"), progress=FALSE, show_col_types=FALSE)
+		if ( all( stringr::str_detect(bim$id, "chr") ) )  source <- "dragen"
+		
+	}  else  {
+	
+		# imputed or dragen?
+		if (! source %in% c("imputed","dragen"))  cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
+		
+		bed_path <- out_file
+	}
 	
 	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
 	varlist <- NULL
@@ -214,11 +239,11 @@ create_pgs <- function(
 	#
 	#
 	# make bed 
-	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
-	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (!is_bed & source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
+	if (!is_bed & source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	
 	# did it work?
-	if (! file.exists(stringr::str_c(out_file, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
+	if (! file.exists(stringr::str_c(bed_path, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
 	
 	#
 	#
@@ -228,7 +253,7 @@ create_pgs <- function(
 	if (source == "dragen")  {
 		
 		# load the bim file
-		bim <- readr::read_tsv(stringr::str_c(out_file, ".bim"), col_names=c("chr","id","null","pos","a1","a2"))
+		bim <- readr::read_tsv(stringr::str_c(bed_path, ".bim"), col_names=c("chr","id","null","pos","a1","a2"), progress=FALSE, show_col_types=FALSE)
 		
 		# create ID for each row of the varlist - make sure alleles match the bim file
 		varlist$rsid_old <- varlist$rsid
@@ -260,11 +285,11 @@ create_pgs <- function(
 	}
 	
 	# save the varlist for plink
-	readr::write_tsv(varlist, out_file_varlist, progress=FALSE, show_col_types=FALSE)
+	readr::write_tsv(varlist, out_file_varlist, progress=FALSE)
 	
 	# Plink
 	if (verbose) cli::cli_alert("Make PGS")
-	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", out_file, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
+	c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", bed_path, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
 	if (very_verbose)  {
 		system(c1)
 	} else {

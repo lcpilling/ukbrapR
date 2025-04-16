@@ -9,6 +9,7 @@ create_pgs(
   out_file = "tmp",
   pgs_name = "pgs",
   source = "imputed",
+  is_bed = FALSE,
   overwrite = FALSE,
   progress = FALSE,
   verbose = FALSE,
@@ -24,8 +25,11 @@ create_pgs(
 \item{pgs_name}{A string. Variable name for created PGS (optional)
 \code{default="pgs"}}
 
-\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
+\item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308). Can instead be a path to a local BED file, if `is_bed=TRUE`.
 \code{default="imputed"}}
+
+\item{is_bed}{Logical. If you already have a BED file containing the required variants set this to TRUE and provide a path to the BED file in the `source` option,
+\code{default=FALSE}}
 
 \item{overwrite}{Logical. Overwrite output BED files? (If out_file is left as 'tmp' overwrite is set to TRUE),
 \code{default=FALSE}}
