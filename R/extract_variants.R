@@ -470,9 +470,10 @@ make_dragen_bed <- function(
 	# for each CHR 
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
+	n_snps_per_chr <- nrow(varlist) / n_chrs
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA ~{prettyunits::pretty_sec(n_chrs*(10*n_snps_per_chr))})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -487,6 +488,15 @@ make_dragen_bed <- function(
 		
 		# path to BGEN
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ BGEN\\ format\\ \\[500k\\ release\\]/ukb24309_c", chr, "_b0_v1.bgen")
+		
+		# check it exists - exit if not 
+		if (! file.exists(stringr::str_replace_all(bgen_path, stringr::fixed("\\"), "")) )  {
+			cli::cli_abort(c(
+				stringr::str_c("DRAGEN BGEN file not found: ukb24309_c", chr, "_b0_v1.bgen"), 
+				"Has your Project been updated since April 2025? If not, you probably don't have the new BGENs.",
+				"Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"
+			))
+		}
 		
 		# use bgenix to extract subset of BGEN
 		if (verbose) cli::cli_alert(stringr::str_c("Using bgenix to extract the positions from chr", chr))
@@ -649,9 +659,10 @@ make_imputed_bed <- function(
 	# for each CHR 
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
+	n_snps_per_chr <- nrow(varlist) / n_chrs
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*(8*n_snps_per_chr))})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {

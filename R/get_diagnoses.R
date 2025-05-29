@@ -73,17 +73,6 @@ get_diagnoses <- function(
 	
 	if (! any(c("ICD10","ICD9","Read2","CTV3","OPCS3","OPCS4","ukb_cancer","ukb_noncancer") %in% codes_df[,vocab_col]))  stop("Vocabularies need to include at least one of ICD10, ICD9, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, or ukb_noncancer")
 	
-	# Is this one of my systems? If so, get the internal file_paths 
-	nodename <- as.character(Sys.info()['nodename'])
-	if ( is.null(file_paths)  &  nodename %in% c("SNOW","SHAPTER") )  {
-		file_paths = ukbrapR:::snow_paths
-		if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
-	}
-	if ( is.null(file_paths)  &  nodename == "indy.ex.ac.uk" )  {
-		file_paths = ukbrapR:::indy_paths
-		if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
-	}
-	
 	# if file_paths not provided assume default paths
 	if (is.null(file_paths))  file_paths = ukbrapR:::ukbrapr_paths
 	
@@ -308,14 +297,6 @@ get_diagnoses <- function(
 	# check files exist
 	for (file in file_paths$path[file_paths$object %in% must_include])  if (! file.exists(file))  cli::cli_abort("Could not find file {.path {file}}")
 	
-	# assume OS in UNIX... check if Windows -- i.e., should we use `grep` or `findstr`
-	unix = TRUE
-	if (as.character(Sys.info()['sysname'])=="Windows")  {
-		unix = FALSE
-		# paths need converting from unix to dos with escape characters?
-		file_paths = file_paths |> dplyr::mutate(path = stringr::str_replace_all(path, "/", "\\\\"))
-	}
-
 	#
 	#########################################################################################################
 	#
@@ -341,7 +322,6 @@ get_diagnoses <- function(
 		
 		# create search string
 		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(ICD10s, collapse = "|")), " ", sprintf('%s', death_cause_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(ICD10s, collapse = "\" /c:\""), "\" ", sprintf('"%s"', death_cause_path))
 		if (verbose)  cat(" -- search string: ", search_string, "\n")
 		
 		# get file headers
@@ -353,13 +333,6 @@ get_diagnoses <- function(
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name) and the dates are dates
 		if (nrow(death_cause_tbl)>0)  {
-			if (!unix)  {
-				death_cause_tbl <- death_cause_tbl |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(death_cause_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
-			
 			# match with date of death data
 			death_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="death" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(death_tbl))  colnames(death_tbl)[1] <- "eid"
@@ -405,7 +378,6 @@ get_diagnoses <- function(
 		
 		# create search string
 		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(ICD10s, collapse = "|")), " ", sprintf('%s', hesin_diag_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(ICD10s, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_diag_path))
 		if (verbose)  cat(" -- search string: ", search_string, "\n")
 		
 		# get file headers
@@ -417,13 +389,6 @@ get_diagnoses <- function(
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		if (nrow(hesin_diag_tbl)>0)  {
-			if (!unix)  {
-				hesin_diag_tbl <- hesin_diag_tbl |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_diag_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
-			
 			# match with HES episode data
 			hesin_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
@@ -456,7 +421,6 @@ get_diagnoses <- function(
 		
 		# create search string
 		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(ICD9s, collapse = "|")), " ", sprintf('%s', hesin_diag_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(ICD9s, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_diag_path))
 		if (verbose)  cat(" -- search string: ", search_string, "\n")
 		
 		# get file headers
@@ -477,13 +441,6 @@ get_diagnoses <- function(
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		if (nrow(hesin_diag_tbl_icd9)>0)  {
-			if (!unix)  {
-				hesin_diag_tbl_icd9 <- hesin_diag_tbl_icd9 |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_diag_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
-			
 			# match with HES episode data
 			hesin_tbl = suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="hesin" ], show_col_types=FALSE, progress=FALSE))
 			if (! "eid" %in% colnames(hesin_tbl))  colnames(hesin_tbl)[1] <- "eid"
@@ -519,7 +476,6 @@ get_diagnoses <- function(
 		
 		# create search string
 		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(oper_codes, collapse = "|")), " ", sprintf('%s', hesin_oper_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(oper_codes, collapse = "\" /c:\""), "\" ", sprintf('"%s"', hesin_oper_path))
 		if (verbose)  cat(" -- search string: ", search_string, "\n")
 		
 		# get file headers
@@ -532,12 +488,6 @@ get_diagnoses <- function(
 		# if any matches returned, make sure eid is formatted nicely (remove file name), and dates are dates
 		# make sure OPCS3 are exact
 		if (nrow(hesin_oper_tbl)>0)  {
-			if (!unix)  {
-				hesin_oper_tbl <- hesin_oper_tbl |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(hesin_oper_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
 			if (OPCS4s[1] != "" & OPCS3s[1] == "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_detect(oper4, stringr::str_flatten(!! OPCS4s, collapse = "|"))) 
 			if (OPCS4s[1] == "" & OPCS3s[1] != "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_starts(oper3, stringr::str_flatten(!! OPCS3s, collapse = "|"))) 
 			if (OPCS4s[1] != "" & OPCS3s[1] != "")  hesin_oper_tbl <- hesin_oper_tbl |> dplyr::filter(stringr::str_starts(oper3, stringr::str_flatten(!! OPCS3s, collapse = "|")) | stringr::str_detect(oper4, stringr::str_flatten(!!OPCS4s, collapse = "|"))) 
@@ -562,7 +512,6 @@ get_diagnoses <- function(
 		
 		# create search strings
 		search_string <- paste0("grep -E ", sprintf('"%s"', stringr::str_flatten(gp_codes, collapse = "|")), " ", sprintf('%s', gp_clinical_path))
-		if (!unix)  search_string <- stringr::str_c("findstr /c:\"", stringr::str_flatten(gp_codes, collapse = "\" /c:\""), "\" ", sprintf('"%s"', gp_clinical_path))
 		if (verbose)  cat(" -- search string: ", search_string, "\n")
 		
 		# get file headers
@@ -574,12 +523,6 @@ get_diagnoses <- function(
 		
 		# if any matches returned, make sure eid is formatted nicely (remove file name), the codes are definite matches, and the dates are dates
 		if (nrow(gp_clinical_tbl)>0)  {
-			if (!unix)  {
-				gp_clinical_tbl <- gp_clinical_tbl |> 
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(gp_clinical_path))) |>
-					dplyr::mutate(eid = stringr::str_remove(eid, stringr::fixed(":"))) |>
-					dplyr::mutate(eid = as.numeric(eid))
-			}
 			gp_clinical_tbl <- gp_clinical_tbl |> dplyr::filter(read_2 %in% !!Read2s | read_3 %in% !!CTV3s) 
 			
 			# format date col if not "Date"
