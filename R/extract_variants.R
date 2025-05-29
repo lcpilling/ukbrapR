@@ -470,9 +470,10 @@ make_dragen_bed <- function(
 	# for each CHR 
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
+	n_snps_per_chr <- nrow(varlist) / n_chrs
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*10)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA ~{prettyunits::pretty_sec(n_chrs*(10*n_snps_per_chr))})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -490,7 +491,10 @@ make_dragen_bed <- function(
 		
 		# check it exists - exit if not 
 		if (! file.exists(bgen_path) )  {
-			cli::cli_abort(c("DRAGEN BGEN file not found: ", bgen_path, "> Has your Project been updated since April 2025? If not, you probably don't have the new BGENs. Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"))
+			cli::cli_abort(c(
+				stringr::str_c("DRAGEN BGEN file not found: ukb24309_c", chr, "_b0_v1.bgen"), 
+				"Has your Project been updated since April 2025? If not, you probably don't have the new BGENs. Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"
+			))
 		}
 		
 		# use bgenix to extract subset of BGEN
@@ -654,9 +658,10 @@ make_imputed_bed <- function(
 	# for each CHR 
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
+	n_snps_per_chr <- nrow(varlist) / n_chrs
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*8)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*(8*n_snps_per_chr))})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
