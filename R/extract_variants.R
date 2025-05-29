@@ -490,7 +490,7 @@ make_dragen_bed <- function(
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ BGEN\\ format\\ \\[500k\\ release\\]/ukb24309_c", chr, "_b0_v1.bgen")
 		
 		# check it exists - exit if not 
-		if (! file.exists(bgen_path) )  {
+		if (! file.exists(stringr::str_replace_all(bgen_path, stringr::fixed("\\"), "")) )  {
 			cli::cli_abort(c(
 				stringr::str_c("DRAGEN BGEN file not found: ukb24309_c", chr, "_b0_v1.bgen"), 
 				"Has your Project been updated since April 2025? If not, you probably don't have the new BGENs.",
