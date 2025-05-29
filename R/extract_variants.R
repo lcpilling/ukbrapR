@@ -493,7 +493,8 @@ make_dragen_bed <- function(
 		if (! file.exists(bgen_path) )  {
 			cli::cli_abort(c(
 				stringr::str_c("DRAGEN BGEN file not found: ukb24309_c", chr, "_b0_v1.bgen"), 
-				"Has your Project been updated since April 2025? If not, you probably don't have the new BGENs. Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"
+				"Has your Project been updated since April 2025? If not, you probably don't have the new BGENs.",
+				"Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"
 			))
 		}
 		

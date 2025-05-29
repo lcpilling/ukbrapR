@@ -2,6 +2,7 @@
 
 ### Change
  - `make_dragen_bed()` returns a more informative error if DRAGEN BGENs not found (suggests user is in a Project not updated since April 2025).
+ - `make_XXX_bed()` functions now give a more accurate ETA. Previously only considered the number of CHRs to search. Now considers the number of variants also.
  - Removed indy/snow paths (i.e., my local servers) because we are now fully RAP working.
  - Removed Windows functionality. The RAP is always UNIX.
 
