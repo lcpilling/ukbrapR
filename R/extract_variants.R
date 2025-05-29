@@ -488,6 +488,11 @@ make_dragen_bed <- function(
 		# path to BGEN
 		bgen_path <- stringr::str_c("/mnt/project/Bulk/DRAGEN\\ WGS/DRAGEN\\ population\\ level\\ WGS\\ variants\\,\\ BGEN\\ format\\ \\[500k\\ release\\]/ukb24309_c", chr, "_b0_v1.bgen")
 		
+		# check it exists - exit if not 
+		if (! file.exists(bgen_path) )  {
+			cli::cli_abort(c("DRAGEN BGEN file not found: ", bgen_path, "> Has your Project been updated since April 2025? If not, you probably don't have the new BGENs. Consider using `ukbrapR:::make_dragen_bed_from_pvcfs()`"))
+		}
+		
 		# use bgenix to extract subset of BGEN
 		if (verbose) cli::cli_alert(stringr::str_c("Using bgenix to extract the positions from chr", chr))
 		c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g ", bgen_path, " -incl-range _ukbrapr_tmp_range.txt > _ukbrapr_tmp.bgen")
