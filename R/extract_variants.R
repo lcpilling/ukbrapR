@@ -471,9 +471,10 @@ make_dragen_bed <- function(
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
 	n_snps_per_chr <- nrow(varlist) / n_chrs
+	n_secs <- (n_chrs * 10) * (0.1 * n_snps_per_chr)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA ~{prettyunits::pretty_sec(n_chrs*(10*n_snps_per_chr))})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA ~{prettyunits::pretty_sec(n_secs)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -660,9 +661,10 @@ make_imputed_bed <- function(
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
 	n_snps_per_chr <- nrow(varlist) / n_chrs
+	n_secs <- (n_chrs * 8) * (0.1 * n_snps_per_chr)
 	
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*(8*n_snps_per_chr))})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_secs)})")
 	
 	# loop over files...
 	for (ii in 1:n_chrs)  {
