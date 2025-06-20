@@ -1,3 +1,12 @@
+# ukbrapR v0.3.7 (20th June 2025)
+
+### Changes
+ - `make_XXX_bed()` functions now give a more accurate ETA. Previously only considered the number of CHRs to search. Now considers the number of variants also.
+
+### Bug fixes
+ - Fix issue #31 where `fields_to_phenos()` incorrectly arrayed some "multiple choice" questions
+
+
 # ukbrapR v0.3.6 (29th May 2025)
 
 ### Change
