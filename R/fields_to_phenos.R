@@ -134,7 +134,8 @@ field_to_phenos <- function(
   }
   
   # Check if the field is arrayed and generate arrays if true
-  if (field_info$arrayed == 1)  {
+  # If the field is "multiple choice" value type then it is *not* arrayed
+  if (field_info$arrayed == 1 & field_info$value_type != 22)  {
     arrays <- seq(field_info$array_min, field_info$array_max, 1)
     if (verbose)  cli::cli_alert(stringr::str_c("Is arrayed [", stringr::str_c(arrays, collapse=","), "]")) 
   
