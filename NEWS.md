@@ -1,3 +1,9 @@
+# ukbrapR v0.3.8 (2nd Dec 2025)
+
+### Changes
+ - Implement suggestion by @nsandau (issue #34) to use `--brief --yes` flags when exporting tables with `export_tables()` (if running from terminal user is prompted for each job).
+
+
 # ukbrapR v0.3.7 (20th June 2025)
 
 ### Changes
