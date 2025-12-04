@@ -251,7 +251,7 @@ get_diagnoses <- function(
 	
 	for (file in must_include)  if (! file %in% file_paths$object) cli::cli_abort("{.var file_paths} must contain {.path {file}}")
 	
-	# if files not already downloaded from RAP then copy to user's home directory
+	# if files not already downloaded from RAP then download to user's home directory
 	#   only do this if the file paths are to "ukbrapr_data"
 	files = file_paths$path[file_paths$object %in% must_include]
 	if (stringr::str_detect(files[1], "ukbrapr_data"))  {
@@ -262,25 +262,20 @@ get_diagnoses <- function(
 		
 		# do any need downloading from RAP? Or already been done?
 		#     each file now has two paths: a RAP path and a local path:
-		dx_files = NULL
-		for (file in stringr::str_c(home_path, "/", files))  if (! file.exists(file))  dx_files = c(dx_files, file)
+		dx_files   <- NULL
+		home_files <- stringr::str_c(home_path, "/", files)
+		for (ii in 1:length(files))  if (! file.exists(home_files[ii]))  dx_files = c(dx_files, files[ii])
 		
 		# if any were missing, download them
 		if (!is.null(dx_files))  {
 			
 			options(cli.progress_show_after = 0)
-			#cli::cli_progress_bar("Downloading files from the RAP", total = length(files))
 			cli::cli_progress_bar(format = "Downloading {.path {basename(file)}} from the RAP [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar} {cli::pb_percent}", total = length(dx_files))
-			
-			# move to RAP directory
-			dx_pwd = system("dx pwd", intern=TRUE)
-			if (! stringr::str_detect(dx_pwd, "ukbrapr_data"))  system("dx cd ukbrapr_data")
 			
 			# copy file from RAP space to instance
 			for (file in dx_files)  {
-				#system(stringr::str_c("cp /mnt/project/", file, " ~/ukbrapr_data/"))
 				cli::cli_progress_update()
-				system(stringr::str_c("dx download \"", basename(file), "\" -o \"", home_path, "/ukbrapr_data\""))
+				system(stringr::str_c("dx download \"${DX_PROJECT_CONTEXT_ID}:/", file, "\" -o \"", home_path, "/ukbrapr_data\""))
 			}
 			cli::cli_progress_done()
 			options(cli.progress_show_after = 2)
