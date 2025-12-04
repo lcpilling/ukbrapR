@@ -1,6 +1,6 @@
 Package: ukbrapR
 Title: R functions to use in the UK Biobank Research Analysis Platform (RAP)
-Version: 0.3.8
+Version: 0.3.9
 Authors@R: c(person("Luke", "Pilling", 
                     email = "L.Pilling@exeter.ac.uk", 
                     role = c("aut", "cre"),

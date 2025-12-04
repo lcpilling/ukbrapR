@@ -1,3 +1,9 @@
+# ukbrapR v0.3.9 (4th Dec 2025)
+
+### Changes
+ - Fix issue with `dx` paths when downloading exported data in `/ukbrapr_data`. Previous method worked fine in RStudio but not Cloud Workstation, and highlighted a dependency on relative paths for `$ dx download` internal commands.
+
+
 # ukbrapR v0.3.8 (2nd Dec 2025)
 
 ### Changes
