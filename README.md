@@ -100,6 +100,10 @@ liver_pgs <- create_pgs(
 summary(liver_pgs$liver_cirrhosis_pgs)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #> 0.00000 0.06006 0.08200 0.08589 0.10722 0.26639
+
+# Default is to search by RSID in the imputed genotype data.
+
+# Either set `use_imp_pos` to TRUE to use the b37 positions, or set `source` to "dragen" to extract from WGS BGENs (using b38 pos)
 ```
 
 ## Ascertain diagnoses
