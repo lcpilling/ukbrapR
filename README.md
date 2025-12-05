@@ -48,6 +48,12 @@ imputed_genotypes <- extract_variants(varlist)
 
 dim(imputed_genotypes)
 #> [1] 487409      3
+
+# If you are missing RSIDs or want to extract using positions (build 37) specify using:
+varlist_pos <- data.frame(chr=c(6,19), pos=c(26093141,45411941)) # RSID is ignored/not needed
+imputed_genotypes_pos <- extract_variants(varlist_pos)
+dim(imputed_genotypes_pos)
+#> [1] 487409      3
 ```
 
 By setting option `source="dragen"` the function will instead subset the [DRAGEN WGS BGEN files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24309). This requires "pos" in the input data frame (build 38). 

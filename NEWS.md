@@ -1,7 +1,10 @@
 # ukbrapR v0.3.10 (XX)
 
-### Changes
- - 
+### New features
+ - For genetic functions using the imputed bgens it is now possible to extract based on position (build 37) not RSID. For example:
+   - In `extract_variants()` when `source="imputed"` new option `use_imp_pos` can be set to TRUE (default is false)
+   - similarly in `make_imputed_bgen()` then `use_pos` can be set to TRUE to extract based on position not RSID
+ - New function `get_imputed_variant_info()`: for a given set of genomic coordinates (position in build 37) get the UK Biobank imputed genotype variant IDs from the MFI files (also returns alleles, MAF and INFO).
 
 
 # ukbrapR v0.3.9 (4th Dec 2025)

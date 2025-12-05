@@ -8,6 +8,7 @@ extract_variants(
   in_file,
   out_bed = "tmp",
   source = "imputed",
+  use_imp_pos = FALSE,
   overwrite = FALSE,
   progress = FALSE,
   verbose = FALSE,
@@ -22,6 +23,9 @@ extract_variants(
 
 \item{source}{A string. Either "imputed" or "dragen" - indicating whether the variants should be from "UKB imputation from genotype" (field 22828) or "DRAGEN population level WGS variants, PLINK format [500k release]" (field 24308)
 \code{default="imputed"}}
+
+\item{use_imp_pos}{Logical. If source imputed, use position instead of rsID to extract variants?,
+\code{default=FALSE}}
 
 \item{overwrite}{Logical. Overwrite output BED files? (If output prefix is left as 'tmp' overwrite is set to TRUE),
 \code{default=FALSE}}
