@@ -311,7 +311,7 @@ make_imputed_bed <- function(
     # get variants list for this file
     if (use_pos)  {
       this_chr <- chr
-      if (chr < 10)  this_chr <- stringr::str_c("0", chr)   # imputed BGENs have 0 prefix to chrs <10
+      if (chr %in% c(1:9))  this_chr <- stringr::str_c("0", chr)   # imputed BGENs have 0 prefix to chrs <10
       varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(bed_range=stringr::str_c(this_chr, ":", pos, "-", pos))
       readr::write_tsv(dplyr::select(varlist_sub, bed_range), "_ukbrapr_tmp_range.txt", col_names = FALSE, progress = FALSE)
     } else {
@@ -351,8 +351,9 @@ make_imputed_bed <- function(
     if (n_rows > 3)  {
       
       # use Plink to convert to BED
+	  #   remove any duplicated positions (multiallelic SNPs cause failues later) - keep first
       if (verbose) cli::cli_alert("Use plink2 to convert BGEN to BED")
-      c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --out _ukbrapr_tmp")
+      c1 <- stringr::str_c("~/_ukbrapr_tools/plink2 --bgen _ukbrapr_tmp.bgen ref-first --sample /mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.sample --make-bed --rm-dup force-first --out _ukbrapr_tmp")
       if (very_verbose)  {
         system(c1)
       } else {
@@ -386,7 +387,7 @@ make_imputed_bed <- function(
     } else {
       cli::cli_warn(stringr::str_c("Variants on CHR ", chr, " are in the input varlist but are missing from imputed BGEN"))
     }
-    
+    	
     # remove tmp files
     system("rm _ukbrapr_tmp*")
     
