@@ -310,9 +310,9 @@ make_imputed_bed <- function(
     
     # get variants list for this file
     if (use_pos)  {
-      this_chr <- chr
-      if (chr < 10)  this_chr <- stringr::str_c("0", chr)   # imputed BGENs have 0 prefix to chrs <10
-      varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(bed_range=stringr::str_c(this_chr, ":", pos, "-", pos))
+      #this_chr <- chr
+      #if (chr <10)  this_chr <- stringr::str_c("0", chr)   # imputed BGENs have 0 prefix to chrs <10
+      varlist_sub <- varlist |> dplyr::filter(chr==!!chr) |> dplyr::mutate(bed_range=stringr::str_c(chr, ":", pos, "-", pos))
       readr::write_tsv(dplyr::select(varlist_sub, bed_range), "_ukbrapr_tmp_range.txt", col_names = FALSE, progress = FALSE)
     } else {
       varlist_sub <- varlist |> dplyr::filter(chr==!!chr)
@@ -334,6 +334,8 @@ make_imputed_bed <- function(
     } else {
       system(stringr::str_c(c1, " 2>/dev/null"))
     }
+	
+	return(0)
     
     # did it work?
     if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB imputed BGEN. Try with `very_verbose=TRUE` to see terminal output.")
