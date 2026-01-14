@@ -217,3 +217,5 @@ In the above example we also included a UK Biobank self-reported illness code fo
 ## Questions and comments
 
 Please report any bugs or [issues](https://github.com/lcpilling/ukbrapR/issues), and feel free to suggest changes as [pull requests](https://github.com/lcpilling/ukbrapR/pulls). Alternatively, feel free to contact me via e-mail L.Pilling@exeter.ac.uk
+
+Thanks to Dr Harry Green (@[hdg204](https://github.com/hdg204)) for the ideas sharing, brainstorming, and bug testing.
