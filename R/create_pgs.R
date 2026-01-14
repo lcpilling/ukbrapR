@@ -155,7 +155,6 @@ create_pgs <- function(
   
   # create ID for each row of the varlist - make sure alleles match the bim file
   varlist$rsid_old <- varlist$rsid
-  varlist$rsid <- ""
   for (ii in 1:nrow(varlist))  {
     
     # keep bim rows where CHR and POS match
