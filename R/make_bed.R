@@ -334,6 +334,8 @@ make_imputed_bed <- function(
     } else {
       system(stringr::str_c(c1, " 2>/dev/null"))
     }
+	
+	return(0)
     
     # did it work?
     if (! file.exists("_ukbrapr_tmp.bgen"))  cli::cli_abort("BGENIX failed to extract from the UKB imputed BGEN. Try with `very_verbose=TRUE` to see terminal output.")
