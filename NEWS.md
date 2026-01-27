@@ -1,4 +1,4 @@
-# ukbrapR v0.3.10 (XX)
+# ukbrapR v0.3.10 (27th Jan 2026)
 
 ### New features
  - For genetic functions using the imputed bgens it is now possible to extract based on position (build 37) not RSID. For example:

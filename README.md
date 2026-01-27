@@ -56,6 +56,10 @@ dim(imputed_genotypes_pos)
 #> [1] 487409      3
 ```
 
+You can use function `get_imputed_variant_info()` to get the UK Biobank imputed genotype variant IDs, alleles, MAF, and INFO from the MFI files. Provide a data.frame containing `chr` and `pos` fields (in build 37).
+
+#### Extract from DRAGEN WGS variant calls
+
 By setting option `source="dragen"` the function will instead subset the [DRAGEN WGS BGEN files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24309). This requires "pos" in the input data frame (build 38). 
 
 ```r
