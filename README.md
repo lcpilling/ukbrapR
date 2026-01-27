@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.3.9-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.3.10-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -48,7 +48,17 @@ imputed_genotypes <- extract_variants(varlist)
 
 dim(imputed_genotypes)
 #> [1] 487409      3
+
+# If you are missing RSIDs or want to extract using positions (build 37) specify using:
+varlist_pos <- data.frame(chr=c(6,19), pos=c(26093141,45411941)) # RSID is ignored/not needed
+imputed_genotypes_pos <- extract_variants(varlist_pos)
+dim(imputed_genotypes_pos)
+#> [1] 487409      3
 ```
+
+You can use function `get_imputed_variant_info()` to get the UK Biobank imputed genotype variant IDs, alleles, MAF, and INFO from the MFI files. Provide a data.frame containing `chr` and `pos` fields (in build 37).
+
+#### Extract from DRAGEN WGS variant calls
 
 By setting option `source="dragen"` the function will instead subset the [DRAGEN WGS BGEN files](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=24309). This requires "pos" in the input data frame (build 38). 
 
@@ -94,6 +104,10 @@ liver_pgs <- create_pgs(
 summary(liver_pgs$liver_cirrhosis_pgs)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #> 0.00000 0.06006 0.08200 0.08589 0.10722 0.26639
+
+# Default is to search by RSID in the imputed genotype data.
+
+# Either set `use_imp_pos` to TRUE to use the b37 positions, or set `source` to "dragen" to extract from WGS BGENs (using b38 pos)
 ```
 
 ## Ascertain diagnoses
@@ -207,3 +221,5 @@ In the above example we also included a UK Biobank self-reported illness code fo
 ## Questions and comments
 
 Please report any bugs or [issues](https://github.com/lcpilling/ukbrapR/issues), and feel free to suggest changes as [pull requests](https://github.com/lcpilling/ukbrapR/pulls). Alternatively, feel free to contact me via e-mail L.Pilling@exeter.ac.uk
+
+Thanks to Dr Harry Green (@[hdg204](https://github.com/hdg204)) for the ideas sharing, brainstorming, and bug testing.
