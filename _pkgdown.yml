@@ -14,6 +14,7 @@ reference:
 - title: Extract genetic variants
 - contents:
   - extract_variants
+  - get_imputed_variant_info
   - make_imputed_bed
   - make_dragen_bed
   - load_bed
