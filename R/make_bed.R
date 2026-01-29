@@ -323,7 +323,7 @@ make_imputed_bed <- function(
     bgen_path <- stringr::str_c("/mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.bgen")
     
     # use bgenix to extract subset of BGEN
-    if (verbose) cli::cli_alert("Use bgenix to extract the positions")
+	if (verbose) cli::cli_alert(stringr::str_c("Using bgenix to extract the positions from chr", chr))
     if (use_pos)  {
       c1 <- stringr::str_c("~/_ukbrapr_tools/bgenix -g ", bgen_path, " -incl-range _ukbrapr_tmp_range.txt > _ukbrapr_tmp.bgen")
     } else {
