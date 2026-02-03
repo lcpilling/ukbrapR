@@ -1,7 +1,7 @@
 # ukbrapR <a href="https://lcpilling.github.io/ukbrapR/"><img src="man/figures/ukbrapR.png" align="right" width="150" /></a>
 
 <!-- badges: start -->
-[![](https://img.shields.io/badge/version-0.3.10-informational.svg)](https://github.com/lcpilling/ukbrapR)
+[![](https://img.shields.io/badge/version-0.3.11-informational.svg)](https://github.com/lcpilling/ukbrapR)
 [![](https://img.shields.io/github/last-commit/lcpilling/ukbrapR.svg)](https://github.com/lcpilling/ukbrapR/commits/main)
 [![](https://img.shields.io/badge/lifecycle-experimental-orange)](https://www.tidyverse.org/lifecycle/#experimental)
 [![DOI](https://zenodo.org/badge/709765135.svg)](https://zenodo.org/doi/10.5281/zenodo.11517716)
@@ -76,7 +76,7 @@ The highlight of developing this feature was naming the internal function `make_
 
 ### Create polygenic score
 
-`create_pgs()` takes a data frame containing a list of variant associations with a trait and creates a weighted allele score using [plink](https://www.cog-genomics.org/plink/1.9/score). By default it uses the [imputed](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=22828) genotypes.
+`create_pgs()` takes a data frame containing a list of variant associations with a trait and creates a weighted allele score using [plink2](https://www.cog-genomics.org/plink/2.0/score). By default it uses the [imputed](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=22828) genotypes.
 
 The only required input is a data frame (or path to file) containing rsid, chr, pos, effect_allele, other_allele, beta. For DRAGEN pos is build 38.
 

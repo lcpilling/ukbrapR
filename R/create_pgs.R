@@ -2,6 +2,8 @@
 #'
 #' @description Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed BGEN files (field 22828) or WGS DRAGEN BGEN files (field 24309) data and load as data.frame
 #'
+#' Uses plink2 to create the score (https://www.cog-genomics.org/plink/2.0/score). The returned score is the sum of the effect alleles weighted by the provided beta coefficients, divided by the number of non-missing alleles (i.e. the average score per allele).
+#' 
 #' If selecting the DRAGEN data as the source, this assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 #'
 #' @return A data frame
@@ -184,7 +186,7 @@ create_pgs <- function(
   
   # Plink
   if (verbose) cli::cli_alert("Make PGS")
-  c1 <- paste0("~/_ukbrapr_tools/plink --bfile ", bed_path, " --score ", out_file_varlist, " 1 4 6 header --out ", out_file)
+  c1 <- paste0("~/_ukbrapr_tools/plink2 --bfile ", bed_path, " --score ", out_file_varlist, " 1 4 6 header cols=+scoresums,+scoreavgs --out ", out_file)
   if (very_verbose)  {
     system(c1)
   } else {
@@ -196,7 +198,7 @@ create_pgs <- function(
   
   # just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
   system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))
-  system(stringr::str_c("awk 'NR > 1 && $1 > 0 { print $1\"\t\"$6 }' ", out_file, ".profile >> ", out_file, ".tsv"))
+  system(stringr::str_c("awk 'NR > 1 && $1 > 0 { print $1\"\t\"$5 }' ", out_file, ".sscore >> ", out_file, ".tsv"))
   
   # load
   pgs <- readr::read_tsv(stringr::str_c(out_file, ".tsv"), progress=FALSE, show_col_types=FALSE)

@@ -1,3 +1,10 @@
+# ukbrapR v0.3.11 (3rd Feb 2026)
+
+### Changes
+ - Use `plink2` when creating polygenic scores. This handles effect/other allele differences more robustly
+   - Returns the "scoreavgs" which is the total sum of the effect weights divided by the number of alleles
+
+
 # ukbrapR v0.3.10 (27th Jan 2026)
 
 ### New features

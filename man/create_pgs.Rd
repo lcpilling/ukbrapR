@@ -53,6 +53,8 @@ A data frame
 \description{
 Use user-provided list of genetic variants with weights for a trait to create a polygenic score. Uses the imputed BGEN files (field 22828) or WGS DRAGEN BGEN files (field 24309) data and load as data.frame
 
+Uses plink2 to create the score (https://www.cog-genomics.org/plink/2.0/score). The returned score is the sum of the effect alleles weighted by the provided beta coefficients, divided by the number of non-missing alleles (i.e. the average score per allele).
+
 If selecting the DRAGEN data as the source, this assumes your project has access to the WGS BGEN files released April 2025. If not, run `ukbrapR:::make_dragen_bed_from_pvcfs()` to use [tabix] and [plink] to subset the [DRAGEN WGS pVCF files].
 }
 \examples{
