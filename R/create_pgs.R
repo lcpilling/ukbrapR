@@ -139,9 +139,11 @@ create_pgs <- function(
   
   #
   #
-  # make bed 
+  # make bed -- if BED provided then just check plink2 is available
   if (!is_bed & source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_file, use_pos=use_imp_pos, progress=progress, verbose=verbose, very_verbose=very_verbose)
   if (!is_bed & source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_file, progress=progress, verbose=verbose, very_verbose=very_verbose)
+  if (is_bed)  ukbrapR:::prep_tools(get_plink=FALSE, get_plink2=TRUE, get_bgen=FALSE, verbose=verbose, very_verbose=very_verbose)
+
   
   # did it work?
   if (! file.exists(stringr::str_c(bed_path, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
