@@ -168,6 +168,11 @@ export_tables_emr <- function(
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_scripts' -ioutput='gp_scripts' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
 	if (submit)  system(table_exporter_command)
+	
+	if (verbose) cli::cli_alert("dx run table-exporter for 'gp_registrations'")
+	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_registrations' -ioutput='gp_registrations' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
+	if (verbose|submit) cli::cli_text(table_exporter_command)
+	if (submit)  system(table_exporter_command)
 
 }
 
