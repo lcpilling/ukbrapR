@@ -480,15 +480,22 @@ get_df1 <- function(
 			diagnosis_df <- dplyr::full_join(diagnosis_df, hesin_oper, by="eid")
 		}
 	}
-	
+
 	#
 	#
 	#
 	
 	# Combined "date first, any source" variable & "source" variable
 	if (verbose) cli::cli_alert("Combined \"date first, any source\" variable\n")
-	diagnosis_df$df <- NA
-	diagnosis_df$src <- ""
+	if (is.null(diagnosis_df))  {
+		# if no data from any source, create empty df with correct columns
+		diagnosis_df <- data.frame(eid=NA, df=NA, src="")[-1,]
+		if (verbose & !is.null(prefix))  cli::cli_alert_warning("No matches from any source for {prefix}\n")
+		if (verbose & is.null(prefix))  cli::cli_alert_warning("No matches from any source\n")
+	} else {
+		diagnosis_df$df <- NA
+		diagnosis_df$src <- ""
+	}
 	
 	if (include_selfrep_illness & use_selfrep)  {
 		diagnosis_df <- diagnosis_df |> 

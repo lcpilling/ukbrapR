@@ -1,3 +1,9 @@
+# ukbrapR v0.3.12 (15th Feb 2026)
+
+### Bug fixes
+ - `get_df()` fixed where no results are returned for a condition - previously returned an error, now just returns a binary variable with all 0's for the condition
+
+
 # ukbrapR v0.3.11 (10th Feb 2026)
 
 ### Changes
