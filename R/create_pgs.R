@@ -196,7 +196,7 @@ create_pgs <- function(
   }  
   
   # did it work?
-  if (! file.exists(stringr::str_c(out_file, ".profile")))  cli::cli_abort("Plink failed to make the allele score. Try with `very_verbose=TRUE` to see terminal output.")
+  if (! file.exists(stringr::str_c(out_file, ".sscore")))  cli::cli_abort("Plink failed to make the allele score. Try with `very_verbose=TRUE` to see terminal output.")
   
   # just extract EID and SCORE to a .tsv file -- remove participants with invalid EIDs < 0
   system(stringr::str_c("echo \"eid\t", pgs_name, "\" > ", out_file, ".tsv"))

@@ -1,3 +1,9 @@
+# ukbrapR v0.3.13 (19th Feb 2026)
+
+### Bug fixes
+ - Fixed issue #39 for `create_pgs()` to correctly load the new PGS from plink2 (thanks to @aepacker for highlighting) 
+
+
 # ukbrapR v0.3.12 (15th Feb 2026)
 
 ### Bug fixes
