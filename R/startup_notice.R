@@ -1,3 +1,7 @@
+#' Internal package state (not exported)
+#' @keywords internal
+.ukbrapr_state <- new.env(parent = emptyenv())
+
 #' Package notice and version banner
 #'
 #' Prints a short banner every time, and a feedback notice once per session.
@@ -6,15 +10,14 @@
 #' 
 #' @keywords internal
 .ukbrapr_startup_notice <- function() {
-  ns <- asNamespace("ukbrapR")
-
   # Suppress banner for nested calls within the same top-level entry
-  if (isTRUE(get0(".ukbrapr_banner_active", envir = ns, inherits = FALSE))) {
+  if (isTRUE(.ukbrapr_state$banner_active)) {
     return(invisible(NULL))
   }
 
-  assign(".ukbrapr_banner_active", TRUE, envir = ns)
-  on.exit(assign(".ukbrapr_banner_active", FALSE, envir = ns), add = TRUE)
+  .ukbrapr_state$banner_active <- TRUE
+  on.exit({ .ukbrapr_state$banner_active <- FALSE }, add = TRUE)
+
   
   # get package version
   pkg_version <- utils::packageVersion("ukbrapR")
