@@ -6,6 +6,17 @@
 #' 
 #' @keywords internal
 .ukbrapr_startup_notice <- function() {
+  ns <- asNamespace("ukbrapR")
+
+  # Suppress banner for nested calls within the same top-level entry
+  if (isTRUE(get0(".ukbrapr_banner_active", envir = ns, inherits = FALSE))) {
+    return(invisible(NULL))
+  }
+
+  assign(".ukbrapr_banner_active", TRUE, envir = ns)
+  on.exit(assign(".ukbrapr_banner_active", FALSE, envir = ns), add = TRUE)
+  
+  # get package version
   pkg_version <- utils::packageVersion("ukbrapR")
 
   # Identify what function the user called from the call stack
