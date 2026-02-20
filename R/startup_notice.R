@@ -36,16 +36,15 @@
 
 
   # Show package version & calling function
-  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}: {caller_name}()")
+  cli::cli_alert_info("{.pkg ukbrapR}::{caller_name}() v{pkg_version}")
 
   # Show feedback notice once per session
   if (!isTRUE(getOption("ukbrapR.feedback_notice_shown", FALSE))) {
     options(ukbrapR.feedback_notice_shown = TRUE)
 
-    cli::cli_inform(c(
-      "i" = "Thanks for using {.pkg ukbrapR} — I hope it is useful.",
-      " " = "I am keen to understand how it is being used.",
-      " " = "Consider starring the repo ({.url https://github.com/lcpilling/ukbrapR}) and sharing feedback."
+    cli::cli_ul(c(
+        "Thanks for using {.pkg ukbrapR}. I am keen to understand how widely it is being used.",
+        "Please star the repo {cli::symbol$star} and consider sharing feedback {.url https://github.com/lcpilling/ukbrapR}"
     ))
   }
 
