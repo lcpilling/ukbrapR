@@ -59,6 +59,9 @@ export_tables <- function(
 	verbose = FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+	
 	# is this just a test? (Will not actually run any dx commands)
 	if (!submit)  {
 		cli::cli_alert_info("Test run. Will not submit any {.code dx} system commands")

@@ -38,6 +38,9 @@ get_rap_phenos <- function(
 	verbose = FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	start_time <- Sys.time()
 	
 	# install packages if required 

@@ -1,7 +1,10 @@
-# ukbrapR v0.3.13 (19th Feb 2026)
+# ukbrapR v0.3.13 (20th Feb 2026)
 
 ### Bug fixes
  - Fixed issue #39 for `create_pgs()` to correctly load the new PGS from plink2 (thanks to @aepacker for highlighting) 
+
+### Changes
+ - Add message at first use to ask users for stars and feedback. Include package version message in new internal startup function.
 
 
 # ukbrapR v0.3.12 (15th Feb 2026)

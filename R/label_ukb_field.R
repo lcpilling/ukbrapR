@@ -39,7 +39,7 @@ label_ukb_field <- function(
 	field_id=NULL,  # if not in UKB format, provide the field ID
 	verbose=FALSE
 )  {
-	
+
 	# get symbol to use as variable name later
 	if (verbose) cat(" - ", field, "\n")
 	field_sym <- rlang::sym(field)
@@ -138,8 +138,8 @@ label_ukb_fields <- function(
 	verbose=FALSE
 )  {
 	
-	v <- packageVersion("ukbrapR")
-	cli::cli_alert_info("ukbrapR v{v}")
+	# start up messages
+	.ukbrapr_startup_notice()
 	
 	start_time <- Sys.time()
 	

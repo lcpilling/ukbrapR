@@ -27,6 +27,9 @@ load_bed <- function(
 	very_verbose=FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	# if it's a character string, assume user has provided a file path
 	if (class(in_bed)[1] == "character")  {
 		

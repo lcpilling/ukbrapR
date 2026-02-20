@@ -28,6 +28,9 @@ upload_to_rap <- function(
 	verbose = FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+
 	if (verbose) cat("Check input & options\n")
 	if (! is.character(file) ) stop("`file` needs to be a string of the filename to upload")
 	if (! file.exists(file) ) stop("`file` not found")
@@ -73,6 +76,9 @@ download_from_rap <- function(
 	verbose = FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	if (verbose) cat("Check input & options\n")
 	if (! is.character(file) ) stop("`file` needs to be a string of the filename to download")
 	if (! file.exists(file) ) stop("`file` not found")

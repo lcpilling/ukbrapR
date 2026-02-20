@@ -25,6 +25,9 @@ get_imputed_variant_info <- function(
 	verbose=FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	# start
 	start_time <- Sys.time()
 	

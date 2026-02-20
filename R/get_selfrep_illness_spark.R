@@ -47,6 +47,9 @@ get_selfrep_illness_spark <- function(
 	verbose = FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	start_time <- Sys.time()
 	
 	# Check input

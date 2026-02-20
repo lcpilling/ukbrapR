@@ -48,7 +48,10 @@ fields_to_phenos <- function(
   abort=TRUE,
   verbose=FALSE
 )  {
-  
+	
+	# start up messages
+	.ukbrapr_startup_notice()
+    
   # Check if 'field' is a character string of length 1
   if (class(fields)[1] != "character")  {
     cli::cli_abort("Provided fields need to be a vector of character strings") # Abort if field is not a character string
@@ -97,7 +100,10 @@ field_to_phenos <- function(
   abort=TRUE,
   verbose=FALSE
 )  {
-  
+	
+	# start up messages
+	.ukbrapr_startup_notice()
+
   # Check if 'field' is a character string of length 1
   if (class(field)[1] == "character")  {
     if (length(field) > 1)  {

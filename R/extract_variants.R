@@ -43,8 +43,8 @@ extract_variants <- function(
 	very_verbose=FALSE
 )  {
 	
-	v <- packageVersion("ukbrapR")
-	cli::cli_alert_info("ukbrapR v{v}")
+	# start up messages
+	.ukbrapr_startup_notice()
 	
 	start_time <- Sys.time()
 	

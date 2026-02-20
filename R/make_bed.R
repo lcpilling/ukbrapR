@@ -33,6 +33,9 @@ make_dragen_bed <- function(
 	very_verbose=FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+		
 	# start
 	start_time <- Sys.time()
 	
@@ -242,7 +245,10 @@ make_imputed_bed <- function(
     verbose=FALSE,
     very_verbose=FALSE
 )  {
-  
+	
+  # start up messages
+  .ukbrapr_startup_notice()
+
   # start
   start_time <- Sys.time()
   
@@ -438,6 +444,9 @@ make_dragen_bed_from_pvcfs <- function(
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
+	
+	# start up messages
+	.ukbrapr_startup_notice()
 	
 	# required files
 	file_dragen <- system.file("files", "dragen_pvcf_coordinates.csv.gz", package="ukbrapR")
@@ -653,6 +662,9 @@ make_dragen_bed_from_pgen <- function(
 	very_verbose=FALSE
 )  {
 	
+	# start up messages
+	.ukbrapr_startup_notice()
+
 	# start
 	start_time <- Sys.time()
 	
