@@ -9,7 +9,7 @@
 
 ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
-> Since `v0.2.0` ukbrapR works best on a "normal" cluster using RStudio and raw data from the table-exporter. Old Spark functions are still available but are not updated.
+> The package is free to use. If you found it useful consider getting in contact - I love to hear from users! Please consider starring the repo and citing it in your papers.
 
 <sub>Wrapped server icon by DALL-E</sub>
 
