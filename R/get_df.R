@@ -2,7 +2,7 @@
 #'
 #' @description For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
 #'
-#' If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently 30 October 2022).
+#' If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (see options - default is HES England or date of death if died).
 #'
 #' @return Returns a single, "wide" data frame: the participant data for the requested diagnosis codes with "date first" `_df` variables. One for each source of data, and a combined variable.
 #'
@@ -30,9 +30,11 @@
 #'        \code{default=TRUE}
 #' @param use_baseline_dates logical. If `baseline_dates` available in file paths, produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently see `censoring_date` option).
 #'        \code{default=TRUE}
+#' @param use_death_dates logical. If `death` data available then use date of death for the date of censoring.
+#'        \code{default=TRUE}
 #' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
 #'        \code{default=NULL}
-#' @param censoring_date A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
+#' @param censoring_date A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES England date.
 #'        \code{default="31-03-2023"}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
@@ -74,28 +76,29 @@ get_df <- function(
 	include_hesin_oper = TRUE,
 	include_cancer_registry = TRUE,
 	use_baseline_dates = TRUE,
+	use_death_dates = TRUE,
 	file_paths = NULL,
 	censoring_date = "31-03-2023",
 	verbose = FALSE
 )  {
 
 	# start up messages
-  pkg_version <- utils::packageVersion("ukbrapR")
-  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
-  .ukbrapr_startup_notice()
+	pkg_version <- utils::packageVersion("ukbrapR")
+	cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
+	.ukbrapr_startup_notice()
 
 	start_time <- Sys.time()
 
+	# if file_paths not provided assume default paths
+	if (is.null(file_paths))  {
+		file_paths = ukbrapR:::ukbrapr_paths
+		# add users home directory to path
+		home_path = as.character(Sys.getenv()["HOME"])
+		file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
+	}
+	
 	# use baseline dates?
 	if (use_baseline_dates)  {
-
-		# if file_paths not provided assume default paths
-		if (is.null(file_paths))  {
-			file_paths = ukbrapR:::ukbrapr_paths
-			# add users home directory to path
-			home_path = as.character(Sys.getenv()["HOME"])
-			file_paths$path = stringr::str_c(home_path, "/", file_paths$path)
-		}
 
 		# does baseline_dates file exist?
 		#   -- this is downloaded to users home directory so need to add this to the path
@@ -117,6 +120,21 @@ get_df <- function(
 			use_baseline_dates = FALSE
 			cli::cli_alert_warning("Could not find \"baseline dates\" file at path {.file {bl_file_path}} - continued without using it")
 		}
+	}	
+	
+	# use death dates?
+	if (use_death_dates)  {
+
+		# does death file exist?
+		#   -- this is downloaded to users home directory so need to add this to the path
+		death_file_path = file_paths$path[ file_paths$object=="death" ]
+		if (file.exists(death_file_path))  {
+			death_data <- readr::read_tsv(death_file_path, show_col_types = FALSE, progress = FALSE)
+			death_data <- dplyr::select(death_data, eid, date_of_death)
+		} else {
+			use_death_dates = FALSE
+			cli::cli_alert_warning("Could not find \"death\" file at path {.file {death_file_path}} - continued without using it")
+		}
 	}
 
 	# are we using a grouping variable?
@@ -135,7 +153,7 @@ get_df <- function(
 		)
 
 		# add binary variables (ever, prev) & censoring date (if provided)
-		if (use_baseline_dates)  df_tbl = ukbrapR:::get_df1_add_bin(df=df_tbl, bd=bl_data, cd=censoring_date, prefix=prefix, verbose=verbose)
+		if (use_baseline_dates)  df_tbl = ukbrapR:::get_df1_add_bin(df=df_tbl, bd=bl_data, dd=death_data, cd=censoring_date, prefix=prefix, verbose=verbose)
 
 	} else {
 
@@ -303,7 +321,7 @@ get_df <- function(
 			)
 
 			# add binary variables (ever, prev) & censoring date (if provided)
-			if (use_baseline_dates)  df_tbl_sub = ukbrapR:::get_df1_add_bin(df=df_tbl_sub, bd=bl_data, cd=censoring_date, prefix=group, verbose=verbose)
+			if (use_baseline_dates)  df_tbl_sub = ukbrapR:::get_df1_add_bin(df=df_tbl_sub, bd=bl_data, dd=death_data, cd=censoring_date, prefix=group, verbose=verbose)
 
 			# merge with main DF table
 			if (is.null(df_tbl))  {
@@ -606,6 +624,7 @@ get_df1 <- function(
 get_df1_add_bin = function(
 	df,
 	bd,
+	dd,
 	cd,
 	prefix = NULL,
 	verbose = FALSE
@@ -643,6 +662,14 @@ get_df1_add_bin = function(
 	# add censoring date
 	if (!is.na(cd))  df = df |> dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0, cd, !!var_df))
 
+	# replace censoring date with date of death if appropriate
+	if (!is.na(dd))  {
+		df = dplyr::left_join(df, dd, by="eid")
+		df = df |> 
+			dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0 & !is.na(date_of_death), date_of_death, !!var_df)) |>
+			dplyr::select(-date_of_death)
+	}
+	
 	# return
 	return(df)
 }

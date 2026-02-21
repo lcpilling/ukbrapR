@@ -15,6 +15,7 @@ get_df(
   include_hesin_oper = TRUE,
   include_cancer_registry = TRUE,
   use_baseline_dates = TRUE,
+  use_death_dates = TRUE,
   file_paths = NULL,
   censoring_date = "31-03-2023",
   verbose = FALSE
@@ -51,10 +52,13 @@ get_df(
 \item{use_baseline_dates}{logical. If `baseline_dates` available in file paths, produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently see `censoring_date` option).
 \code{default=TRUE}}
 
+\item{use_death_dates}{logical. If `death` data available then use date of death for the date of censoring.
+\code{default=TRUE}}
+
 \item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
 \code{default=NULL}}
 
-\item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
+\item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES England date.
 \code{default="31-03-2023"}}
 
 \item{verbose}{Logical. Be verbose,
@@ -66,7 +70,7 @@ Returns a single, "wide" data frame: the participant data for the requested diag
 \description{
 For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
 
-If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently 30 October 2022).
+If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (see options - default is HES England or date of death if died).
 }
 \examples{
 
