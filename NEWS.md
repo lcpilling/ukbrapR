@@ -1,7 +1,12 @@
-# ukbrapR v0.3.13 (19th Feb 2026)
+# ukbrapR v0.3.13 (21st Feb 2026)
 
 ### Bug fixes
  - Fixed issue #39 for `create_pgs()` to correctly load the new PGS from plink2 (thanks to @aepacker for highlighting) 
+
+### Changes
+ - `get_df()` default censoring date updated to 31-03-2023 (i.e., the current date for HES for England https://biobank.ndph.ox.ac.uk/ukb/exinfo.cgi?src=Data_providers_and_dates).
+ - `get_df()` if a participant has died then use the date of death as the censoring date instead.
+ - Add message at first use of package in session to ask users for stars and feedback. 
 
 
 # ukbrapR v0.3.12 (15th Feb 2026)

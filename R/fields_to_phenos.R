@@ -48,12 +48,17 @@ fields_to_phenos <- function(
   abort=TRUE,
   verbose=FALSE
 )  {
-  
+
+	# start up messages
+  pkg_version <- utils::packageVersion("ukbrapR")
+  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
+  .ukbrapr_startup_notice()
+
   # Check if 'field' is a character string of length 1
   if (class(fields)[1] != "character")  {
     cli::cli_abort("Provided fields need to be a vector of character strings") # Abort if field is not a character string
   }
-  
+
   # If filename provided, check it is valid
   save_file <- FALSE
   if (filename != "")  {
@@ -61,10 +66,10 @@ fields_to_phenos <- function(
     if (! length(filename) == 1)   cli::cli_abort("Provided filename need to be a character string of length 1")
     save_file <- TRUE
   }
-  
+
   # Apply field_to_phenos() to each field
   phenos <- purrr::map(fields, \(x) ukbrapR:::field_to_phenos(field=x, abort=abort, verbose=verbose)) |> purrr::list_c()
-  
+
   # Save file, or return vector?
   if (save_file)  {
     data.frame(c("eid",phenos)) |> readr::write_tsv(filename, col_names=FALSE, progress=FALSE)
@@ -72,7 +77,7 @@ fields_to_phenos <- function(
   } else {
     return(phenos)
   }
-  
+
 }
 
 
@@ -97,7 +102,7 @@ field_to_phenos <- function(
   abort=TRUE,
   verbose=FALSE
 )  {
-  
+
   # Check if 'field' is a character string of length 1
   if (class(field)[1] == "character")  {
     if (length(field) > 1)  {
@@ -110,10 +115,10 @@ field_to_phenos <- function(
   # Extract the field ID, in case it's passed as 'p4080_i0_a0' or similar
   field_id <- field |> stringr::str_remove("p") |> stringr::str_split_i("_", 1)
   if (verbose)  cli::cli_alert(c("Field ID: ", field_id))
-  
+
   # Get information for this field from the schema
   field_info <- ukbrapR:::ukb_schema[["field"]] |> dplyr::filter(field_id == !!field_id)
-  
+
   # Was the provided field ID in the schema?
   if (nrow(field_info)==0)  {
     if (abort)   cli::cli_abort(stringr::str_c("Field ID [", field_id, "] not present in the UK Biobank schema (https://biobank.ctsu.ox.ac.uk/ukb/schema.cgi?id=1)"))
@@ -122,30 +127,30 @@ field_to_phenos <- function(
       return(NULL)
     }
   }
-  
+
   # Initialize the basic field ID and valid fields list
   p_field_id <- stringr::str_c("p", field_id)
   valid_fields <- NULL
-  
+
   # Check if the field is instanced and generate instances if true
   if (field_info$instanced == 1)  {
     instances <- seq(field_info$instance_min, field_info$instance_max, 1)
-    if (verbose)  cli::cli_alert(stringr::str_c("Is instaced [", stringr::str_c(instances, collapse=","), "]")) 
+    if (verbose)  cli::cli_alert(stringr::str_c("Is instaced [", stringr::str_c(instances, collapse=","), "]"))
   }
-  
+
   # Check if the field is arrayed and generate arrays if true
   # If the field is "multiple choice" value type then it is *not* arrayed
   if (field_info$arrayed == 1 & field_info$value_type != 22)  {
     arrays <- seq(field_info$array_min, field_info$array_max, 1)
-    if (verbose)  cli::cli_alert(stringr::str_c("Is arrayed [", stringr::str_c(arrays, collapse=","), "]")) 
-  
+    if (verbose)  cli::cli_alert(stringr::str_c("Is arrayed [", stringr::str_c(arrays, collapse=","), "]"))
+
     # Generate valid fields for non-instanced arrayed fields
     if (field_info$instanced == 0)  {
       for (aa in 1:length(arrays))  {
         valid_fields <- c(valid_fields, stringr::str_c(p_field_id, "_a", arrays[aa]))
       }
     }
-    
+
     # Generate valid fields for instanced arrayed fields
     if (field_info$instanced == 1)  {
       for (ii in 1:length(instances))  {
@@ -154,24 +159,24 @@ field_to_phenos <- function(
         }
       }
     }
-  
+
   }  else  {
-  
+
     # Generate valid fields for instanced non-arrayed fields
     if (field_info$instanced == 1)  {
       for (ii in 1:length(instances))  {
         valid_fields <- c(valid_fields, stringr::str_c(p_field_id, "_i", instances[ii]))
       }
     } else {
-    
+
       # not instanced or arrayed!
       valid_fields <- p_field_id
-    
+
     }
-  
+
   }
-  
+
   # Return the list of valid fields for this field ID
   return(valid_fields)
-  
+
 }

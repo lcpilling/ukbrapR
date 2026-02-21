@@ -22,9 +22,9 @@
 #'        \code{default=FALSE}
 #'
 #' @examples
-#' 
-#' # To keep files organised this package assumes the following file structure 
-#' #  This object is not actually required but illstrates the defaults to be 
+#'
+#' # To keep files organised this package assumes the following file structure
+#' #  This object is not actually required but illstrates the defaults to be
 #' #  created in your RAP space (override by providing a new `file_paths`):
 #' ukbrapr_paths = data.frame(
 #' 	object=c("death","death_cause","hesin","hesin_diag","hesin_oper","gp_clinical","gp_scripts","selfrep_illness","cancer_registry","baseline_dates"),
@@ -58,13 +58,18 @@ export_tables <- function(
 	dataset = NULL,
 	verbose = FALSE
 )  {
-	
+
+	# start up messages
+  pkg_version <- utils::packageVersion("ukbrapR")
+  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
+  .ukbrapr_startup_notice()
+
 	# is this just a test? (Will not actually run any dx commands)
 	if (!submit)  {
 		cli::cli_alert_info("Test run. Will not submit any {.code dx} system commands")
 		ignore_warnings = TRUE
 	}
-	
+
 	# do any files already exist? Warn if so!
 	for (fp in file_paths$path)  {
 		if (file.exists(stringr::str_c("/mnt/project/", fp)))  {
@@ -72,7 +77,7 @@ export_tables <- function(
 			if (!ignore_warnings)  cli::cli_abort("File already exists on RAP at {.path {fp}}.")
 		}
 	}
-	
+
 	# if output directory does not exist in the RAP, create it
 	fp_dir = file_paths$path[1]
 	if (stringr::str_detect(fp_dir, "/"))  {
@@ -82,25 +87,25 @@ export_tables <- function(
 			if (submit)  system(stringr::str_c("dx mkdir ", fp_dir))
 		}
 	}
-	
-	# get dataset id 
+
+	# get dataset id
 	if (is.null(dataset))  {
 		dataset = system("dx describe /*dataset | grep  app | awk -F ' ' '{print $2}' | sort | tail -n 1", intern = TRUE)
 	}
 	if (verbose) cli::cli_alert_info("Using dataset {.file {dataset}}")
-	
+
 	# run table exporter commands
 	ukbrapR:::export_tables_emr(dataset=dataset, submit=submit, verbose=verbose)
 	ukbrapR:::export_tables_selfrep_illness(dataset=dataset, submit=submit, verbose=verbose)
 	ukbrapR:::export_tables_cancer_registry(dataset=dataset, submit=submit, verbose=verbose)
 	ukbrapR:::export_tables_baseline_info(dataset=dataset, submit=submit, verbose=verbose)
-	
+
 	cli::cli_alert_success("Submitted all table-exporter jobs.")
 	cli::cli_alert_info("Can take ~15mins to complete.")
 	cli::cli_alert_info("Files will be saved to `ukbrapr_data` directory in your RAP project presistent storage space.")
 	cli::cli_alert_warning("~10Gb of text files are created. This will cost ~£0.15 per month to store in the RAP standard storage.")
-	
-	# was this just a test? 
+
+	# was this just a test?
 	if (!submit)  {
 		cli::cli_abort("This was a test run. No {.code dx table-exporter} commands were submitted. Re-run with {.code submit = TRUE} to submit.")
 	}
@@ -127,13 +132,13 @@ export_tables_emr <- function(
 
 	cli::cli_alert("Export tables: Electronic Medical Records")
 
-	# get dataset id 
+	# get dataset id
 	if (is.null(dataset))  {
 		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
 		dataset = dataset[1]
 	}
-	
-	# submit table-exporter 
+
+	# submit table-exporter
 	if (verbose) cli::cli_alert("dx run table-exporter for 'death'")
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='death' -ioutput='death' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
@@ -168,7 +173,7 @@ export_tables_emr <- function(
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_scripts' -ioutput='gp_scripts' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
 	if (submit)  system(table_exporter_command)
-	
+
 	if (verbose) cli::cli_alert("dx run table-exporter for 'gp_registrations'")
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ientity='gp_registrations' -ioutput='gp_registrations' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
@@ -179,7 +184,7 @@ export_tables_emr <- function(
 
 
 
-#' Extract self-reported illess fields 
+#' Extract self-reported illess fields
 #'
 #' @description In the UK Biobank RAP, submit a table-exporter job to extract the self-reported illness fields:
 #'
@@ -198,9 +203,9 @@ export_tables_selfrep_illness <- function(
 	submit = FALSE,
 	verbose = FALSE
 )  {
-	
+
 	cli::cli_alert("Export table: Self-reported Illness fields")
-	
+
 	# RAP stores arrays as separate variables
 	if (verbose) cli::cli_alert("Determine field names to request")
 	if (verbose) cli::cli_alert(c("n_instances = ", n_instances))
@@ -210,51 +215,51 @@ export_tables_selfrep_illness <- function(
 	# Determine variable names needed (depends if cancer or non-cancer)
 	#   will use 20001 (cancer code) and 20002 (non-cancer code)
 	#   will use the interpolated year (20006 = cancer year, 20008 = non-cancer year)
-	
-	# get field names 
+
+	# get field names
 	names = "eid"
-	
+
 	# phenotypes
 	#   cancer code = 20001
 	#   cancer year = 20006
 	for (p in c(20001, 20006))  {
-		
+
 		# instances 0:n_instances
 		for (i in c(0:n_instances))  {
-			
+
 			# cancer arrays
 			for (a in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p", p, "_i", i, "_a", a))
-			
+
 		}
 	}
-	
+
 	# phenotypes
 	#   non-cancer illness code = 20002
 	#   non-cancer illness year = 20008
 	for (p in c(20002, 20008))  {
-		
+
 		# instances 0:3
 		for (i in c(0:n_instances))  {
-			
+
 			# non-cancer arrays
 			for (a in c(0:n_noncancer_arrays))  names <- c(names, stringr::str_c("p", p, "_i", i, "_a", a))
-			
+
 		}
 	}
 
 	if (verbose) print(names)
-	
-	# save and upload names file 
+
+	# save and upload names file
 	readr::write_tsv(data.frame(names), "fieldnames_selfrep_illness.txt", col_names=FALSE)
 	if (submit)  ukbrapR::upload_to_rap("fieldnames_selfrep_illness.txt", dir="/ukbrapr_data")
 
-	# get dataset id 
+	# get dataset id
 	if (is.null(dataset))  {
 		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
 		dataset = dataset[1]
 	}
-	
-	# submit table-exporter 
+
+	# submit table-exporter
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='/ukbrapr_data/fieldnames_selfrep_illness.txt' -ientity='participant' -ioutput='selfrep_illness' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
 	if (submit)  system(table_exporter_command)
@@ -264,7 +269,7 @@ export_tables_selfrep_illness <- function(
 
 
 
-#' Extract cancer registry fields 
+#' Extract cancer registry fields
 #'
 #' @description In the UK Biobank RAP, submit a table-exporter job to extract the cancer registry fields:
 #'
@@ -281,7 +286,7 @@ export_tables_cancer_registry <- function(
 	submit = FALSE,
 	verbose = FALSE
 )  {
-	
+
 	cli::cli_alert("Export table: Cancer Registry fields")
 
 	# RAP stores arrays as separate variables
@@ -292,31 +297,31 @@ export_tables_cancer_registry <- function(
 	#   age vars = 40008
 	#   histology vars = 40011
 	#   behaviour vars = 40012
-	
-	# get field names 
+
+	# get field names
 	names = "eid"
-	
+
 	# phenotypes
 	for (p in c(40005, 40006, 40008, 40011, 40012))  {
-		
+
 		# instances 0:n_instances
 		for (i in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p", p, "_i", i))
-		
+
 	}
-	
+
 	if (verbose) print(names)
-	
-	# save and upload names file 
+
+	# save and upload names file
 	readr::write_tsv(data.frame(names), "fieldnames_cancer_registry.txt", col_names=FALSE)
 	if (submit)  ukbrapR::upload_to_rap("fieldnames_cancer_registry.txt", dir="/ukbrapr_data")
 
-	# get dataset id 
+	# get dataset id
 	if (is.null(dataset))  {
 		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
 		dataset = dataset[1]
 	}
-	
-	# submit table-exporter 
+
+	# submit table-exporter
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='/ukbrapr_data/fieldnames_cancer_registry.txt' -ientity='participant' -ioutput='cancer_registry' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
 	if (submit)  system(table_exporter_command)
@@ -343,18 +348,18 @@ export_tables_baseline_info <- function(
 	submit = FALSE,
 	verbose = FALSE
 )  {
-	
+
 	cli::cli_alert("Export table: Baseline Info fields")
 
-	# get dataset id 
+	# get dataset id
 	if (is.null(dataset))  {
 		dataset = list.files("/mnt/project") |> stringr::str_subset(".dataset")
 		dataset = dataset[1]
 	}
-	
+
 	# baseline fields to export
 	fields <- c(
-		"eid", 
+		"eid",
 		"p53_i0", "p53_i1", "p53_i2", "p53_i3",   # assessment dates
 		"p54_i0", "p54_i1", "p54_i2", "p54_i3",   # assessment centres
 		"p52", "p34",                             # month and year of birth
@@ -362,8 +367,8 @@ export_tables_baseline_info <- function(
 	)
 	readr::write_tsv(data.frame(fields), "fieldnames_baseline_info.txt", col_names=FALSE)
 	if (submit)  ukbrapR::upload_to_rap("fieldnames_baseline_info.txt", dir="/ukbrapr_data")
-	
-	# submit table-exporter 
+
+	# submit table-exporter
 	table_exporter_command = stringr::str_c("dx run table-exporter -idataset_or_cohort_or_dashboard=", dataset, " -ifield_names_file_txt='/ukbrapr_data/fieldnames_baseline_info.txt' -ientity='participant' -ioutput='baseline_dates' -ioutput_format='TSV' -icoding_option='RAW' --destination /ukbrapr_data/ --brief --yes")
 	if (verbose|submit) cli::cli_text(table_exporter_command)
 	if (submit)  system(table_exporter_command)

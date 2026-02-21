@@ -42,72 +42,74 @@ extract_variants <- function(
 	verbose=FALSE,
 	very_verbose=FALSE
 )  {
-	
-	v <- packageVersion("ukbrapR")
-	cli::cli_alert_info("ukbrapR v{v}")
-	
+
+	# start up messages
+  pkg_version <- utils::packageVersion("ukbrapR")
+  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
+  .ukbrapr_startup_notice()
+
 	start_time <- Sys.time()
-	
+
 	#
 	#
 	# check inputs
 	if (very_verbose)  verbose <- TRUE
 	if (verbose) cli::cli_alert("Checking inputs")
-	
+
 	# imputed or dragen?
 	if (! source %in% c("imputed","dragen")) cli::cli_abort("{.var source} must be either \"imputed\" or \"dragen\"")
-	
+
 	# load user-provided varlist file (only first two TSV cols are used: must be chr, bp)
 	varlist <- NULL
-	
+
 	# if it's a character string, assume user has provided a file path
 	if (class(in_file)[1] == "character")  {
-		
+
 		if (length(in_file)>1)  cli::cli_abort("Input file path needs to be length 1")
 		# does input file exist?
 		if (! file.exists(in_file))  cli::cli_abort("Input file not found")
 		varlist <- readr::read_tsv(in_file, progress=FALSE, show_col_types=FALSE)
-		
+
 	} else if (! any(class(in_file) %in% c("data.frame","tbl","tbl_df")))  {
-		
+
 		cli::cli_abort(c(
 			"{.var in_file} must be a data.frame (or tibble), or a character string",
 			"x" = "You've supplied a {.cls {class(in_file)}}."
 		))
-		
+
 	} else {
 		varlist <- in_file   # user has passed a data frame
 	}
-	
+
 	# check varlist formatting
-	need_pos <- FALSE 
+	need_pos <- FALSE
 	if (source == "dragen" | use_imp_pos)  need_pos <- TRUE
 	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=need_pos, verbose=verbose)
-	
-	# check output format 
+
+	# check output format
 	if (! class(out_bed)=="character")  cli::cli_abort("Output file prefix needs to be a character string")
 	if (length(out_bed)>1)  cli::cli_abort("Output file prefix needs to be length 1")
 	if (out_bed=="tmp")  overwrite <- TRUE
 	if (file.exists(paste0(out_bed,".bed")) & !overwrite)  cli::cli_abort("Output bed already exists. To overwrite, set option `overwrite=TRUE`")
-	
+
 	#
 	#
-	# make bed 
+	# make bed
 	if (source == "imputed")  ukbrapR::make_imputed_bed(in_file=varlist, out_bed=out_bed, use_pos=use_imp_pos, progress=progress, verbose=verbose, very_verbose=very_verbose)
 	if (source == "dragen")   ukbrapR::make_dragen_bed(in_file=varlist, out_bed=out_bed, progress=progress, verbose=verbose, very_verbose=very_verbose)
-	
+
 	# did it work?
 	if (! file.exists(stringr::str_c(out_bed, ".bed")))  cli::cli_abort("Failed to make the BED. Try with `very_verbose=TRUE` to see terminal output.")
-	
+
 	# load bed
 	bed <- ukbrapR::load_bed(in_bed=out_bed, verbose=verbose, very_verbose=very_verbose)
-	
+
 	#
 	#
 	# finished
 	cli::cli_alert_success(c("Loaded data from {ncol(bed)-1} variants."))
 	if (verbose) cli::cli_alert_info(c("Time taken: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-	
+
 	return(bed)
-	
+
 }

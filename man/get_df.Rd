@@ -15,8 +15,9 @@ get_df(
   include_hesin_oper = TRUE,
   include_cancer_registry = TRUE,
   use_baseline_dates = TRUE,
+  use_death_dates = TRUE,
   file_paths = NULL,
-  censoring_date = "30-10-2022",
+  censoring_date = "31-03-2023",
   verbose = FALSE
 )
 }
@@ -26,7 +27,7 @@ get_df(
 \item{prefix}{String. Prefix to add to variable names (e.g., if prefix="chd" the output variables would be "chd_gp_df", "chd_hes_df", "chd_df" etc.)
 \code{default=NULL}}
 
-\item{group_by}{String. If the codes list provided to `get_diagnoses()` (i.e., in diagnosis_list$codes_df) contained a grouping/condition variable, indicate the variable name here. 
+\item{group_by}{String. If the codes list provided to `get_diagnoses()` (i.e., in diagnosis_list$codes_df) contained a grouping/condition variable, indicate the variable name here.
 "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
 \code{default=NULL}}
 
@@ -51,11 +52,14 @@ get_df(
 \item{use_baseline_dates}{logical. If `baseline_dates` available in file paths, produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently see `censoring_date` option).
 \code{default=TRUE}}
 
+\item{use_death_dates}{logical. If `death` data available then use date of death for the date of censoring.
+\code{default=TRUE}}
+
 \item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
 \code{default=NULL}}
 
-\item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
-\code{default="30-10-2022"}}
+\item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES England date.
+\code{default="31-03-2023"}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}
@@ -66,7 +70,7 @@ Returns a single, "wide" data frame: the participant data for the requested diag
 \description{
 For each participant identify the date of first diagnosis from all available electronic medical records & self-reported data.
 
-If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (currently 30 October 2022).
+If `use_baseline_dates=TRUE` (the default) then will also produce a binary 0/1 variable, indicating the controls (people without a diagnosis) and setting the date first `_df` field to the date of censoring (see options - default is HES England or date of death if died).
 }
 \examples{
 

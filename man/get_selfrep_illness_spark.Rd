@@ -39,7 +39,7 @@ get_selfrep_illness_spark(
 Returns a data frame with four variables: eid, selfrep [binary, codes identified?], selfrep_df [date of reported illness], selfrep_i [instance the illness was first reported]
 }
 \description{
-For a specific self-reported illness code or codes, identify whether the participant has self-reported at any visit, and identify the year. 
+For a specific self-reported illness code or codes, identify whether the participant has self-reported at any visit, and identify the year.
 Intended for use on the UK Biobank DNnexus Research Analysis Platform, but if the user provides their own dataframe of UK Biobank self-reported fields this works on any system.
 }
 \examples{
