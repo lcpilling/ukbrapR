@@ -158,7 +158,7 @@ Identify the date first diagnosed for each participant from any of datasets sear
 Also included are:
 
  - a `src` field indicating the source of the date of first diagnosis.
- - a `bin` field indicating the cases [1] and controls [0]. This relies on a small number of baseline fields also exported. The `df` field for the controls is the date of censoring (currently 30 October 2022).
+ - a `bin` field indicating the cases [1] and controls [0]. This relies on a small number of baseline fields also exported. The `df` field for the controls is the date of censoring (currently 31 March 2023 [the HES England date] or the date of death).
  - a `bin_prev` field indicating whether the case was before the UK Biobank baseline assessment
 
 ```r
