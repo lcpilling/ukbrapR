@@ -98,6 +98,7 @@ get_df <- function(
 	}
 	
 	# use baseline dates?
+	bl_data <- NULL
 	if (use_baseline_dates)  {
 
 		# does baseline_dates file exist?
@@ -123,6 +124,7 @@ get_df <- function(
 	}	
 	
 	# use death dates?
+	death_data <- NULL
 	if (use_death_dates)  {
 
 		# does death file exist?
@@ -663,7 +665,7 @@ get_df1_add_bin = function(
 	if (!is.na(cd))  df = df |> dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0, cd, !!var_df))
 
 	# replace censoring date with date of death if appropriate
-	if (!is.na(dd))  {
+	if (!is.null(dd))  {
 		df = dplyr::left_join(df, dd, by="eid")
 		df = df |> 
 			dplyr::mutate(!!var_df := dplyr::if_else(!!var_bin==0 & !is.na(date_of_death), date_of_death, !!var_df)) |>
