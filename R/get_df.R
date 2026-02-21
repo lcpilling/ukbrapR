@@ -33,7 +33,7 @@
 #' @param file_paths A data frame. Columns must be `object` and `path` containing paths to outputted files. If not provided will use those in `ukbrapr_paths`
 #'        \code{default=NULL}
 #' @param censoring_date A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
-#'        \code{default="30-10-2022"}
+#'        \code{default="31-03-2023"}
 #' @param verbose Logical. Be verbose,
 #'        \code{default=FALSE}
 #'
@@ -75,7 +75,7 @@ get_df <- function(
 	include_cancer_registry = TRUE,
 	use_baseline_dates = TRUE,
 	file_paths = NULL,
-	censoring_date = "30-10-2022",
+	censoring_date = "31-03-2023",
 	verbose = FALSE
 )  {
 
@@ -88,17 +88,6 @@ get_df <- function(
 
 	# use baseline dates?
 	if (use_baseline_dates)  {
-
-		# Is this one of my systems? If so, get the internal file_paths
-		nodename <- as.character(Sys.info()['nodename'])
-		if ( is.null(file_paths)  &  nodename %in% c("SNOW","SHAPTER") )  {
-			file_paths = ukbrapR:::snow_paths
-			if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
-		}
-		if ( is.null(file_paths)  &  nodename == "indy.ex.ac.uk" )  {
-			file_paths = ukbrapR:::indy_paths
-			if (verbose)  cli::cli_alert_info("Identified server {nodename} - using predefined paths.")
-		}
 
 		# if file_paths not provided assume default paths
 		if (is.null(file_paths))  {

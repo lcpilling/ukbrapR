@@ -21,7 +21,7 @@ label_ukb_field(d, field, field_id = NULL, verbose = FALSE)
 Returns a data frame.
 }
 \description{
-Variables such as education and ethnicity are provided as integers but have specific codes. 
+Variables such as education and ethnicity are provided as integers but have specific codes.
 
 The UK Biobank schema are machine-readable dictionaries and mappings defining the internal structure of the online Showcase. https://biobank.ctsu.ox.ac.uk/crystal/schema.cgi
 

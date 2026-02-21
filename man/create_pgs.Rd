@@ -59,7 +59,7 @@ If selecting the DRAGEN data as the source, this assumes your project has access
 }
 \examples{
 
-# example variant list and weights from GWAS of liver cirrhosis 
+# example variant list and weights from GWAS of liver cirrhosis
 #  - Innes 2020 Gastroenterology doi:10.1053/j.gastro.2020.06.014
 #  - Position in build 38
 varlist <- system.file("files", "pgs_liver_cirrhosis.txt", package="ukbrapR")

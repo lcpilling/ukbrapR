@@ -10,7 +10,7 @@ get_diagnoses(codes_df, file_paths = NULL, verbose = FALSE)
 \item{codes_df}{A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary (ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, and ukb_noncancer are recognised). Other columns are ignored.}
 
 \item{file_paths}{A data frame. Columns must be `object` and `path` containing paths to required files. Default assumes you have the tables exported in the RAP environment from
-ukbrapR::export_tables() 
+ukbrapR::export_tables()
 \code{default=ukbrapR:::ukbrapr_paths}}
 
 \item{verbose}{Logical. Be verbose,
@@ -42,7 +42,7 @@ codes_df_ckd <- ukbrapR:::codes_df_ckd
 head(codes_df_ckd)
 
 # Get diagnosis data - returns list of data frames (one per source)
-# -- Requires exported tables - see `export_tables()` 
+# -- Requires exported tables - see `export_tables()`
 diagnosis_list <- get_diagnoses(codes_df_ckd)
 
 # don't forget to save and upload data to RAP persistent storage!

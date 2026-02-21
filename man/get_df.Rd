@@ -16,7 +16,7 @@ get_df(
   include_cancer_registry = TRUE,
   use_baseline_dates = TRUE,
   file_paths = NULL,
-  censoring_date = "30-10-2022",
+  censoring_date = "31-03-2023",
   verbose = FALSE
 )
 }
@@ -26,7 +26,7 @@ get_df(
 \item{prefix}{String. Prefix to add to variable names (e.g., if prefix="chd" the output variables would be "chd_gp_df", "chd_hes_df", "chd_df" etc.)
 \code{default=NULL}}
 
-\item{group_by}{String. If the codes list provided to `get_diagnoses()` (i.e., in diagnosis_list$codes_df) contained a grouping/condition variable, indicate the variable name here. 
+\item{group_by}{String. If the codes list provided to `get_diagnoses()` (i.e., in diagnosis_list$codes_df) contained a grouping/condition variable, indicate the variable name here.
 "Date first" variables will be created for each prefix in the grouping variable. The `prefix` option is ignored, in favour of the names in the grouping variable.
 \code{default=NULL}}
 
@@ -55,7 +55,7 @@ get_df(
 \code{default=NULL}}
 
 \item{censoring_date}{A string. If using baseline data to infer control participants, include a censoring date (set to NA if not desired). Use dd-mm-yyyy format. Default is the (current) HES date.
-\code{default="30-10-2022"}}
+\code{default="31-03-2023"}}
 
 \item{verbose}{Logical. Be verbose,
 \code{default=FALSE}}

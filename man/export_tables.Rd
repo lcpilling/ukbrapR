@@ -38,8 +38,8 @@ Suggest executing in an RStudio session. ~10Gb of text files are created. This w
 }
 \examples{
 
-# To keep files organised this package assumes the following file structure 
-#  This object is not actually required but illstrates the defaults to be 
+# To keep files organised this package assumes the following file structure
+#  This object is not actually required but illstrates the defaults to be
 #  created in your RAP space (override by providing a new `file_paths`):
 ukbrapr_paths = data.frame(
 	object=c("death","death_cause","hesin","hesin_diag","hesin_oper","gp_clinical","gp_scripts","selfrep_illness","cancer_registry","baseline_dates"),
