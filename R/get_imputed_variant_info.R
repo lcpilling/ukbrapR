@@ -19,52 +19,54 @@
 #' varlist2 <- get_imputed_variant_info(varlist1)
 #'
 #' @export
-#' 
+#'
 get_imputed_variant_info <- function(
 	varlist,
 	verbose=FALSE
 )  {
-	
+
 	# start up messages
-	.ukbrapr_startup_notice()
-		
+  pkg_version <- utils::packageVersion("ukbrapR")
+  cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
+  .ukbrapr_startup_notice()
+
 	# start
 	start_time <- Sys.time()
-	
+
 	#
 	#
 	# check inputs
 	if (verbose) cli::cli_alert("Checking inputs")
-	
+
 	# check varlist formatting
 	varlist <- ukbrapR:::prep_varlist(varlist, doing_pgs=FALSE, need_pos=TRUE, verbose=verbose)
 	varlist$ukb_minor_allele <- varlist$ukb_a2 <- varlist$ukb_a1 <- varlist$ukb_rsid <- varlist$ukb_variant_id <- ""
 	varlist$ukb_info <- varlist$ukb_maf <- NA_real_
-	
+
 	#
 	#
-	# for each CHR 
+	# for each CHR
 	chrs <- unique(varlist$chr)
 	n_chrs <- length(chrs)
-	
+
 	# show progress
 	cli::cli_alert("Getting variant IDs for {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s}")
-	
+
 	# loop over files...
 	for (ii in 1:n_chrs)  {
-		
+
 		# this CHR
 		chr <- chrs[ii]
-		if (verbose) cli::cli_alert("Processing CHR {chr} ({ii} of {n_chrs})")		
-		
+		if (verbose) cli::cli_alert("Processing CHR {chr} ({ii} of {n_chrs})")
+
 		# path to MFI
 		mfi_path <- stringr::str_c("/mnt/project/Bulk/Imputation/UKB\\ imputation\\ from\\ genotype/ukb22828_c", chr, "_b0_v3.mfi.txt")
-		
+
 		# build grep query for this CHR
-		# grep whole word matches only 
+		# grep whole word matches only
 		varlist_sub <- varlist |> dplyr::filter(chr==!!chr)
 		search_string <- paste0("grep -E -w ", sprintf('"%s"', stringr::str_flatten(varlist_sub$pos, collapse = "|")), " ", sprintf('%s', mfi_path))
-		
+
 		# use search string to only read lines that matched a code
 		mfi_tbl <- suppressWarnings(readr::read_tsv(pipe(search_string), col_names=c("ukb_variant_id","ukb_rsid","pos","ukb_a1","ukb_a2","ukb_maf","ukb_minor_allele","ukb_info"), show_col_types=FALSE, progress=FALSE))
 
@@ -72,7 +74,7 @@ get_imputed_variant_info <- function(
 		mfi_tbl <- mfi_tbl |> dplyr::filter(pos %in% varlist_sub$pos)
 
 		# for each variant in varlist_sub, get the variant_id from mfi_tbl
-		for (jj in 1:nrow(varlist_sub))  {	
+		for (jj in 1:nrow(varlist_sub))  {
 			r <- mfi_tbl |> dplyr::filter(pos==!!varlist_sub$pos[jj])
 			# find any for this pos?
 			if (nrow(r)>0)  {
