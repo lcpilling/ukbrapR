@@ -1,3 +1,9 @@
+# ukbrapR v0.3.14 (24th Feb 2026)
+
+### Bug fixes
+ - `get_df()` now removes any duplicated IDs if using the death data to get the censoring date (this unfortunately resulted in some extra rows added during a later left join).
+
+
 # ukbrapR v0.3.13 (21st Feb 2026)
 
 ### Bug fixes

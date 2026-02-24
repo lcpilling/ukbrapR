@@ -132,7 +132,15 @@ get_df <- function(
 		death_file_path = file_paths$path[ file_paths$object=="death" ]
 		if (file.exists(death_file_path))  {
 			death_data <- readr::read_tsv(death_file_path, show_col_types = FALSE, progress = FALSE)
-			death_data <- dplyr::select(death_data, eid, date_of_death)
+			death_data <- death_data |> 
+				dplyr::select(eid, date_of_death) |>
+				dplyr::mutate(date_of_death = lubridate::ymd(date_of_death)) |>
+				dplyr::group_by(eid) |>
+				dplyr::summarise(
+					date_of_death = min(date_of_death, na.rm = TRUE),
+					.groups = "drop"
+				) |>
+				dplyr::ungroup()
 		} else {
 			use_death_dates = FALSE
 			cli::cli_alert_warning("Could not find \"death\" file at path {.file {death_file_path}} - continued without using it")
