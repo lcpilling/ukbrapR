@@ -9,7 +9,9 @@
 
 ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Biobank Research Analysis Platform (RAP). The aim is to make it quicker, easier, and more reproducible.
 
-> The package is free to use. If you found it useful consider getting in contact - I love to hear from users! Please consider starring the repo and citing it in your papers.
+Please consider starring the repo and citing it in your papers:
+
+> Pilling LC (2026). lcpilling/ukbrapR (v0.3.14). doi:[10.5281/zenodo.18836738](https://doi.org/10.5281/zenodo.18836738), url:https://github.com/lcpilling/ukbrapR
 
 <sub>Wrapped server icon by DALL-E</sub>
 

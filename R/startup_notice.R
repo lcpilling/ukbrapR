@@ -11,7 +11,7 @@
 
     cli::cli_inform(c(
       "",
-      "i" = "Hi! Once-per-session message from Luke. I am keen to understand how widely {.pkg ukbrapR} is used. Please consider {.emph starring} the repo ({cli::symbol$star} {.url https://github.com/lcpilling/ukbrapR}), {.strong citing it in papers}, and sharing feedback. Thanks for supporting {.pkg ukbrapR}!",
+      "i" = "Hi, thanks for using {.pkg ukbrapR}! Please consider {.emph starring} the repo ({cli::symbol$star} {.url https://github.com/lcpilling/ukbrapR}), {.strong citing it in papers} ({.url https://doi.org/10.5281/zenodo.18836738}), and sharing feedback.",
       ""
     ))
   }

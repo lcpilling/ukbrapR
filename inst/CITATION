@@ -1,0 +1,12 @@
+year <- sub("-.*", "", Sys.Date())
+note <- paste0("ukbrapR v", utils::packageVersion("ukbrapR"))
+
+bibentry(
+  bibtype = "Misc",
+  title = "ukbrapR: an R package for working in the UK Biobank Research Analysis Platform (RAP)",
+  author = person(c("Luke C"), "Pilling"),
+  year = year,
+  note = note,
+  url = "https://github.com/lcpilling/ukbrapR",
+  doi = "10.5281/zenodo.18836738"
+)

@@ -7,7 +7,7 @@ Authors@R: c(person("Luke", "Pilling",
                     comment = c(ORCID = "0000-0002-3332-8454")))
 Description: R functions to use in the UK Biobank Research Analysis Platform (RAP). The aim is to make working in the RAP quicker, easier, and more reproducible. The package is designed to work in a "normal" cluster using RStudio, and raw UK Biobank data from the table-exporter (rather than on a Spark cluster).
 License: GPL-3
-URL: https://lcpilling.github.io/ukbrapR, https://github.com/lcpilling/ukbrapR
+URL: https://lcpilling.github.io/ukbrapR, https://github.com/lcpilling/ukbrapR, https://doi.org/10.5281/zenodo.18836738
 Depends: 
   R (>= 4.1.1)
 Imports:
