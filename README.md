@@ -11,7 +11,7 @@ ukbrapR (phonetically: 'U-K-B-wrapper') is an R package for working in the UK Bi
 
 Please consider starring the repo and citing it in your papers:
 
-> Pilling LC (2026). lcpilling/ukbrapR (v0.3.14). doi:[10.5281/zenodo.18836738](https://doi.org/10.5281/zenodo.18836738), url:https://github.com/lcpilling/ukbrapR
+> Pilling LC (2026). ukbrapR (v0.3.14). doi:[10.5281/zenodo.18836738](https://doi.org/10.5281/zenodo.18836738), https://github.com/lcpilling/ukbrapR
 
 <sub>Wrapped server icon by DALL-E</sub>
 
