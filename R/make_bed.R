@@ -86,7 +86,7 @@ make_dragen_bed <- function(
 	n_secs <- (n_chrs * 10) * (0.1 * n_snps_per_chr)
 
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s} (ETA ~{prettyunits::pretty_sec(n_secs)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} DRAGEN BGEN file{?s}")   #  (ETA ~{prettyunits::pretty_sec(n_secs)})
 
 	# loop over files...
 	for (ii in 1:n_chrs)  {
@@ -299,7 +299,7 @@ make_imputed_bed <- function(
   n_secs <- (n_chrs * 8) * (0.1 * n_snps_per_chr)
 
   # show progress
-  cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s} (ETA {prettyunits::pretty_sec(n_secs)})")
+  cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} imputed BGEN file{?s}") #  (ETA {prettyunits::pretty_sec(n_secs)})
 
   # loop over files...
   for (ii in 1:n_chrs)  {
@@ -513,7 +513,7 @@ make_dragen_bed_from_pvcfs <- function(
 	n_files <- length(fls)
 
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_files} DRAGEN pVCF file{?s} (ETA {prettyunits::pretty_sec(n_files*60)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_files} DRAGEN pVCF file{?s}")  #  (ETA {prettyunits::pretty_sec(n_files*60)})
 
 	# loop over files...
 	for (ii in 1:n_files)  {
@@ -704,7 +704,7 @@ make_dragen_bed_from_pgen <- function(
 	n_chrs <- length(chrs)
 
 	# show progress
-	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} PGEN file{?s} (ETA {prettyunits::pretty_sec(n_chrs*30)})")
+	cli::cli_alert("Extracting {nrow(varlist)} variant{?s} from {n_chrs} PGEN file{?s}")  #  (ETA {prettyunits::pretty_sec(n_chrs*30)})
 
 	# loop over files...
 	for (ii in 1:n_chrs)  {
