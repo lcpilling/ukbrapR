@@ -6,7 +6,8 @@
 #'
 #' @noRd
 get_cancer_registry <- function(
-	codes,
+	ICD9s,
+	ICD10s,
 	ukb_dat,
 	verbose = FALSE
 )  {
@@ -14,7 +15,12 @@ get_cancer_registry <- function(
 	start_time <- Sys.time()
 	
 	# Check input
-	if (verbose) cli::cli_alert_info("Searching cancer registry data for {length(unique(codes))} ICD10 codes")
+	if (verbose & ICD9s[1]!="")  cli::cli_alert_info("Searching cancer registry data for {length(unique(codes))} ICD9 codes")
+	if (verbose & ICD10s[1]!="") cli::cli_alert_info("Searching cancer registry data for {length(unique(codes))} ICD10 codes")
+	
+	# if "missing" (empty string) replace with impossible code so grep doesn't catch all rows 
+	if (ICD9s[1]=="")   ICD9s <- "not_a_code"
+	if (ICD10s[1]=="")  ICD10s <- "not_a_code"
 	
 	# remove rows where participant has no cancer data 
 	ukb_dat = ukb_dat |> dplyr::filter(
@@ -33,6 +39,7 @@ get_cancer_registry <- function(
 	#   behaviour vars = 40012
 	
 	# variable prefix 
+	v_icd9      <- "p40013_"
 	v_icd10     <- "p40006_"
 	v_date      <- "p40005_"
 	v_age       <- "p40008_"
@@ -46,6 +53,7 @@ get_cancer_registry <- function(
 			dplyr::select(eid, dplyr::contains(v)) |>
 			tidyr::pivot_longer(!eid, names_to = "instance", names_prefix = v, values_to = n)
 	}
+	ukb_dat_icd9      <- pivot_cancer(ukb_dat, v_icd9, "icd9")
 	ukb_dat_icd10     <- pivot_cancer(ukb_dat, v_icd10, "icd10")
 	ukb_dat_date      <- pivot_cancer(ukb_dat, v_date, "date")
 	ukb_dat_age       <- pivot_cancer(ukb_dat, v_age, "age")
@@ -54,23 +62,27 @@ get_cancer_registry <- function(
 	
 	# join tables
 	if (verbose) cli::cli_alert("Join cancer registry data")
-	ukb_dat_cr = purrr::reduce(list(ukb_dat_icd10, ukb_dat_date, ukb_dat_age, ukb_dat_histology, ukb_dat_behaviour), dplyr::full_join, by = c("eid"="eid", "instance"="instance"))
+	ukb_dat_cr = purrr::reduce(list(ukb_dat_icd9, ukb_dat_icd10, ukb_dat_date, ukb_dat_age, ukb_dat_histology, ukb_dat_behaviour), dplyr::full_join, by = c("eid"="eid", "instance"="instance"))
 	
 	# remove rows where participant has no cancer data 
 	ukb_dat_cr = ukb_dat_cr |> dplyr::filter(
 		dplyr::if_any(
-			c("icd10","date","age","histology","behaviour"),
+			c("icd9","icd10","date","age","histology","behaviour"),
 			~!is.na(.)
 		)
 	)
 	
-	# subset to ICD10s in provided codes
+	# subset to ICD9s/ICD10s in provided codes
 	if (verbose) cli::cli_alert("Identify matching codes")
 	ukb_dat_cr = ukb_dat_cr |> 
 		dplyr::filter(
 			stringr::str_detect(
+				icd9,
+				stringr::str_flatten(ICD9s, collapse = "|")
+			) |
+			stringr::str_detect(
 				icd10,
-				stringr::str_flatten(codes, collapse = "|")
+				stringr::str_flatten(ICD10s, collapse = "|")
 			)
 		)
 	
