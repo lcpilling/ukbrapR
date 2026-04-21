@@ -6,7 +6,7 @@
 #'
 #'  - ICD10 (for `hesin`, `death_cause` and `cancer_registry` searches) - fuzzy matching
 #'
-#'  - ICD9 (for `hesin` searches) - fuzzy matching
+#'  - ICD9 (for `hesin` searches and `cancer_registry` searches) - fuzzy matching
 #'
 #'  - Read2 / CTV3 (for `gp_clinical`) - exact matches on first 5 characters
 #'
@@ -22,7 +22,7 @@
 #'
 #' @name get_diagnoses
 #'
-#' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary (ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, and ukb_noncancer are recognised). Other columns are ignored.
+#' @param codes_df A data frame. Contains two columns: `code` and `vocab_id` i.e., a list of diagnostic codes, and an indicator of the vocabulary (ICD9, ICD10, Read2, CTV3, OPCS3, OPCS4, ukb_cancer, and ukb_noncancer are recognised). Other columns are ignored.
 #' @param file_paths A data frame. Columns must be `object` and `path` containing paths to required files. Default assumes you have the tables exported in the RAP environment from
 #'        ukbrapR::export_tables()
 #'        \code{default=ukbrapR:::ukbrapr_paths}
@@ -53,7 +53,7 @@ get_diagnoses <- function(
 	# start up messages
   pkg_version <- utils::packageVersion("ukbrapR")
   cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
-  .ukbrapr_startup_notice()
+  #.ukbrapr_startup_notice()
 
 	start_time <- Sys.time()
 
@@ -147,6 +147,7 @@ get_diagnoses <- function(
 			stringr::str_sub(1, 5)
 		hyphen_check(ICD9s, "ICD9")
 		cat(" - N unique ICD9 codes:", length(ICD9s), "\n")
+		if (any(dplyr::between(as.numeric(ICD9s), 140, 208)))  get_canreg <- TRUE
 	}
 
 	# get Read2 and CTV3s. First 5 characters only.
@@ -344,28 +345,6 @@ get_diagnoses <- function(
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 
 		#
-		# cancer registry ####################################
-		#
-
-		# do any ICD10s start with a C? Skip if not.
-		if (get_canreg)  {
-
-			cli::cli_alert("Ascertaining cancer registry data.")
-
-			# load data
-			cancer_registry_dat <- suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE))
-
-			# get cancer registry data for these ICD10s
-			cancer_registry_tbl <- ukbrapR:::get_cancer_registry(codes = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
-			cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
-
-			rm(cancer_registry_dat)
-
-			if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
-
-		}
-
-		#
 		# HES diagnosis data (ICD10s) ###########################################
 		#
 
@@ -402,6 +381,27 @@ get_diagnoses <- function(
 		}
 
 		cli::cli_alert_success("Loaded {.var hesin_diag} with {nrow(hesin_diag_tbl)} matched rows.")
+
+		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
+
+	}
+
+	#
+	# cancer registry ####################################
+	#
+
+	if (get_canreg)  {
+
+		cli::cli_alert("Ascertaining cancer registry data.")
+
+		# load data
+		cancer_registry_dat <- suppressWarnings(readr::read_tsv(file_paths$path[ file_paths$object=="cancer_registry" ], show_col_types = FALSE, progress = FALSE))
+
+		# get cancer registry data for these ICD10s
+		cancer_registry_tbl <- ukbrapR:::get_cancer_registry(ICD9s = ICD9s, ICD10s = ICD10s, ukb_dat = cancer_registry_dat, verbose = verbose)
+		cli::cli_alert_success("Loaded {.var cancer_registry} with {nrow(cancer_registry_tbl)} matched rows.")
+
+		rm(cancer_registry_dat)
 
 		if (verbose)  cli::cli_alert_info(c("Time taken so far: ", "{prettyunits::pretty_sec(as.numeric(difftime(Sys.time(), start_time, units=\"secs\")))}."))
 

@@ -133,7 +133,7 @@ field_to_phenos <- function(
   valid_fields <- NULL
 
   # Check if the field is instanced and generate instances if true
-  if (field_info$instanced == 1)  {
+  if (field_info$instanced != 0)  {
     instances <- seq(field_info$instance_min, field_info$instance_max, 1)
     if (verbose)  cli::cli_alert(stringr::str_c("Is instaced [", stringr::str_c(instances, collapse=","), "]"))
   }
@@ -152,7 +152,7 @@ field_to_phenos <- function(
     }
 
     # Generate valid fields for instanced arrayed fields
-    if (field_info$instanced == 1)  {
+    if (field_info$instanced != 0)  {
       for (ii in 1:length(instances))  {
         for (aa in 1:length(arrays))  {
           valid_fields <- c(valid_fields, stringr::str_c(p_field_id, "_i", instances[ii], "_a", arrays[aa]))
@@ -163,7 +163,7 @@ field_to_phenos <- function(
   }  else  {
 
     # Generate valid fields for instanced non-arrayed fields
-    if (field_info$instanced == 1)  {
+    if (field_info$instanced != 0)  {
       for (ii in 1:length(instances))  {
         valid_fields <- c(valid_fields, stringr::str_c(p_field_id, "_i", instances[ii]))
       }

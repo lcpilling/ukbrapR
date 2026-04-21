@@ -219,6 +219,18 @@ get_df <- function(
 				ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
 			}
 
+			# create ICD9 search string
+			if (any(codes_sub$vocab_id == "ICD9"))  {
+				ICD9s <- codes_sub |>
+					dplyr::filter(vocab_id == "ICD9") |>
+					dplyr::select(code) |>
+					dplyr::pull() |>
+					unique() |>
+					stringr::str_remove(stringr::fixed(".")) |>
+					stringr::str_sub(1, 5)
+				ICD9_search = stringr::str_flatten(ICD9s, collapse = "|")
+			}
+
 			## hesin_diag
 			hesin_diag_sub = NULL
 			if (!is.null(diagnosis_list_sub$hesin_diag) & any(codes_sub$vocab_id %in% c("ICD10","ICD9")))  {
@@ -229,17 +241,6 @@ get_df <- function(
 				}
 
 				if (any(codes_sub$vocab_id == "ICD9"))  {
-					ICD9s = ""
-					if (any(codes_sub$vocab_id == "ICD9"))  {
-						ICD9s <- codes_sub |>
-							dplyr::filter(vocab_id == "ICD9") |>
-							dplyr::select(code) |>
-							dplyr::pull() |>
-							unique() |>
-							stringr::str_remove(stringr::fixed(".")) |>
-							stringr::str_sub(1, 5)
-					}
-					ICD9_search = stringr::str_flatten(ICD9s, collapse = "|")
 					colnames(diagnosis_list_sub$hesin_diag) = tolower(colnames(diagnosis_list_sub$hesin_diag))
 					hesin_diag_sub = rbind(hesin_diag_sub, diagnosis_list_sub$hesin_diag |> dplyr::filter(stringr::str_starts(diag_icd9, !! ICD9_search)))
 				}
@@ -255,9 +256,17 @@ get_df <- function(
 			diagnosis_list_sub$death_cause <- death_cause_sub
 
 			## cancer_registry
-			cancer_registry_sub <- NULL
+			cancer_registry_sub <- cancer_registry_sub_icd10 <- NULL
+			if (!is.null(diagnosis_list_sub$cancer_registry) & any(codes_sub$vocab_id == "ICD9"))  {
+				cancer_registry_sub <- diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd9, !! ICD9_search))
+			}
 			if (!is.null(diagnosis_list_sub$cancer_registry) & any(codes_sub$vocab_id == "ICD10"))  {
-				cancer_registry_sub <- diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd10, !! ICD10_search))
+				cancer_registry_sub_icd10 <- diagnosis_list_sub$cancer_registry |> dplyr::filter(stringr::str_detect( icd10, !! ICD10_search))
+				if (is.null(cancer_registry_sub))  {
+					cancer_registry_sub <- cancer_registry_sub_icd10
+				} else {
+					cancer_registry_sub <- rbind(cancer_registry_sub, cancer_registry_sub_icd10)
+				}
 			}
 			diagnosis_list_sub$cancer_registry <- cancer_registry_sub
 
@@ -704,19 +713,36 @@ get_cancer_registry_df <- function(
 	start_time <- Sys.time()
 
 	if (verbose) cat("Getting cancer registry data\n")
+	
+	# create ICD9 search string
+	ICD9_search <- ""
+	if (any(codes_df$vocab_id == "ICD9"))  {
+		ICD9s <- codes_df |>
+			dplyr::filter(vocab_id == "ICD9") |>
+			dplyr::select(code) |>
+			dplyr::pull() |>
+			unique() |>
+			stringr::str_remove(stringr::fixed(".")) |>
+			stringr::str_sub(1, 5)
+		ICD9_search = stringr::str_flatten(ICD9s, collapse = "|")
+	}
 
-	# format codes
-	vocab_col = "vocab_id"
-	codes_col = "code"
+	# create ICD10 search string
+	ICD10_search <- ""
+	if (any(codes_df$vocab_id == "ICD10"))  {
+		ICD10s <- codes_df |>
+			dplyr::filter(vocab_id == "ICD10") |>
+			dplyr::select(code) |>
+			dplyr::pull() |>
+			unique() |>
+			stringr::str_remove(stringr::fixed(".")) |>
+			stringr::str_sub(1, 5)
+		ICD10_search = stringr::str_flatten(ICD10s, collapse = "|")
+	}
 
-	codes <- codes_df |>
-		dplyr::filter(!!rlang::sym(vocab_col) == "ICD10") |>
-		dplyr::select(!!rlang::sym(codes_col)) |>
-		dplyr::pull() |>
-		unique() |>
-		stringr::str_remove(stringr::fixed(".")) |>
-		stringr::str_sub(1, 5)
-	codes_string = stringr::str_flatten(codes, collapse = "|")
+	# if "missing" (empty string) replace with impossible code so grep doesn't catch all rows 
+	if (ICD9_search=="")   ICD9_search <- "not_a_code"
+	if (ICD10_search=="")  ICD10_search <- "not_a_code"
 
 	# create empty vars in ukb_dat to modify
 	ukb_dat$canreg    <- 0
@@ -734,8 +760,15 @@ get_cancer_registry_df <- function(
 
 		# Update where the code matches
 		ukb_dat <- ukb_dat |> dplyr::mutate(
-			canreg_df = dplyr::if_else(canreg == 0 & stringr::str_detect(icd10, codes_string), date, canreg_df, canreg_df),
-			canreg    = dplyr::if_else(canreg == 0 & stringr::str_detect(icd10, codes_string), 1, canreg, canreg)
+			canreg_df = dplyr::if_else(
+				canreg == 0 & 
+				( stringr::str_detect(icd9, ICD9_search) | stringr::str_detect(icd10, ICD10_search) ), 
+				date, canreg_df, canreg_df
+			),
+			canreg    = dplyr::if_else(
+				canreg == 0 & 
+				( stringr::str_detect(icd9, ICD9_search) | stringr::str_detect(icd10, ICD10_search) ), 
+				1, canreg, canreg)
 			)
 	}
 
