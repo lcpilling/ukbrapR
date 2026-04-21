@@ -53,7 +53,7 @@ get_diagnoses <- function(
 	# start up messages
   pkg_version <- utils::packageVersion("ukbrapR")
   cli::cli_alert_info("{.pkg ukbrapR} v{pkg_version}")
-  .ukbrapr_startup_notice()
+  #.ukbrapr_startup_notice()
 
 	start_time <- Sys.time()
 

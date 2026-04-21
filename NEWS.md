@@ -1,3 +1,18 @@
+# ukbrapR v0.3.15 (21st April 2026)
+
+### Changes
+ - (PR #41) Cancer registry data did not include ICD9 codes. Thanks to @hdg204 for the suggestions. Changes are:
+   - `export_tables_cancer_registry` now exports fields 40013 (cancer registry ICD9 codes)
+   - `get_diagnoses` notices if user has provided an ICD9 in range 140 to 208, flag to search cancer registry
+   - `get_cancer_registry` differentiates between ICD9 and ICD10 when searching the raw data
+     - If user has an older table (without ICD9) then only ICD10 codes are searched 
+   - `get_df` correctly handles if ICD9 and/or ICD10 diagnoses are available
+
+### Bug fixes
+ - `fields_to_phenos` now better handles some instanced fields (like 40006) where the Schema has instanced == 2
+   - Known bug: some arrayed fields (like 20001) are not always handled correctly - not worked this out yet
+
+
 # ukbrapR v0.3.14 (24th Feb 2026)
 
 ### Bug fixes
