@@ -293,16 +293,17 @@ export_tables_cancer_registry <- function(
 	if (verbose) cli::cli_alert("Determine field names to request")
 	if (verbose) cli::cli_alert(c("n_cancer_arrays = ", n_cancer_arrays))
 	#   date vars = 40005
-	#   cancer vars = 40006
+	#   cancer ICD10 vars = 40006
 	#   age vars = 40008
 	#   histology vars = 40011
 	#   behaviour vars = 40012
+	#   cancer ICD9 vars = 40013
 
 	# get field names
 	names = "eid"
 
 	# phenotypes
-	for (p in c(40005, 40006, 40008, 40011, 40012))  {
+	for (p in c(40005, 40006, 40008, 40011, 40012, 40013))  {
 
 		# instances 0:n_instances
 		for (i in c(0:n_cancer_arrays))  names <- c(names, stringr::str_c("p", p, "_i", i))
