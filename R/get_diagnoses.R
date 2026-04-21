@@ -147,7 +147,7 @@ get_diagnoses <- function(
 			stringr::str_sub(1, 5)
 		hyphen_check(ICD9s, "ICD9")
 		cat(" - N unique ICD9 codes:", length(ICD9s), "\n")
-		if (any(dplyr::between(ICD9s, 140, 208)))  get_canreg <- TRUE
+		if (any(dplyr::between(as.numeric(ICD9s), 140, 208)))  get_canreg <- TRUE
 	}
 
 	# get Read2 and CTV3s. First 5 characters only.

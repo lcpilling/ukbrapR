@@ -53,16 +53,29 @@ get_cancer_registry <- function(
 			dplyr::select(eid, dplyr::contains(v)) |>
 			tidyr::pivot_longer(!eid, names_to = "instance", names_prefix = v, values_to = n)
 	}
-	ukb_dat_icd9      <- pivot_cancer(ukb_dat, v_icd9, "icd9")
+
 	ukb_dat_icd10     <- pivot_cancer(ukb_dat, v_icd10, "icd10")
 	ukb_dat_date      <- pivot_cancer(ukb_dat, v_date, "date")
 	ukb_dat_age       <- pivot_cancer(ukb_dat, v_age, "age")
 	ukb_dat_histology <- pivot_cancer(ukb_dat, v_histology, "histology")
 	ukb_dat_behaviour <- pivot_cancer(ukb_dat, v_behaviour, "behaviour")
 	
+	# some older exports may not have icd9
+	ukb_dat_icd9 <- NULL
+	if ("" %in% colnames(ukb_dat))  {
+		ukb_dat_icd9      <- pivot_cancer(ukb_dat, v_icd9, "icd9")
+	} else {
+		cli::cli_alert_warning("'icd9' not in exported cancer registry data. Consider re-exporting raw tables with `export_tables()`")
+	}
+
 	# join tables
 	if (verbose) cli::cli_alert("Join cancer registry data")
-	ukb_dat_cr = purrr::reduce(list(ukb_dat_icd9, ukb_dat_icd10, ukb_dat_date, ukb_dat_age, ukb_dat_histology, ukb_dat_behaviour), dplyr::full_join, by = c("eid"="eid", "instance"="instance"))
+	ukb_dat_cr = purrr::reduce(list(ukb_dat_icd10, ukb_dat_date, ukb_dat_age, ukb_dat_histology, ukb_dat_behaviour), dplyr::full_join, by = c("eid"="eid", "instance"="instance"))
+	if (!is.null(ukb_dat_icd9))  {
+		ukb_dat_cr <- dplyr::full_join(ukb_dat_icd9, ukb_dat_cr)
+	}  else  {
+		ukb_dat_cr$icd9 <- NA
+	}
 	
 	# remove rows where participant has no cancer data 
 	ukb_dat_cr = ukb_dat_cr |> dplyr::filter(
